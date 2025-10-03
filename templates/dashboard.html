@@ -1,0 +1,1239 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Dashboard-specific styles that complement base.html */
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--light);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--gray-200);
+    }
+
+    .page-header h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-header h1 i {
+        color: var(--primary);
+        background: rgba(67, 97, 238, 0.1);
+        padding: 0.5rem;
+        border-radius: 10px;
+    }
+
+    /* Greeting Section Styles */
+    .greeting-section {
+        background: var(--light);
+        border-radius: var(--border-radius);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--gray-200);
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(58, 12, 163, 0.05) 100%);
+        border-left: 4px solid var(--primary);
+    }
+
+    .greeting-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .greeting-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .greeting-text i {
+        color: var(--primary);
+        background: rgba(67, 97, 238, 0.1);
+        padding: 0.5rem;
+        border-radius: 50%;
+        font-size: 1.25rem;
+    }
+
+    .greeting-subtext {
+        font-size: 1rem;
+        color: var(--gray-600);
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* Dark mode support for greeting */
+    .dark-mode .greeting-section {
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(58, 12, 163, 0.1) 100%);
+        border-color: var(--gray-300);
+    }
+
+    /* Responsive design for greeting */
+    @media (max-width: 768px) {
+        .greeting-section {
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .greeting-text {
+            font-size: 1.25rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .last-updated {
+        font-size: 0.9rem;
+        color: var(--gray-600);
+        background: var(--gray-100);
+        padding: 0.75rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    }
+
+    /* Stats Cards - Made smaller to fit in one line */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: var(--light);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--gray-200);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 140px;
+        /* Reduced height */
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        /* Reduced height */
+        background: var(--primary-gradient);
+    }
+
+    .stat-card.danger::before {
+        background: var(--danger);
+    }
+
+    .stat-card.warning::before {
+        background: var(--warning);
+    }
+
+    .stat-card.success::before {
+        background: var(--success);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+        /* Reduced margin */
+    }
+
+    .stat-title {
+        font-size: 0.85rem;
+        /* Smaller font */
+        font-weight: 600;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        /* Smaller icon */
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(67, 97, 238, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.1rem;
+        /* Smaller icon size */
+    }
+
+    .stat-card.danger .stat-icon {
+        background: rgba(249, 65, 68, 0.1);
+        color: var(--danger);
+    }
+
+    .stat-card.warning .stat-icon {
+        background: rgba(249, 199, 79, 0.1);
+        color: var(--warning);
+    }
+
+    .stat-card.success .stat-icon {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--success);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        /* Smaller font size */
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        /* Reduced margin */
+        line-height: 1;
+    }
+
+    .stat-description {
+        font-size: 0.85rem;
+        /* Smaller font */
+        color: var(--gray-600);
+        margin-top: auto;
+    }
+
+    /* Data Section */
+    .data-section {
+        background: var(--light);
+        border-radius: var(--border-radius);
+        padding: 1.75rem;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .section-header {
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-header h2 i {
+        color: var(--primary);
+    }
+
+    .table-container {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid var(--gray-200);
+        padding: 1rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    th {
+        background: var(--gray-100);
+        padding: 1rem 1.25rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--dark);
+        border-bottom: 1px solid var(--gray-200);
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+        white-space: nowrap;
+    }
+
+    th:hover {
+        background: var(--gray-200);
+    }
+
+    th i {
+        margin-left: 0.5rem;
+        opacity: 0.5;
+        transition: var(--transition);
+        font-size: 0.8rem;
+    }
+
+    th:hover i {
+        opacity: 1;
+    }
+
+    td {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--gray-200);
+        vertical-align: top;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover td {
+        background: var(--gray-100);
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-active {
+        background: rgba(76, 201, 240, 0.15);
+        color: var(--success);
+    }
+
+    .badge-warning {
+        background: rgba(247, 37, 133, 0.15);
+        color: var(--warning);
+    }
+
+    /* Course Blocks */
+    .course-blocks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .course-block {
+        background: var(--gray-100);
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.8rem;
+        border: 1px solid var(--gray-200);
+        min-width: 150px;
+    }
+
+    .course-name {
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        color: var(--dark);
+    }
+
+    .course-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .course-grade {
+        color: var(--danger);
+        font-weight: 700;
+    }
+
+    .course-credit {
+        color: var(--gray-600);
+        font-size: 0.75rem;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pagination-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pagination-pages {
+        display: flex;
+        gap: 0.35rem;
+    }
+
+    .pagination-page {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--gray-700);
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .pagination-page:hover {
+        background: var(--gray-100);
+        border-color: var(--gray-300);
+    }
+
+    .pagination-page.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .pagination-ellipsis {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        color: var(--gray-500);
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        padding: 1rem;
+    }
+
+    .modal.show {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background: var(--light);
+        border-radius: var(--border-radius);
+        width: 100%;
+        max-width: 500px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+        border: 1px solid var(--gray-200);
+        position: relative;
+    }
+
+    .modal.show .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-content h2 {
+        margin-bottom: 1rem;
+        color: var(--dark);
+        font-size: 1.5rem;
+    }
+
+    .close {
+        position: absolute;
+        top: 1.25rem;
+        right: 1.25rem;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray-500);
+        transition: var(--transition);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .close:hover {
+        color: var(--dark);
+        background: var(--gray-100);
+    }
+
+    /* File Upload */
+    .file-upload-container {
+        margin: 1.5rem 0;
+    }
+
+    .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed var(--gray-300);
+        border-radius: 12px;
+        padding: 2.5rem 2rem;
+        cursor: pointer;
+        transition: var(--transition);
+        text-align: center;
+    }
+
+    .file-upload-label:hover,
+    .file-upload-label.drag-over {
+        border-color: var(--primary);
+        background: rgba(67, 97, 238, 0.05);
+    }
+
+    .file-upload-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .file-upload-text {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+
+    .file-upload-subtext {
+        font-size: 0.9rem;
+        color: var(--gray-600);
+        line-height: 1.5;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .file-name {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--gray-100);
+        border-radius: 8px;
+        padding: 0.9rem 1.25rem;
+        margin-top: 1rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .file-name span {
+        font-weight: 500;
+        color: var(--dark);
+    }
+
+    .remove-file {
+        cursor: pointer;
+        color: var(--gray-500);
+        transition: var(--transition);
+        padding: 0.25rem;
+        border-radius: 4px;
+    }
+
+    .remove-file:hover {
+        color: var(--danger);
+        background: rgba(249, 65, 68, 0.1);
+    }
+
+    .upload-btn {
+        width: 100%;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+
+    .upload-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .upload-status {
+        margin-top: 1.5rem;
+        padding: 1.25rem;
+        border-radius: 8px;
+        display: none;
+        border: 1px solid transparent;
+    }
+
+    .status-loading {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--success);
+        border-color: rgba(76, 201, 240, 0.2);
+    }
+
+    .status-success {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--success);
+        border-color: rgba(76, 201, 240, 0.2);
+    }
+
+    .status-error {
+        background: rgba(249, 65, 68, 0.1);
+        color: var(--danger);
+        border-color: rgba(249, 65, 68, 0.2);
+    }
+
+    .progress-bar {
+        height: 4px;
+        background: var(--gray-200);
+        border-radius: 2px;
+        margin-top: 0.75rem;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    /* Responsive Design - Adjusted for smaller cards */
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pagination {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .course-blocks {
+            flex-direction: column;
+        }
+
+        .modal-content {
+            padding: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            min-height: 120px;
+            padding: 1.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeIn 0.5s ease forwards;
+    }
+
+    .delay-1 {
+        animation-delay: 0.1s;
+    }
+
+    .delay-2 {
+        animation-delay: 0.2s;
+    }
+
+    .delay-3 {
+        animation-delay: 0.3s;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.08);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+
+    /* Empty state for when there are no learners with credit issues */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--gray-600);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--gray-400);
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--gray-700);
+    }
+
+    
+</style>
+
+<div class="dashboard-container">
+    <!-- Page Header -->
+    <div class="greeting-section animated">
+        <div class="greeting-content">
+            <h2 class="greeting-text">
+                <i class="fas fa-hand-wave"></i>
+                Hello, {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}!
+            </h2>
+            <p class="greeting-subtext">Welcome to your Learner Journey Analytics Dashboard</p>
+        </div>
+    </div>
+    <div class="page-header">
+        <h1><i class="fas fa-chart-line"></i> Learner Journey Analytics</h1>
+        <div class="header-actions">
+            <div class="last-updated">
+                <i class="fas fa-clock"></i>
+                Last updated: {{ last_updated.strftime('%d %b %Y') if last_updated else 'Just now' }}
+            </div>
+            <button class="btn btn-primary" onclick="showUploadModal()">
+                <i class="fas fa-upload"></i> Update Database
+            </button>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideUploadModal()">&times;</span>
+            <h2>Update Database</h2>
+            <p>Upload a new Excel file to update the database:</p>
+
+            <div class="file-upload-container">
+                <label for="excelFile" class="file-upload-label" id="fileUploadLabel">
+                    <div class="file-upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="file-upload-text">Drag & Drop your file here</div>
+                    <div class="file-upload-subtext">or click to browse</div>
+                    <div class="file-upload-subtext">Supported formats: .xlsx, .xls</div>
+                </label>
+
+                <input type="file" id="excelFile" name="excel_file" accept=".xlsx,.xls" class="file-input" required>
+
+                <div id="fileName" class="file-name" style="display: none;">
+                    <span id="selectedFileName"></span>
+                    <span class="remove-file" onclick="clearFileSelection()">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            </div>
+
+            <button type="button" id="uploadButton" class="btn btn-primary upload-btn" onclick="processUpload()"
+                disabled>
+                <i class="fas fa-upload"></i> Upload and Process
+            </button>
+
+            <div id="uploadStatus" class="upload-status" style="display: none;">
+                <div id="statusMessage"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards - Now smaller and in one line -->
+    <div class="stats-grid">
+        <a href="{{ url_for('learners') }}" style="text-decoration: none; color: inherit;">
+            <div class="stat-card animated">
+                <div class="stat-header">
+                    <div class="stat-title">Total Learners</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ total_learners }}</div>
+                <div class="stat-description">All registered learners</div>
+            </div>
+        </a>
+
+        <div class="stat-card success animated delay-1">
+            <div class="stat-header">
+                <div class="stat-title">International / Domestic</div>
+                <div class="stat-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ international_count }} / {{ domestic_count }}</div>
+            <div class="stat-description">International vs Domestic</div>
+        </div>
+
+        <div class="stat-card warning animated delay-2">
+            <div class="stat-header">
+                <div class="stat-title">Dissertation Phase</div>
+                <div class="stat-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ completed_learners_count }}</div>
+            <div class="stat-description">Dissertation Phase</div>
+        </div>
+
+        <div class="stat-card danger animated delay-3 pulse">
+            <div class="stat-header">
+                <div class="stat-title">Low Credit Learners</div>
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ low_credit_count }}</div>
+            <div class="stat-description">Grades C+ or below</div>
+        </div>
+    </div>
+
+    <!-- Data Section -->
+    <div class="data-section">
+        <div class="section-header">
+            <h2><i class="fas fa-exclamation-circle"></i> Learners with Credit Issues</h2>
+            <div class="results-count">{{ pagination.total_low_credit }} learners found</div>
+        </div>
+
+        <div class="table-container">
+            {% if learners_with_low_grades %}
+            <table id="learnersTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Name <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(1)">Cohort <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(2)">Slot <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(3)">Status <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(4)">Low Grade Courses <i class="fas fa-sort"></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for learner in learners_with_low_grades %}
+                    <tr>
+                        <td>{{ learner['Name'] }}</td>
+                        <td>{{ learner['Cohort'] }}</td>
+                        <td>{{ learner['Slot'] }}</td>
+                        <td>
+                            <span
+                                class="badge {% if learner['Status'] == 'Active' %}badge-active{% else %}badge-warning{% endif %}">
+                                {{ learner['Status'] }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="course-blocks">
+                                {% for course_info in learner['FormattedCourses'].split('; ') %}
+                                {% set parts = course_info.split(': ') %}
+                                {% if parts|length > 1 %}
+                                {% set course_name = parts[0] %}
+                                {% set details = parts[1].split(', ') %}
+                                <div class="course-block">
+                                    <div class="course-name">{{ course_name }}</div>
+                                    <div class="course-details">
+                                        <span class="course-grade">{{ details[0] }}</span>
+                                        <span class="course-credit">{{ details[1] if details|length > 1 else 'N/A'
+                                            }}</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if pagination.total_pages > 1 %}
+            <div class="pagination animated">
+                <div class="pagination-controls">
+                    {% if pagination.has_prev %}
+                    <a href="{{ url_for('dashboard', page=pagination.prev_num) }}" class="pagination-btn">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                    {% else %}
+                    <button class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    {% endif %}
+
+                    <div class="pagination-pages">
+                        {% set max_visible_pages = 5 %}
+                        {% set half_range = (max_visible_pages // 2) %}
+                        {% set start_page = [1, pagination.page - half_range]|max %}
+                        {% set end_page = [pagination.total_pages, start_page + max_visible_pages - 1]|min %}
+
+                        {% if start_page > 1 %}
+                        <a href="{{ url_for('dashboard', page=1) }}" class="pagination-page">1</a>
+                        {% if start_page > 2 %}
+                        <span class="pagination-ellipsis">...</span>
+                        {% endif %}
+                        {% endif %}
+
+                        {% for p in range(start_page, end_page + 1) %}
+                        {% if p == pagination.page %}
+                        <span class="pagination-page active">{{ p }}</span>
+                        {% else %}
+                        <a href="{{ url_for('dashboard', page=p) }}" class="pagination-page">{{ p }}</a>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if end_page < pagination.total_pages %} {% if end_page < pagination.total_pages - 1 %} <span
+                            class="pagination-ellipsis">...</span>
+                            {% endif %}
+                            <a href="{{ url_for('dashboard', page=pagination.total_pages) }}" class="pagination-page">{{
+                                pagination.total_pages }}</a>
+                            {% endif %}
+                    </div>
+
+                    {% if pagination.has_next %}
+                    <a href="{{ url_for('dashboard', page=pagination.next_num) }}" class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% else %}
+                    <button class="pagination-btn" disabled>
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div class="pagination-info">
+                    Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} to
+                    {{ [pagination.page * pagination.per_page, pagination.total_low_credit]|min }}
+                    of {{ pagination.total_low_credit }} learners with credit issues
+                </div>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h3>No learners with credit issues</h3>
+                <p>All learners are currently meeting the credit requirements.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Sort table function
+    function sortTable(columnIndex) {
+        const table = document.getElementById('learnersTable');
+        const rows = Array.from(table.querySelectorAll('tr:not(:first-child)'));
+        const headerCells = table.querySelectorAll('th');
+
+        // Remove any existing sort indicators
+        headerCells.forEach(cell => {
+            cell.querySelector('i').className = 'fas fa-sort';
+        });
+
+        // Set sort indicator
+        const sortIcon = headerCells[columnIndex].querySelector('i');
+        sortIcon.className = 'fas fa-sort-up';
+
+        // Special handling for course column
+        const isCourseColumn = columnIndex === 4;
+
+        rows.sort((a, b) => {
+            let aValue, bValue;
+
+            if (isCourseColumn) {
+                // Count the number of course blocks for sorting
+                aValue = a.cells[columnIndex].querySelectorAll('.course-block').length;
+                bValue = b.cells[columnIndex].querySelectorAll('.course-block').length;
+                return aValue - bValue;
+            } else {
+                aValue = a.cells[columnIndex].textContent;
+                bValue = b.cells[columnIndex].textContent;
+                return aValue.localeCompare(bValue);
+            }
+        });
+
+        // Remove existing rows
+        rows.forEach(row => table.tBodies[0].appendChild(row));
+    }
+
+    // Enhanced file upload functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('excelFile');
+        const fileUploadLabel = document.getElementById('fileUploadLabel');
+        const fileName = document.getElementById('fileName');
+        const selectedFileName = document.getElementById('selectedFileName');
+        const uploadButton = document.getElementById('uploadButton');
+
+        // Drag and drop functionality
+        fileUploadLabel.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            fileUploadLabel.classList.add('drag-over');
+        });
+
+        fileUploadLabel.addEventListener('dragleave', function () {
+            fileUploadLabel.classList.remove('drag-over');
+        });
+
+        fileUploadLabel.addEventListener('drop', function (e) {
+            e.preventDefault();
+            fileUploadLabel.classList.remove('drag-over');
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelection();
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', handleFileSelection);
+
+        function handleFileSelection() {
+            if (fileInput.files.length) {
+                const file = fileInput.files[0];
+                const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+
+                // Check if file is an Excel file
+                if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/i)) {
+                    showStatus('Please select a valid Excel file.', 'error');
+                    clearFileSelection();
+                    return;
+                }
+
+                selectedFileName.textContent = file.name;
+                fileName.style.display = 'flex';
+                uploadButton.disabled = false;
+            }
+        }
+    });
+
+    function clearFileSelection() {
+        document.getElementById('excelFile').value = '';
+        document.getElementById('fileName').style.display = 'none';
+        document.getElementById('uploadButton').disabled = true;
+    }
+
+    function processUpload() {
+        const fileInput = document.getElementById('excelFile');
+
+        if (!fileInput.files.length) {
+            showStatus('Please select a file first.', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('excel_file', fileInput.files[0]);
+
+        // Show loading state
+        showStatus('Processing file...', 'loading');
+        simulateProgress();
+
+        // Use the correct endpoint URL
+        fetch("{{ url_for('upload_database') }}", {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('Database updated successfully! Refreshing page...', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showStatus(`Error: ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus(`Error: ${error.message}`, 'error');
+            });
+    }
+
+    function showStatus(message, type) {
+        const statusElement = document.getElementById('uploadStatus');
+        const statusMessage = document.getElementById('statusMessage');
+
+        statusElement.style.display = 'block';
+        statusElement.className = `upload-status status-${type}`;
+        statusMessage.textContent = message;
+    }
+
+    function simulateProgress() {
+        const progressFill = document.getElementById('progressFill');
+        let width = 0;
+
+        const interval = setInterval(() => {
+            if (width >= 90) {
+                clearInterval(interval);
+            } else {
+                width += Math.random() * 10;
+                progressFill.style.width = `${width}%`;
+            }
+        }, 200);
+    }
+
+    // Modal functions
+    function showUploadModal() {
+        document.getElementById('uploadModal').classList.add('show');
+    }
+
+    function hideUploadModal() {
+        document.getElementById('uploadModal').classList.remove('show');
+        clearFileSelection();
+        document.getElementById('uploadStatus').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+        const modal = document.getElementById('uploadModal');
+        if (event.target === modal) {
+            hideUploadModal();
+        }
+    }
+
+    // Update last updated time
+    function updateLastUpdated() {
+        const now = new Date();
+        const options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const formattedDate = now.toLocaleDateString('en-US', options);
+        document.getElementById('lastUpdated').textContent = `Last updated: ${formattedDate}`;
+    }
+
+    // Auto-update last updated time every minute
+    setInterval(updateLastUpdated, 60000);
+</script>
+{% endblock %}

@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Composer | Bulk Document Generator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* Reuse the same CSS styles from document_creation.html */
+      :root {
+        --primary: #4361ee;
+        --primary-dark: #3a56d4;
+        --primary-light: #eef2ff;
+        --secondary: #0e9f6e;
+        --secondary-light: #def7ec;
+        --danger: #f05252;
+        --danger-light: #fde8e8;
+        --warning: #faca15;
+        --warning-light: #fdf6b2;
+        --info: #3f83f8;
+        --info-light: #e1effe;
+        --dark: #1f2d3d;
+        --dark-light: #6b7280;
+        --light: #f9fafb;
+        --white: #ffffff;
+        --border-radius: 12px;
+        --border-radius-sm: 8px;
+        --border-radius-lg: 16px;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Inter", sans-serif;
+      }
+
+      body {
+        background: var(--light);
+        color: var(--dark);
+        line-height: 1.6;
+        min-height: 100vh;
+        padding: 0;
+      }
+
+      .app-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .app-header {
+        background: var(--white);
+        border-radius: var(--border-radius-lg);
+        padding: 24px 32px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        background: var(--primary);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-size: 20px;
+      }
+
+      .logo-text h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--dark);
+      }
+
+      .logo-text p {
+        font-size: 14px;
+        color: var(--dark-light);
+      }
+
+      .content-panel {
+        background: var(--white);
+        border-radius: var(--border-radius-lg);
+        padding: 32px;
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+      }
+
+      .panel-header {
+        margin-bottom: 24px;
+      }
+
+      .panel-header h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .panel-header p {
+        color: var(--dark-light);
+        font-size: 15px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: var(--border-radius-sm);
+        font-size: 14px;
+        transition: var(--transition);
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+      }
+
+      .form-group textarea {
+        min-height: 150px;
+        resize: vertical;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--primary);
+        color: var(--white);
+        border: none;
+        padding: 12px 20px;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        transition: var(--transition);
+      }
+
+      .btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      .btn:disabled {
+        background: var(--dark-light);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+      }
+
+      .btn-outline:hover {
+        background: var(--primary-light);
+      }
+
+      .btn-success {
+        background: var(--secondary);
+      }
+
+      .btn-success:hover {
+        background: #0d9265;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .placeholder-hint {
+        background: var(--light);
+        border-radius: var(--border-radius);
+        padding: 16px;
+        margin-top: 16px;
+      }
+
+      .placeholder-hint h4 {
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: var(--dark);
+      }
+
+      .placeholder-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .placeholder-tag {
+        cursor: pointer;
+        /* changes cursor to hand */
+        background: #f0f0f0;
+        /* optional: highlight */
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin: 2px;
+        display: inline-block;
+      }
+
+      .progress-container {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        margin-top: 24px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .progress-header {
+        margin-bottom: 16px;
+        text-align: center;
+      }
+
+      .progress-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .progress-header p {
+        color: var(--dark-light);
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 12px;
+        background: #f3f4f6;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 20px;
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      .progress-status {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        font-size: 14px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .format-options {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .format-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .outlook-notice {
+        background: var(--info-light);
+        color: var(--info);
+        padding: 16px;
+        border-radius: var(--border-radius);
+        margin-bottom: 24px;
+        border-left: 4px solid var(--info);
+      }
+
+      .recipient-panel {
+        background: var(--light);
+        border: 1px solid #e5e7eb;
+        border-radius: var(--border-radius);
+        padding: 16px;
+        margin-top: 16px;
+        max-height: 250px;
+        overflow-y: auto;
+      }
+
+      .recipient-panel h4 {
+        font-size: 15px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--primary-dark);
+      }
+
+      .recipient-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .recipient-list li {
+        padding: 6px 10px;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .recipient-list li i {
+        color: var(--secondary);
+        font-size: 12px;
+      }
+
+      /* Rich Text Editor Styles */
+      .editor-container {
+        border: 1px solid #d1d5db;
+        border-radius: var(--border-radius-sm);
+        overflow: hidden;
+      }
+
+      .toolbar {
+        background: #f9fafb;
+        padding: 8px 12px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .toolbar button {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        padding: 6px 8px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #4b5563;
+        transition: all 0.2s;
+      }
+
+      .toolbar button:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+      }
+
+      .toolbar button.active {
+        background: #e5e7eb;
+        color: #111827;
+      }
+
+      .toolbar select {
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 14px;
+      }
+
+      .editor {
+        min-height: 200px;
+        padding: 16px;
+        font-size: 14px;
+        line-height: 1.6;
+        outline: none;
+        overflow-y: auto;
+      }
+
+      .editor:focus {
+        outline: none;
+      }
+
+      .editor ul,
+      .editor ol {
+        padding-left: 24px;
+        margin: 8px 0;
+      }
+
+      .editor blockquote {
+        border-left: 4px solid #e5e7eb;
+        padding-left: 16px;
+        margin: 8px 0;
+        color: #6b7280;
+      }
+
+      /* Add to email_composer.html CSS */
+      .toolbar button,
+      .toolbar select {
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .toolbar button:active {
+        transform: translateY(1px);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <header class="app-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="logo-text">
+            <h1>Email Composer</h1>
+            <p>Send generated documents via Outlook</p>
+          </div>
+        </div>
+        <a href="/" class="btn btn-outline">
+          <i class="fas fa-arrow-left"></i> Back to Generator
+        </a>
+      </header>
+
+      <div class="content-panel">
+        <div class="panel-header">
+          <h2><i class="fas fa-envelope"></i> Compose Email</h2>
+          <p>
+            Create your email template and send documents to recipients using
+            Outlook
+          </p>
+        </div>
+
+        <div class="outlook-notice">
+          <i class="fas fa-info-circle"></i>
+          <strong>Outlook Integration</strong>
+          <p>
+            Emails will be sent using your selected Outlook account. Each email
+            will open in Outlook for your review before sending.
+          </p>
+          <div
+            class="outlook-status"
+            id="outlook-status"
+            style="
+              margin-top: 10px;
+              padding: 10px;
+              border-radius: 5px;
+              display: none;
+            "
+          >
+            <i class="fas fa-circle" id="outlook-status-icon"></i>
+            <span id="outlook-status-text">Checking Outlook status...</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="outlook-account">Select Outlook Account</label>
+          <select id="outlook-account"></select>
+        </div>
+        <!-- Add this after the format options section -->
+        <div class="form-group">
+          <div class="format-option">
+            <input type="checkbox" id="save-drafts" checked />
+            <label for="save-drafts"
+              >Save failed emails as drafts in Outlook</label
+            >
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email-subject">Email Subject</label>
+          <input
+            type="text"
+            id="email-subject"
+            placeholder="Enter email subject"
+          />
+        </div>
+
+        <div class="form-group">
+          <!-- Add this after the format options section -->
+          <label for="email-body">Email Body</label>
+
+          <!-- Rich Text Editor -->
+          <div class="editor-container">
+            <div class="toolbar">
+              <button type="button" data-command="bold" title="Bold">
+                <i class="fas fa-bold"></i>
+              </button>
+              <button type="button" data-command="italic" title="Italic">
+                <i class="fas fa-italic"></i>
+              </button>
+              <button type="button" data-command="underline" title="Underline">
+                <i class="fas fa-underline"></i>
+              </button>
+              <button
+                type="button"
+                data-command="insertUnorderedList"
+                title="Bullet List"
+              >
+                <i class="fas fa-list-ul"></i>
+              </button>
+              <button
+                type="button"
+                data-command="insertOrderedList"
+                title="Numbered List"
+              >
+                <i class="fas fa-list-ol"></i>
+              </button>
+              <button
+                type="button"
+                data-command="justifyLeft"
+                title="Align Left"
+              >
+                <i class="fas fa-align-left"></i>
+              </button>
+              <button type="button" data-command="justifyCenter" title="Center">
+                <i class="fas fa-align-center"></i>
+              </button>
+              <button
+                type="button"
+                data-command="justifyRight"
+                title="Align Right"
+              >
+                <i class="fas fa-align-right"></i>
+              </button>
+              <button
+                type="button"
+                data-command="formatBlock"
+                data-value="blockquote"
+                title="Quote"
+              >
+                <i class="fas fa-quote-right"></i>
+              </button>
+              <button
+                type="button"
+                data-command="createLink"
+                title="Insert Link"
+              >
+                <i class="fas fa-link"></i>
+              </button>
+              <button type="button" data-command="unlink" title="Remove Link">
+                <i class="fas fa-unlink"></i>
+              </button>
+              <select id="font-size" title="Font Size">
+                <option value="1">Small</option>
+                <option value="3" selected>Normal</option>
+                <option value="5">Large</option>
+                <option value="7">X-Large</option>
+              </select>
+            </div>
+            <div id="email-body" class="editor" contenteditable="true"></div>
+          </div>
+          <div class="placeholder-hint">
+            <h4>
+              Available placeholders (will be replaced with actual values):
+            </h4>
+            <div class="placeholder-items" id="email-placeholders">
+              <!-- Placeholders will be populated dynamically -->
+            </div>
+            <p style="margin-top: 10px; font-size: 13px; color: #666">
+              Example: Use {Full_Name} in your subject or body, and it will be
+              replaced with the actual name from your CSV data for each
+              recipient.
+            </p>
+          </div>
+          <div class="recipient-panel">
+            <h4>
+              <i class="fas fa-users"></i> Recipients (<span
+                id="recipient-count"
+                >0</span
+              >)
+            </h4>
+            <ul id="recipient-list" class="recipient-list"></ul>
+          </div>
+        </div>
+
+        <div class="format-options">
+          <label>Attachment Format:</label>
+          <div class="format-option">
+            <input
+              type="radio"
+              id="format-pdf"
+              name="document-format"
+              value="pdf"
+              checked
+            />
+            <label for="format-pdf">PDF</label>
+          </div>
+          <div class="format-option">
+            <input
+              type="radio"
+              id="format-word"
+              name="document-format"
+              value="word"
+            />
+            <label for="format-word">Word</label>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-success" id="send-emails-btn">
+            <i class="fas fa-paper-plane"></i> Send Emails via Outlook
+          </button>
+        </div>
+
+        <div id="progress-container" class="progress-container hidden">
+          <div class="progress-header">
+            <h3><i class="fas fa-paper-plane"></i> Sending Emails</h3>
+            <p>
+              Processing <span id="current-email-number">0</span> of
+              <span id="total-emails">0</span> emails
+            </p>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+          </div>
+          <div class="progress-status">
+            <span id="progress-percentage">0%</span>
+            <span id="current-email">Initializing...</span>
+          </div>
+          <div class="progress-status">
+            <span>Success: <span id="success-count">0</span></span>
+            <span>Failed: <span id="failed-count">0</span></span>
+          </div>
+          <button
+            class="btn btn-outline"
+            id="cancel-btn"
+            style="display: block; margin: 0 auto"
+          >
+            <i class="fas fa-times"></i> Cancel
+          </button>
+        </div>
+
+        <div
+          id="success-message"
+          class="hidden"
+          style="
+            background: var(--secondary-light);
+            color: var(--secondary);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin-top: 24px;
+          "
+        >
+          <i class="fas fa-check-circle"></i>
+          <strong>Emails sent successfully!</strong>
+          <p>
+            Success: <span id="final-success-count">0</span>, Failed:
+            <span id="final-failed-count">0</span>
+          </p>
+        </div>
+
+        <div
+          id="failure-message"
+          class="hidden"
+          style="
+            background: var(--danger-light);
+            color: var(--danger);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin-top: 24px;
+          "
+        >
+          <i class="fas fa-exclamation-circle"></i>
+          <strong>Some emails failed to send!</strong>
+          <p>
+            Failed: <span id="final-failed-count">0</span> emails.
+            <a
+              href="#"
+              id="download-failed-btn"
+              style="color: var(--danger); text-decoration: underline"
+            >
+              Download failed emails list
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global state
+      const state = {
+        taskId: null,
+        placeholders: [],
+        emailInterval: null,
+        cancelRequested: false,
+      };
+
+      // DOM Elements
+      const emailSubject = document.getElementById("email-subject");
+      const emailBody = document.getElementById("email-body");
+      const emailPlaceholders = document.getElementById("email-placeholders");
+      const sendEmailsBtn = document.getElementById("send-emails-btn");
+      const progressContainer = document.getElementById("progress-container");
+      const progressBarFill = document.getElementById("progress-bar-fill");
+      const progressPercentage = document.getElementById("progress-percentage");
+      const currentEmailNumber = document.getElementById(
+        "current-email-number"
+      );
+      const totalEmails = document.getElementById("total-emails");
+      const currentEmail = document.getElementById("current-email");
+      const successCount = document.getElementById("success-count");
+      const failedCount = document.getElementById("failed-count");
+      const cancelBtn = document.getElementById("cancel-btn");
+      const successMessage = document.getElementById("success-message");
+      const finalSuccessCount = document.getElementById("final-success-count");
+      const finalFailedCount = document.getElementById("final-failed-count");
+      const formatPdf = document.getElementById("format-pdf");
+      const formatWord = document.getElementById("format-word");
+      const fontSizeSelect = document.getElementById("font-size");
+      const toolbarButtons = document.querySelectorAll(".toolbar button");
+
+      // Initialize application
+      function init() {
+        // Get task ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        state.taskId = urlParams.get("taskId");
+
+        if (!state.taskId) {
+          alert("No task ID provided. Please generate documents first.");
+          window.location.href = "/";
+          return;
+        }
+
+        // Load placeholders from the template
+        loadPlaceholders();
+        loadOutlookAccounts();
+        loadRecipients();
+        checkOutlookStatus();
+        // Set up event listeners
+        setupEventListeners();
+        setupRichTextEditor();
+
+        document
+          .getElementById("download-failed-btn")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            if (state.emailTaskId) {
+              window.location.href = `/document/api/download-failed-emails/${state.emailTaskId}`;
+            } else {
+              alert("No email task ID available for download");
+            }
+          });
+      }
+
+      // Set up rich text editor functionality
+      function setupRichTextEditor() {
+        // Toolbar button functionality
+        toolbarButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const command = this.dataset.command;
+            const value = this.dataset.value;
+
+            if (command === "createLink") {
+              const url = prompt("Enter URL:", "https://");
+              if (url) {
+                document.execCommand(command, false, url);
+              }
+            } else if (value) {
+              document.execCommand(command, false, value);
+            } else {
+              document.execCommand(command, false, null);
+            }
+
+            // Update active state for formatting buttons
+            if (["bold", "italic", "underline"].includes(command)) {
+              this.classList.toggle("active");
+            }
+
+            emailBody.focus();
+          });
+        });
+
+        // Font size selector
+        fontSizeSelect.addEventListener("change", function () {
+          document.execCommand("fontSize", false, this.value);
+          emailBody.focus();
+        });
+      }
+
+      async function loadOutlookAccounts() {
+        try {
+          const response = await fetch("/document/api/get-outlook-accounts");
+          const data = await response.json();
+
+          const accountSelect = document.getElementById("outlook-account");
+          accountSelect.innerHTML = "";
+
+          if (data.accounts && data.accounts.length > 0) {
+            data.accounts.forEach((acc) => {
+              const option = document.createElement("option");
+              option.value = acc;
+              option.textContent = acc;
+              accountSelect.appendChild(option);
+            });
+
+            // Hide the notice if accounts were found
+            document.querySelector(".outlook-notice").style.display = "block";
+          } else {
+            const option = document.createElement("option");
+
+            if (data.error) {
+              option.textContent = `Error: ${data.error}`;
+            } else if (data.warning) {
+              option.textContent = data.warning;
+            } else {
+              option.textContent = "No Outlook accounts found";
+            }
+
+            option.disabled = true;
+            accountSelect.appendChild(option);
+
+            // Show a more prominent warning
+            const outlookNotice = document.querySelector(".outlook-notice");
+            outlookNotice.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                <strong>Outlook Integration Issue</strong>
+                <p>${
+                  data.error ||
+                  data.warning ||
+                  "Outlook is not available. Please install Microsoft Outlook to use email features."
+                }</p>
+            `;
+            outlookNotice.style.backgroundColor = "var(--warning-light)";
+            outlookNotice.style.borderLeftColor = "var(--warning)";
+            outlookNotice.style.color = "#8e4b10";
+          }
+        } catch (error) {
+          console.error("Failed to load Outlook accounts:", error);
+
+          const accountSelect = document.getElementById("outlook-account");
+          accountSelect.innerHTML = "";
+          const option = document.createElement("option");
+          option.textContent = "Error loading accounts";
+          option.disabled = true;
+          accountSelect.appendChild(option);
+
+          // Show error in notice
+          const outlookNotice = document.querySelector(".outlook-notice");
+          outlookNotice.innerHTML = `
+            <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+            <strong>Connection Error</strong>
+            <p>Could not connect to Outlook. Please check if Microsoft Outlook is installed.</p>
+        `;
+          outlookNotice.style.backgroundColor = "var(--danger-light)";
+          outlookNotice.style.borderLeftColor = "var(--danger)";
+          outlookNotice.style.color = "#c81e1e";
+        }
+      }
+
+      async function loadRecipients() {
+        try {
+          const response = await fetch(`/document/api/get-recipients/${state.taskId}`);
+          const data = await response.json();
+
+          const list = document.getElementById("recipient-list");
+          const count = document.getElementById("recipient-count");
+          list.innerHTML = "";
+
+          if (data.emails && data.emails.length > 0) {
+            count.textContent = data.count;
+            data.emails.forEach((email) => {
+              const li = document.createElement("li");
+              li.innerHTML = `<i class="fas fa-envelope"></i> ${email}`;
+              list.appendChild(li);
+            });
+          } else {
+            count.textContent = 0;
+            const li = document.createElement("li");
+            li.textContent = "No recipients found";
+            list.appendChild(li);
+          }
+        } catch (error) {
+          console.error("Failed to load recipients:", error);
+          alert("Could not load recipients");
+        }
+      }
+
+      // Load placeholders from the template
+      async function loadPlaceholders() {
+        try {
+          // Get the headers from URL parameters
+          const urlParams = new URLSearchParams(window.location.search);
+          const headersParam = urlParams.get("headers");
+
+          let placeholders = [];
+
+          if (headersParam) {
+            placeholders = JSON.parse(decodeURIComponent(headersParam));
+          } else {
+            // Fallback: try to get from API
+            const response = await fetch(
+              `/document/api/get-placeholders/${state.taskId}`
+            );
+            const data = await response.json();
+            placeholders = data.placeholders || [];
+          }
+
+          emailPlaceholders.innerHTML = "";
+
+          placeholders.forEach((ph) => {
+            const span = document.createElement("span");
+            span.className = "placeholder-tag";
+            span.textContent = `{${ph}}`;
+            span.title = `Click to insert {${ph}} placeholder`;
+            emailPlaceholders.appendChild(span);
+          });
+
+          state.placeholders = placeholders;
+        } catch (error) {
+          console.error("Failed to load placeholders:", error);
+          alert("Could not load placeholders");
+        }
+      }
+
+      function insertAtCursor(element, text) {
+        element.focus();
+
+        const selection = window.getSelection();
+
+        if (selection.rangeCount > 0) {
+          let range = selection.getRangeAt(0);
+
+          // Delete any selected text
+          range.deleteContents();
+
+          // Create a text node for the placeholder
+          const textNode = document.createTextNode(text);
+
+          // Insert at the cursor position
+          range.insertNode(textNode);
+
+          // Move cursor right after the inserted placeholder
+          range = range.cloneRange();
+          range.setStartAfter(textNode);
+          range.collapse(true);
+
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else {
+          // Fallback: append at the end
+          element.appendChild(document.createTextNode(text));
+        }
+
+        // Trigger input event for consistency
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      // Single event listener (avoid duplicates)
+      emailPlaceholders.addEventListener("click", function (e) {
+        if (e.target.classList.contains("placeholder-tag")) {
+          const placeholder = e.target.textContent;
+          insertAtCursor(emailBody, placeholder);
+          emailBody.focus();
+        }
+      });
+
+      // Set up event listeners
+      function setupEventListeners() {
+        // Send emails button
+        sendEmailsBtn.addEventListener("click", sendEmails);
+
+        // Cancel button
+        cancelBtn.addEventListener("click", cancelEmails);
+      }
+
+      // In email_composer.html, update the sendEmails function
+      async function sendEmails() {
+        if (!emailSubject.value || !emailBody.innerHTML.trim()) {
+          alert("Please fill in both subject and body fields");
+          return;
+        }
+
+        const format = formatPdf.checked ? "pdf" : "word";
+        const account = document.getElementById("outlook-account").value;
+        const saveDrafts = document.getElementById("save-drafts").checked;
+
+        if (!account) {
+          alert("Please select an Outlook account");
+          return;
+        }
+
+        sendEmailsBtn.innerHTML = '<div class="loading"></div> Sending...';
+        sendEmailsBtn.disabled = true;
+        successMessage.classList.add("hidden");
+
+        try {
+          const response = await fetch("/document/api/send-emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              task_id: state.taskId,
+              subject: emailSubject.value,
+              body: emailBody.innerHTML,
+              format: format,
+              account: account,
+              save_drafts: saveDrafts, // Add this line
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to start email sending");
+          }
+
+          // Start polling for progress
+          state.emailTaskId = data.task_id;
+          state.emailInterval = setInterval(pollEmailProgress, 1000);
+          showProgressBar();
+        } catch (error) {
+          alert("Error: " + error.message);
+          sendEmailsBtn.innerHTML =
+            '<i class="fas fa-paper-plane"></i> Send Emails via Outlook';
+          sendEmailsBtn.disabled = false;
+        }
+      }
+
+      // Poll email progress
+      async function pollEmailProgress() {
+        if (!state.emailTaskId) return;
+
+        try {
+          const response = await fetch(
+            `/document/api/email-progress/${state.emailTaskId}`
+          );
+          const progress = await response.json();
+
+          if (progress.status === "completed") {
+            clearInterval(state.emailInterval);
+            updateProgress(progress);
+            showSuccessMessage(progress);
+            resetUI();
+          } else if (progress.status === "error") {
+            clearInterval(state.emailInterval);
+            alert("Error: " + progress.error);
+            resetUI();
+          } else if (progress.status === "cancelled") {
+            clearInterval(state.emailInterval);
+            alert("Email sending was cancelled");
+            resetUI();
+          } else {
+            updateProgress(progress);
+          }
+        } catch (error) {
+          console.error("Error polling email progress:", error);
+        }
+      }
+
+      // Update progress UI
+      function updateProgress(progress) {
+        const percentage = Math.round(
+          (progress.processed / progress.total) * 100
+        );
+
+        progressBarFill.style.width = `${percentage}%`;
+        progressPercentage.textContent = `${percentage}%`;
+        currentEmailNumber.textContent = progress.processed;
+        totalEmails.textContent = progress.total;
+        currentEmail.textContent = progress.current_email || "Processing...";
+        successCount.textContent = progress.success || 0;
+        failedCount.textContent = progress.failed || 0;
+
+        // Show failure message if there are failures
+        if (progress.failed > 0) {
+          document.getElementById("failure-message").classList.remove("hidden");
+          document.getElementById("final-failed-count").textContent =
+            progress.failed;
+        }
+      }
+      // Show progress bar
+      function showProgressBar() {
+        progressContainer.classList.remove("hidden");
+      }
+
+      // Show success message
+      function showSuccessMessage(progress) {
+        finalSuccessCount.textContent = progress.success || 0;
+        finalFailedCount.textContent = progress.failed || 0;
+        successMessage.classList.remove("hidden");
+
+        // Show failure message if there are failures
+        if (progress.failed > 0) {
+          document.getElementById("failure-message").classList.remove("hidden");
+          document.getElementById("final-failed-count").textContent =
+            progress.failed;
+
+          // Set up download link
+          const downloadBtn = document.getElementById("download-failed-btn");
+          if (downloadBtn) {
+            downloadBtn.href = `/document/api/download-failed-emails/${state.emailTaskId}`;
+            downloadBtn.style.display = "inline";
+          }
+        } else {
+          document.getElementById("failure-message").classList.add("hidden");
+        }
+      }
+
+      // Reset UI
+      function resetUI() {
+        sendEmailsBtn.innerHTML =
+          '<i class="fas fa-paper-plane"></i> Send Emails via Outlook';
+        sendEmailsBtn.disabled = false;
+      }
+
+      // Cancel email sending
+      async function cancelEmails() {
+        if (!state.emailTaskId) return;
+
+        try {
+          const response = await fetch("/document/api/cancel-emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              task_id: state.emailTaskId,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.status === "cancelled") {
+            clearInterval(state.emailInterval);
+            alert("Email sending cancelled");
+            resetUI();
+          }
+        } catch (error) {
+          console.error("Error cancelling email sending:", error);
+        }
+      }
+
+      async function checkOutlookStatus() {
+        try {
+          const response = await fetch("/document/api/check-outlook-status");
+          const data = await response.json();
+
+          const statusElement = document.getElementById("outlook-status");
+          const statusIcon = document.getElementById("outlook-status-icon");
+          const statusText = document.getElementById("outlook-status-text");
+
+          statusElement.style.display = "block";
+
+          if (data.available) {
+            statusElement.style.backgroundColor = "var(--secondary-light)";
+            statusElement.style.borderLeft = "4px solid var(--secondary)";
+            statusIcon.style.color = "var(--secondary)";
+            statusText.textContent =
+              "Outlook is available and ready to send emails";
+          } else {
+            statusElement.style.backgroundColor = "var(--danger-light)";
+            statusElement.style.borderLeft = "4px solid var(--danger)";
+            statusIcon.style.color = "var(--danger)";
+            statusText.textContent =
+              data.error ||
+              "Outlook is not available. Please make sure Outlook is installed and running.";
+
+            // Disable the send button
+            document.getElementById("send-emails-btn").disabled = true;
+          }
+        } catch (error) {
+          console.error("Error checking Outlook status:", error);
+        }
+      }
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>
