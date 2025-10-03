@@ -12,6 +12,7 @@ SQLAlchemy==2.0.20
 flask_sqlalchemy==3.0.5
 flask_migrate==4.0.1
 gunicorn==20.1.0
-logging==
+logging
 torch==2.1.0
 python-dotenv  
+
