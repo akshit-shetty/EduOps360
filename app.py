@@ -14,7 +14,8 @@ from document_and_email import document_bp
 from reminder import reminders_bp
 from create_folders import folders_bp
 from chatbot import chatbot_bp
-
+import sys
+print("Python version:", sys.version)
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-in-production'  # Make sure this is set
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -944,4 +945,5 @@ def folder_home():
 
 
 if __name__ == '__main__':
+
     app.run(debug=True)
