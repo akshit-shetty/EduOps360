@@ -1,0 +1,661 @@
+<!-- templates/chatbot_enhanced.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-robot"></i> EduOps AI - Assistant</h1>
+        <div class="header-actions">
+            <div class="last-updated">
+                <i class="fas fa-database"></i>
+                Database: Connected
+                <span class="status-indicator online"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-assistant-container">
+        <!-- Quick Stats Cards -->
+        <div class="quick-stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="total-learners">Loading...</h3>
+                    <span>Total Learners</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="active-learners">Loading...</h3>
+                    <span>Active Learners</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="avg-cgpa">Loading...</h3>
+                    <span>Average CGPA</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Chat Interface -->
+        <div class="ai-chat-interface">
+            <div class="chat-header">
+                <div class="ai-identity">
+                    <div class="ai-avatar">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="ai-info">
+                        <h3>EduOps AI</h3>
+                        <span class="ai-status">Learner Information Assistant - Real-time Data Connected</span>
+                    </div>
+                </div>
+                <div class="chat-controls">
+                    <button id="clear-chat" class="btn btn-outline">
+                        <i class="fas fa-trash"></i> Clear Chat
+                    </button>
+                </div>
+            </div>
+
+            <div id="enhanced-chat-messages" class="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            Hello! I'm <strong>EduOps AI</strong>, your dedicated learner information assistant. I can help you find specific learner details using:
+
+                            <br><br>
+                            <strong>🔍 Search by:</strong>
+                            <ul>
+                                <li><strong>First Name</strong> (e.g., "John")</li>
+                                <li><strong>Last Name</strong> (e.g., "Doe")</li>
+                                <li><strong>Full Name</strong> (e.g., "John Doe")</li>
+                                <li><strong>Email Address</strong> (e.g., "john.doe@email.com")</li>
+                            </ul>
+
+                            <br>
+                            <strong>📋 What I Provide:</strong>
+                            <ul>
+                                <li>Personal information (name, email, cohort, status)</li>
+                                <li>Academic details (CGPA, courses completed)</li>
+                                <li>Course grades and credits</li>
+                                <li>Dissertation information (if available)</li>
+                            </ul>
+
+                            <br>
+                            <strong>⚠️ Important:</strong>
+                            <ul>
+                                <li>I <strong>cannot</strong> perform statistical analysis</li>
+                                <li>I <strong>cannot</strong> provide cohort-wide statistics</li>
+                                <li>I <strong>cannot</strong> generate reports or analytics</li>
+                                <li>I <strong>only</strong> provide individual learner details</li>
+                            </ul>
+
+                            <br>
+                            <strong>💡 Example queries:</strong>
+                            <ul>
+                                <li>"Find John Doe"</li>
+                                <li>"Search for madhu.tamraparni@gmail.com"</li>
+                                <li>"Show details for Srinivasan Munugoor"</li>
+                                <li>"Find learner with first name John"</li>
+                            </ul>
+
+                            Which learner would you like information about?
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-section">
+                <!-- Quick Action Buttons -->
+                <div class="quick-actions">
+                    <span class="action-label">Quick Searches:</span>
+                    <div class="action-buttons">
+                        <button class="action-btn" data-query="Find John">
+                            <i class="fas fa-user"></i> Find by First Name
+                        </button>
+                        <button class="action-btn" data-query="Find madhu.tamraparni@gmail.com">
+                            <i class="fas fa-envelope"></i> Find by Email
+                        </button>
+                        <button class="action-btn" data-query="Find Srinivasan Munugoor">
+                            <i class="fas fa-user-tag"></i> Find by Full Name
+                        </button>
+                        <button class="action-btn" data-query="help">
+                            <i class="fas fa-question-circle"></i> Help
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-container">
+                    <input type="text" id="enhanced-user-input"
+                        placeholder="Enter first name, last name, full name, or email address..."
+                        class="form-control">
+                    <button id="enhanced-send-button" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .ai-assistant-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .quick-stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .stat-content h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .stat-content span {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    .ai-chat-interface {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+    }
+
+    .chat-header {
+        padding: 1.5rem;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ai-identity {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .ai-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .ai-info h3 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .ai-status {
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+
+    .chat-messages {
+        height: 400px;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background: var(--gray-100);
+    }
+
+    .message {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .user-message {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .user-message .message-avatar {
+        background: var(--accent);
+    }
+
+    .message-content {
+        max-width: 70%;
+    }
+
+    .message-text {
+        padding: 1rem;
+        border-radius: 1rem;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-message .message-text {
+        background: var(--primary);
+        color: white;
+    }
+
+    .message-time {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
+    }
+
+    .chat-input-section {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .quick-actions {
+        margin-bottom: 1rem;
+    }
+
+    .action-label {
+        font-size: 0.9rem;
+        color: var(--gray-600);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        background: var(--gray-100);
+        border: 1px solid var(--gray-300);
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .input-container {
+        display: flex;
+        gap: 1rem;
+    }
+
+    #enhanced-user-input {
+        flex: 1;
+        padding: 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 25px;
+        font-size: 0.9rem;
+    }
+
+    #enhanced-send-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+
+    .status-indicator.online {
+        background: #4ade80;
+    }
+
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-600);
+        font-style: italic;
+    }
+
+    .message-text strong {
+        font-weight: 600;
+        color: inherit;
+    }
+
+    .message-text em {
+        font-style: italic;
+        color: inherit;
+    }
+
+    .message-text code {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+
+    .message-text ul,
+    .message-text ol {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+
+    .message-text li {
+        margin: 4px 0;
+        line-height: 1.4;
+    }
+
+    .message-text p {
+        margin: 8px 0;
+        line-height: 1.5;
+    }
+
+    .user-message .message-text strong,
+    .user-message .message-text em,
+    .user-message .message-text code {
+        color: rgba(255, 255, 255, 0.9);
+    }
+</style>
+
+<script>
+    let conversationSessionId = 'session_' + Date.now();
+
+    // Load initial statistics
+    document.addEventListener('DOMContentLoaded', function () {
+        loadRealTimeStats();
+
+        // Focus on input
+        document.getElementById('enhanced-user-input').focus();
+    });
+
+    async function loadRealTimeStats() {
+        try {
+            const response = await fetch('/api/learner-stats');
+            const data = await response.json();
+
+            if (data.success) {
+                const stats = data.statistics;
+                document.getElementById('total-learners').textContent = stats.total_learners || 'N/A';
+                document.getElementById('active-learners').textContent = stats.active_learners || 'N/A';
+
+                // Load average CGPA separately
+                loadAverageCGPA();
+            }
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    async function loadAverageCGPA() {
+        try {
+            const response = await fetch('/api/query-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query_type: 'average_cgpa',
+                    parameters: {}
+                })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('avg-cgpa').textContent = data.result || 'N/A';
+            }
+        } catch (error) {
+            console.error('Error loading CGPA:', error);
+        }
+    }
+
+    // Enhanced chat functionality
+    const chatMessages = document.getElementById('enhanced-chat-messages');
+    const userInput = document.getElementById('enhanced-user-input');
+    const sendButton = document.getElementById('enhanced-send-button');
+    const clearChatButton = document.getElementById('clear-chat');
+
+    // Update the addMessage function in chatbot.html
+    function addMessage(message, isUser) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
+
+        const messageAvatar = document.createElement('div');
+        messageAvatar.className = 'message-avatar';
+        messageAvatar.innerHTML = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+
+        // Format the message with enhanced formatting
+        const formattedMessage = formatMessage(message);
+        messageText.innerHTML = formattedMessage;
+
+        const messageTime = document.createElement('div');
+        messageTime.className = 'message-time';
+        messageTime.textContent = new Date().toLocaleTimeString();
+
+        messageContent.appendChild(messageText);
+        messageContent.appendChild(messageTime);
+        messageDiv.appendChild(messageAvatar);
+        messageDiv.appendChild(messageContent);
+        chatMessages.appendChild(messageDiv);
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Enhanced formatting function for chatbot.html
+    function formatMessage(text) {
+        if (!text) return '';
+
+        let formattedText = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>');
+
+        // Enhanced list handling
+        const lines = formattedText.split('<br>');
+        let inList = false;
+        let listItems = [];
+
+        formattedText = lines.map(line => {
+            line = line.trim();
+
+            // Check for list items
+            if (line.match(/^[•\-*]\s+/) || line.match(/^\d+\.\s+/)) {
+                if (!inList) {
+                    inList = true;
+                    listItems = [];
+                }
+                const listItem = line.replace(/^[•\-*]\s+/, '').replace(/^\d+\.\s+/, '');
+                return `<li>${listItem}</li>`;
+            } else {
+                if (inList && listItems.length > 0) {
+                    inList = false;
+                    const listType = line.match(/^\d+\./) ? 'ol' : 'ul';
+                    return `</${listType}>${line}`;
+                }
+                return line;
+            }
+        }).join('<br>');
+
+        // Final cleanup
+        formattedText = formattedText
+            .replace(/(<li>.*?<\/li>(<br>)?)+/g, match => {
+                const isOrdered = match.match(/\d+\./);
+                const cleanMatch = match.replace(/<br>/g, '');
+                return isOrdered ? `<ol>${cleanMatch}</ol>` : `<ul>${cleanMatch}</ul>`;
+            });
+
+        return formattedText;
+    }
+
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot-message';
+        typingDiv.id = 'typing-indicator';
+
+        const messageAvatar = document.createElement('div');
+        messageAvatar.className = 'message-avatar';
+        messageAvatar.innerHTML = '<i class="fas fa-robot"></i>';
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        typingIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> EduOps AI is searching for learner information...';
+
+        messageContent.appendChild(typingIndicator);
+        typingDiv.appendChild(messageAvatar);
+        typingDiv.appendChild(messageContent);
+        chatMessages.appendChild(typingDiv);
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    // In chatbot.html, update the sendMessage function:
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+            // Add user message to chat
+            addMessage(message, true);
+
+            // Clear input
+            userInput.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+
+                // Send to enhanced chat endpoint - FIXED
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: conversationSessionId
+                    }),
+                });
+
+                const data = await response.json();
+
+                // Remove typing indicator
+                hideTypingIndicator();
+
+                // Add bot response with formatting support
+                addMessage(data.response, false);
+
+            } catch (error) {
+                console.error('Error:', error);
+                hideTypingIndicator();
+                addMessage('Sorry, there was an error processing your request. Please try again.', false);
+            }
+        }
+    }
+
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+
+    userInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    clearChatButton.addEventListener('click', function () {
+        chatMessages.innerHTML = '';
+        conversationSessionId = 'session_' + Date.now();
+
+        // Add welcome message back
+        addMessage(`Hello! I'm EduOps AI, your learner information assistant. I can help you find specific learner details using first name, last name, full name, or email address. Which learner would you like information about?`, false);
+    });
+
+    // Quick action buttons
+    document.querySelectorAll('.action-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const query = this.getAttribute('data-query');
+            userInput.value = query;
+            sendMessage();
+        });
+    });
+</script>
+{% endblock %}

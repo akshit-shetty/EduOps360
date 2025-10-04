@@ -1,0 +1,1644 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="learners-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Learner Management</h1>
+            <p>Manage and track all learners in the program</p>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value">{{ pagination.total_learners }}</div>
+                <div class="stat-label">Total Learners</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                <div class="stat-value">{{ active_learners_count }}</div>
+                <div class="stat-label">Active Learners</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="stat-value">{{ completed_learners_count }}</div>
+                <div class="stat-label">Dissertation Phase</div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Make statistics section bigger */
+        .header-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            flex: 1;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .stat-icon {
+
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Make Courses Completed column smaller */
+        .learners-table th:nth-child(7) {
+            width: 120px;
+            max-width: 120px;
+        }
+
+        .learners-table td:nth-child(7) {
+            width: 120px;
+            max-width: 120px;
+        }
+    </style>
+    <!-- Compact Filter Dropdown -->
+    <div class="filter-section">
+        <div class="filter-header">
+            <div class="filter-title-area">
+                <button id="toggleFilters" class="toggle-filters-btn">
+                    <i class="fas fa-filter"></i> Filters
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="search-box compact-search">
+                    <input type="text" id="tableSearchInput" class="search-input" placeholder="Search learners..."
+                        value="{{ request.args.get('search', '') }}">
+                    <button class="search-clear-btn" id="clearSearch" title="Clear search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="filter-meta">
+                <div class="results-count">
+                    <i class="fas fa-users"></i> {{ pagination.total_learners }} learners found
+                </div>
+            </div>
+        </div>
+
+        <div id="filterContent" class="filter-content collapsed">
+            <!-- Active Filters Display -->
+            <div id="activeFilters" class="active-filters">
+                <!-- Active filter tags will be added here dynamically -->
+            </div>
+
+            <div class="filter-inline-container">
+                <div class="filter-inline-group cohort-filter">
+                    <label for="cohortFilter">
+                        <i class="fas fa-graduation-cap"></i> Cohort
+                    </label>
+                    <div class="custom-select-wrapper">
+                        <select class="filter-select multi-select" id="cohortFilter" multiple>
+                            {% for cohort in cohorts %}
+                            <option value="{{ cohort }}" {% if cohort|string in selected_cohorts %}selected{% endif %}>
+                                {{ cohort }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="select-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-inline-group slot-filter">
+                    <label for="slotFilter">
+                        <i class="fas fa-calendar-alt"></i> Slot
+                    </label>
+                    <div class="custom-select-wrapper">
+                        <select class="filter-select multi-select" id="slotFilter" multiple>
+                            {% for slot in slots %}
+                            <option value="{{ slot }}" {% if slot in selected_slots %}selected{% endif %}>{{ slot[:6] if
+                                slot else '' }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="select-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-inline-group status-filter">
+                    <label for="statusFilter">
+                        <i class="fas fa-tag"></i> Status
+                    </label>
+                    <div class="custom-select-wrapper">
+                        <select class="filter-select multi-select" id="statusFilter" multiple>
+                            {% for status in statuses %}
+                            <option value="{{ status }}" {% if status in selected_statuses %}selected{% endif %}>{{
+                                status }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="select-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-filter"></i> Apply
+                </button>
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+                <button class="btn btn-outline" id="saveFilters">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learners Table -->
+    <!-- Learners Table -->
+    <div class="table-section">
+        <div class="table-container">
+            <table id="learnersTable" class="learners-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)" class="sortable">
+                            <span>Name</span>
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th onclick="sortTable(1)" class="sortable">
+                            <span>Email</span>
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th onclick="sortTable(2)" class="sortable">
+                            <span>Cohort</span>
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th onclick="sortTable(3)" class="sortable">
+                            <span>Slot</span>
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th onclick="sortTable(4)" class="sortable">
+                            <span>Batch</span>
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th onclick="sortTable(5)" class="sortable status-column">
+                            <span>Status</span>
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th onclick="sortTable(6)" class="sortable">
+                            <span>Courses Completed</span>
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for learner in learners %}
+                    <tr>
+                        <td>
+                            <div class="learner-info">
+                                <div class="learner-avatar">
+                                    {{ learner['First Name'][0] }}{{ learner['Last Name'][0] }}
+                                </div>
+                                <div class="learner-name">
+                                    {{ learner['First Name'] }} {{ learner['Last Name'] }}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ learner['Email'] }}</td>
+                        <td>
+                            <span class="cohort-badge">{{ learner['Cohort #'] }}</span>
+                        </td>
+                        <td>{{ learner['Slot'][:6] if learner['Slot'] else 'N/A' }}</td>
+                        <td>{{ learner['Batch'] }}</td>
+                        <td class="status-cell">
+                            <span
+                                class="status-badge status-{{ learner['Status'].lower().replace(' ', '-').replace('/', '-') }}">
+                                {{ learner['Status'] }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="courses-count">
+                                {{ learner['Net Completed'] if learner['Net Completed'] is defined else 0 }}/7
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-action" onclick="viewLearnerProfile('{{ learner['User ID'] }}')"
+                                title="View Profile">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.total_pages > 1 %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} to
+                {{ [pagination.page * pagination.per_page, pagination.total_learners]|min }}
+                of {{ pagination.total_learners }} learners
+            </div>
+
+            <div class="pagination-controls">
+                {% if pagination.has_prev %}
+                <a href="{{ url_for('learners', page=pagination.prev_num, cohort=request.args.get('cohort'), slot=request.args.get('slot'), status=request.args.get('status'), search=request.args.get('search')) }}"
+                    class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% else %}
+                <button class="pagination-btn disabled" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                {% endif %}
+
+                <div class="pagination-pages">
+                    {% set max_visible_pages = 5 %}
+                    {% set half_range = (max_visible_pages // 2) %}
+                    {% set start_page = [1, pagination.page - half_range]|max %}
+                    {% set end_page = [pagination.total_pages, start_page + max_visible_pages - 1]|min %}
+
+                    {% if start_page > 1 %}
+                    <a href="{{ url_for('learners', page=1, cohort=request.args.get('cohort'), slot=request.args.get('slot'), status=request.args.get('status'), search=request.args.get('search')) }}"
+                        class="pagination-page">1</a>
+                    {% if start_page > 2 %}
+                    <span class="pagination-ellipsis">...</span>
+                    {% endif %}
+                    {% endif %}
+
+                    {% for p in range(start_page, end_page + 1) %}
+                    {% if p == pagination.page %}
+                    <span class="pagination-page active">{{ p }}</span>
+                    {% else %}
+                    <a href="{{ url_for('learners', page=p, cohort=request.args.get('cohort'), slot=request.args.get('slot'), status=request.args.get('status'), search=request.args.get('search')) }}"
+                        class="pagination-page">{{ p }}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if end_page < pagination.total_pages %} {% if end_page < pagination.total_pages - 1 %} <span
+                        class="pagination-ellipsis">...</span>
+                        {% endif %}
+                        <a href="{{ url_for('learners', page=pagination.total_pages, cohort=request.args.get('cohort'), slot=request.args.get('slot'), status=request.args.get('status'), search=request.args.get('search')) }}"
+                            class="pagination-page">{{ pagination.total_pages }}</a>
+                        {% endif %}
+                </div>
+
+                {% if pagination.has_next %}
+                <a href="{{ url_for('learners', page=pagination.next_num, cohort=request.args.get('cohort'), slot=request.args.get('slot'), status=request.args.get('status'), search=request.args.get('search')) }}"
+                    class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% else %}
+                <button class="pagination-btn disabled" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Apply filters function
+    function applyFilters() {
+        // Get selected values from multi-select dropdowns
+        const cohortFilter = Array.from(document.getElementById('cohortFilter').selectedOptions)
+            .map(option => option.value);
+        const slotFilter = Array.from(document.getElementById('slotFilter').selectedOptions)
+            .map(option => option.value);
+        const statusFilter = Array.from(document.getElementById('statusFilter').selectedOptions)
+            .map(option => option.value);
+        // Remove country filter
+        const searchValue = document.getElementById('tableSearchInput').value;
+
+        // Build query parameters (remove country)
+        const params = new URLSearchParams();
+        cohortFilter.forEach(cohort => params.append('cohort', cohort));
+        slotFilter.forEach(slot => params.append('slot', slot));
+        statusFilter.forEach(status => params.append('status', status));
+        // Remove country filter
+        if (searchValue) {
+            params.append('search', searchValue);
+        }
+        params.append('page', 1); // Reset to first page when filters change
+
+        // Show a loading animation
+        showLoading();
+
+        // Reload the page with filters
+        window.location.href = `{{ url_for('learners') }}?${params.toString()}`;
+    }
+
+    // Clear filters function
+    function clearFilters() {
+        document.getElementById('cohortFilter').value = '';
+        document.getElementById('slotFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('tableSearchInput').value = '';
+
+        // Clear active filters display
+        document.getElementById('activeFilters').innerHTML = '';
+
+        // Remove selection styling
+        document.querySelectorAll('.filter-group').forEach(group => {
+            group.classList.remove('has-selection');
+        });
+
+        // Show a loading animation
+        showLoading();
+
+        // Reload the page without filters
+        window.location.href = '{{ url_for("learners") }}';
+    }
+
+    // Search function for table search with visual feedback
+    document.getElementById('tableSearchInput').addEventListener('keyup', function (e) {
+        if (e.key === 'Enter') {
+            applyFilters();
+        } else {
+            const searchValue = this.value.toLowerCase();
+            filterTable(searchValue);
+
+            // Show/hide clear button based on search input
+            const clearBtn = document.getElementById('clearSearch');
+            if (searchValue.length > 0) {
+                clearBtn.style.display = 'flex';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+
+            // Update filter tags
+            updateFilterTags();
+        }
+    });
+
+    // Clear search button
+    document.getElementById('clearSearch').addEventListener('click', function () {
+        document.getElementById('tableSearchInput').value = '';
+        filterTable('');
+        this.style.display = 'none';
+        updateFilterTags();
+    });
+
+    function filterTable(searchValue) {
+        const table = document.getElementById('learnersTable');
+        const rows = table.getElementsByTagName('tr');
+        let matchCount = 0;
+
+        // If search is empty, show all rows
+        if (!searchValue) {
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].style.display = '';
+                removeHighlights(rows[i]);
+                matchCount++;
+            }
+
+            // Update the results count
+            const resultsCount = document.querySelector('.results-count');
+            resultsCount.innerHTML = `<i class="fas fa-users"></i> {{ pagination.total_learners }} learners found`;
+            return;
+        }
+
+        for (let i = 1; i < rows.length; i++) {
+            let found = false;
+            const cells = rows[i].getElementsByTagName('td');
+
+            // Check all columns for a match
+            for (let j = 0; j < cells.length; j++) {
+                const cell = cells[j];
+                if (cell) {
+                    const cellText = cell.textContent || cell.innerText;
+                    if (cellText.toLowerCase().includes(searchValue.toLowerCase())) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (found) {
+                rows[i].style.display = '';
+                matchCount++;
+
+                // Highlight matching text
+                highlightText(rows[i], searchValue);
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+
+        // Update the results count with animation
+        const resultsCount = document.querySelector('.results-count');
+        resultsCount.classList.add('updating');
+        setTimeout(() => {
+            resultsCount.innerHTML = `<i class="fas fa-users"></i> ${matchCount} learners found`;
+            resultsCount.classList.remove('updating');
+        }, 300);
+    }
+
+    // Highlight matching text in table cells
+    // Highlight matching text in table cells
+    function highlightText(row, searchText) {
+        const cells = row.getElementsByTagName('td');
+
+        for (let i = 0; i < cells.length; i++) {
+            const cell = cells[i];
+
+            // Skip cells with complex content (like those with status badges)
+            if (cell.querySelector('.status-badge') || cell.querySelector('.cohort-badge') || cell.querySelector('.courses-count')) {
+                continue;
+            }
+
+            const originalText = cell.textContent || cell.innerText;
+            if (originalText.toLowerCase().includes(searchText.toLowerCase())) {
+                // Store original HTML if not already stored
+                if (!cell.hasAttribute('data-original-html')) {
+                    cell.setAttribute('data-original-html', cell.innerHTML);
+                }
+
+                // Create highlighted version
+                const regex = new RegExp(`(${escapeRegExp(searchText)})`, 'gi');
+                const highlightedText = originalText.replace(regex, '<span class="highlight">$1</span>');
+                cell.innerHTML = highlightedText;
+            }
+        }
+    }
+
+    // Helper function to escape special regex characters
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Remove highlights from cells
+    // Remove highlights from cells
+    function removeHighlights(row) {
+        const cells = row.getElementsByTagName('td');
+
+        for (let i = 0; i < cells.length; i++) {
+            const cell = cells[i];
+            if (cell.hasAttribute('data-original-html')) {
+                cell.innerHTML = cell.getAttribute('data-original-html');
+                cell.removeAttribute('data-original-html');
+            }
+        }
+    }
+
+    // Sort table function
+    function sortTable(columnIndex) {
+        const table = document.getElementById('learnersTable');
+        const rows = Array.from(table.querySelectorAll('tr:not(:first-child)'));
+        const headerCells = table.querySelectorAll('th');
+
+        // Remove any existing sort indicators
+        headerCells.forEach(cell => {
+            const icon = cell.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-sort';
+            }
+        });
+
+        // Set sort indicator
+        const sortIcon = headerCells[columnIndex].querySelector('i');
+        if (sortIcon) {
+            sortIcon.className = 'fas fa-sort-up';
+        }
+
+        rows.sort((a, b) => {
+            const aValue = a.cells[columnIndex].textContent;
+            const bValue = b.cells[columnIndex].textContent;
+
+            // Handle numeric values for Courses Completed column
+            if (columnIndex === 6) {
+                return parseInt(aValue) - parseInt(bValue);
+            }
+
+            return aValue.localeCompare(bValue);
+        });
+
+        // Remove existing rows
+        rows.forEach(row => table.tBodies[0].appendChild(row));
+    }
+
+    // View learner profile
+    // View learner profile - UPDATED to use User ID
+    function viewLearnerProfile(userId) {
+        console.log('View profile clicked for User ID:', userId);
+        if (!userId) {
+            console.error('No User ID provided');
+            return;
+        }
+        window.location.href = `/learner/${encodeURIComponent(userId)}`;
+    }
+
+
+    // Show loading animation
+    function showLoading() {
+        const tableSection = document.querySelector('.table-section');
+        tableSection.classList.add('loading');
+    }
+
+    // Toggle filter dropdown visibility
+    document.getElementById('toggleFilters').addEventListener('click', function () {
+        const filterContent = document.getElementById('filterContent');
+
+        this.classList.toggle('collapsed');
+        filterContent.classList.toggle('collapsed');
+
+        // Save filter state in localStorage
+        localStorage.setItem('filtersCollapsed', filterContent.classList.contains('collapsed'));
+    });
+
+    // Create and manage filter tags
+    function updateFilterTags() {
+        const activeFilters = document.getElementById('activeFilters');
+        activeFilters.innerHTML = '';
+
+        // Get all selected filters (remove country)
+        const cohorts = Array.from(document.getElementById('cohortFilter').selectedOptions)
+            .map(option => ({ type: 'cohort', value: option.value, label: option.textContent.trim() }));
+
+        const slots = Array.from(document.getElementById('slotFilter').selectedOptions)
+            .map(option => ({ type: 'slot', value: option.value, label: option.textContent.trim() }));
+
+        const statuses = Array.from(document.getElementById('statusFilter').selectedOptions)
+            .map(option => ({ type: 'status', value: option.value, label: option.textContent.trim() }));
+
+        const searchValue = document.getElementById('tableSearchInput').value;
+        const allFilters = [...cohorts, ...slots, ...statuses]; // Remove countries
+
+        if (searchValue) {
+            allFilters.push({ type: 'search', value: searchValue, label: `"${searchValue}"` });
+        }
+
+        // Create filter tags
+        allFilters.forEach(filter => {
+            const tag = document.createElement('div');
+            tag.className = 'filter-tag';
+            tag.setAttribute('data-type', filter.type);
+            tag.innerHTML = `
+            <span class="tag-type">${filter.type}:</span>
+            <span class="tag-value">${filter.label}</span>
+            <span class="remove-tag" data-type="${filter.type}" data-value="${filter.value}">
+                <i class="fas fa-times"></i>
+            </span>
+        `;
+            activeFilters.appendChild(tag);
+
+            // Add click handler to remove tag
+            tag.querySelector('.remove-tag').addEventListener('click', function () {
+                removeFilter(this.dataset.type, this.dataset.value);
+            });
+        });
+
+        // Show/hide the active filters section
+        if (allFilters.length > 0) {
+            activeFilters.style.display = 'flex';
+        } else {
+            activeFilters.style.display = 'none';
+        }
+    }
+
+    // Remove individual filter
+    function removeFilter(type, value) {
+        if (type === 'search') {
+            document.getElementById('tableSearchInput').value = '';
+            filterTable('');
+            document.getElementById('clearSearch').style.display = 'none';
+        } else {
+            const selectId = type + 'Filter';
+            const select = document.getElementById(selectId);
+
+            Array.from(select.options).forEach(option => {
+                if (option.value === value) {
+                    option.selected = false;
+                }
+            });
+
+            // Trigger change event
+            const event = new Event('change');
+            select.dispatchEvent(event);
+        }
+
+        // Update filter tags
+        updateFilterTags();
+    }
+
+    // Set current filter values from URL parameters
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Set selected options in dropdowns
+        if (urlParams.getAll('cohort').length > 0) {
+            const cohorts = urlParams.getAll('cohort');
+            const cohortSelect = document.getElementById('cohortFilter');
+            Array.from(cohortSelect.options).forEach(option => {
+                option.selected = cohorts.includes(option.value);
+            });
+        }
+
+        if (urlParams.getAll('slot').length > 0) {
+            const slots = urlParams.getAll('slot');
+            const slotSelect = document.getElementById('slotFilter');
+            Array.from(slotSelect.options).forEach(option => {
+                option.selected = slots.includes(option.value);
+            });
+        }
+
+        if (urlParams.getAll('status').length > 0) {
+            const statuses = urlParams.getAll('status');
+            const statusSelect = document.getElementById('statusFilter');
+            Array.from(statusSelect.options).forEach(option => {
+                option.selected = statuses.includes(option.value);
+            });
+        }
+
+        if (urlParams.get('search')) {
+            document.getElementById('tableSearchInput').value = urlParams.get('search');
+            filterTable(urlParams.get('search').toLowerCase());
+            document.getElementById('clearSearch').style.display = 'flex';
+        } else {
+            document.getElementById('clearSearch').style.display = 'none';
+        }
+
+        // Initialize multi-select dropdowns with enhanced UI
+        initMultiSelects();
+
+        // Update filter tags
+        updateFilterTags();
+
+        // Restore filter section state
+        const filtersCollapsed = localStorage.getItem('filtersCollapsed') === 'true';
+        if (filtersCollapsed) {
+            document.getElementById('toggleFilters').classList.add('collapsed');
+            document.getElementById('filterContent').classList.add('collapsed');
+        }
+    });
+
+    // Simple multi-select enhancement
+    function initMultiSelects() {
+        const multiSelects = document.querySelectorAll('.multi-select');
+        multiSelects.forEach(select => {
+            select.addEventListener('change', function () {
+                const selectedCount = Array.from(this.selectedOptions).length;
+                if (selectedCount > 0) {
+                    this.parentNode.classList.add('has-selection');
+                } else {
+                    this.parentNode.classList.remove('has-selection');
+                }
+            });
+
+            // Trigger change event to set initial state
+            const event = new Event('change');
+            select.dispatchEvent(event);
+        });
+    }
+
+
+</script>
+
+<style>
+    /* Learners Page Specific Styles */
+    .learners-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .header-content p {
+        color: var(--gray-600);
+        font-size: 1rem;
+    }
+
+    .header-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 0.7rem 1rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        min-width: 200px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border-left: 4px solid transparent;
+        pointer-events: pointer;
+    }
+
+    .stat-card:nth-child(1) {
+        border-left-color: #43ddee;
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), white);
+    }
+
+    .stat-card:nth-child(2) {
+        border-left-color: #9ea30c;
+        background: linear-gradient(135deg, rgba(58, 12, 163, 0.05), white);
+    }
+
+    .stat-card:nth-child(3) {
+        border-left-color: #f04cbf;
+        background: linear-gradient(135deg, rgba(76, 201, 240, 0.05), white);
+    }
+
+    .stat-icon {
+        margin-bottom: 0.3rem;
+        font-size: 1.2rem;
+        color: var(--primary);
+        opacity: 0.8;
+        margin-bottom: 0.8rem;
+    }
+
+    .stat-card:nth-child(1) .stat-icon {
+        color: #43e8ee;
+    }
+
+    .stat-card:nth-child(2) .stat-icon {
+        color: #ecec0c;
+    }
+
+    .stat-card:nth-child(3) .stat-icon {
+        color: #f04cf0;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--gray-600);
+        text-transform: capitalize;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-title-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .filter-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .toggle-filters-btn {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        transition: var(--transition);
+    }
+
+    .toggle-filters-btn:hover {
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+    }
+
+    .toggle-filters-btn i:last-child {
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-filters-btn.collapsed i:last-child {
+        transform: rotate(180deg);
+    }
+
+    /* Compact Search */
+    .compact-search {
+        flex: 1;
+        max-width: 400px;
+        margin-left: 1rem;
+    }
+
+    .last-updated,
+    .results-count {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .last-updated i,
+    .results-count i {
+        color: var(--primary);
+        font-size: 0.8rem;
+    }
+
+    .filter-content {
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+        overflow: hidden;
+        max-height: 1000px;
+        opacity: 1;
+    }
+
+    .filter-content.collapsed {
+        max-height: 0;
+        opacity: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Active Filters */
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        min-height: 36px;
+    }
+
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    /* Color-coded filter tags */
+    .filter-tag[data-type="cohort"] {
+        background: rgba(74, 107, 255, 0.1);
+        color: #2541b2;
+    }
+
+    .filter-tag[data-type="slot"] {
+        background: rgba(255, 145, 0, 0.1);
+        color: #d67600;
+    }
+
+    .filter-tag[data-type="status"] {
+        background: rgba(76, 175, 80, 0.1);
+        color: #2e7d32;
+    }
+
+    .filter-tag[data-type="search"] {
+        background: rgba(156, 39, 176, 0.1);
+        color: #7b1fa2;
+    }
+
+    .filter-tag:hover {
+        filter: brightness(0.95);
+    }
+
+    .filter-tag .remove-tag {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: rgba(67, 97, 238, 0.2);
+        color: white;
+        font-size: 0.7rem;
+        transition: all 0.2s ease;
+    }
+
+    .filter-tag .remove-tag:hover {
+        background: var(--primary);
+    }
+
+    /* Inline filter container */
+    .filter-inline-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 1.5rem;
+        justify-content: space-between;
+    }
+
+    .filter-inline-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 200px;
+        max-width: 300px;
+        border-radius: 6px;
+        padding: 10px 15px;
+        transition: all 0.2s ease;
+    }
+
+    /* Color-coded filter groups */
+    .cohort-filter {
+        background-color: rgba(74, 107, 255, 0.05);
+        border-left: 3px solid #4a6bff;
+    }
+
+    .slot-filter {
+        background-color: rgba(255, 145, 0, 0.05);
+        border-left: 3px solid #ff9100;
+    }
+
+    .status-filter {
+        background-color: rgba(76, 175, 80, 0.05);
+        border-left: 3px solid #4caf50;
+    }
+
+    .filter-group label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-group label i {
+        color: var(--primary);
+    }
+
+    /* Custom Select Styling */
+    .custom-select-wrapper {
+        position: relative;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        background: white;
+        color: var(--gray-800);
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .filter-group.has-selection .filter-select {
+        border-color: var(--primary);
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+
+    .select-icon {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        pointer-events: none;
+        transition: transform 0.2s ease;
+    }
+
+    .filter-select:focus+.select-icon {
+        color: var(--primary);
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Multi-select styling */
+    .filter-select[multiple] {
+        height: auto;
+        min-height: 120px;
+        padding: 0.5rem;
+    }
+
+    .filter-select[multiple] option {
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .filter-select[multiple] option:checked {
+        background: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
+    }
+
+    .filter-select[multiple] option:hover {
+        background: rgba(67, 97, 238, 0.05);
+    }
+
+    .search-group {
+        grid-column: 1 / -1;
+    }
+
+    .search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 2.5rem 0.75rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z' fill='rgba(67, 97, 238, 0.6)'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: 0.75rem center;
+        padding-left: 2.5rem;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .search-clear-btn {
+        position: absolute;
+        right: 0.75rem;
+        background: none;
+        border: none;
+        color: var(--gray-500);
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .search-clear-btn:hover {
+        background: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding-top: 1rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* New button style */
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-outline:hover {
+        background: rgba(67, 97, 238, 0.1);
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+    }
+
+    .btn-secondary {
+        background: var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-300);
+    }
+
+    .btn-action {
+        padding: 0.5rem;
+        background: transparent;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+    }
+
+    .btn-action:hover {
+        background: var(--gray-100);
+        color: var(--primary);
+    }
+
+    /* Table Section */
+    .table-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .learners-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .learners-table th {
+        background: var(--gray-100);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .learners-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-100);
+        font-size: 0.9rem;
+    }
+
+    .learners-table tbody tr {
+        transition: var(--transition);
+    }
+
+    .learners-table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .sortable span {
+        margin-right: 0.5rem;
+    }
+
+    .sortable:hover {
+        background: var(--gray-200);
+    }
+
+    /* Status Column - Flexible width and alignment */
+    .status-column {
+        min-width: 150px;
+        max-width: 250px;
+    }
+
+    .status-cell {
+        text-align: left;
+    }
+
+    /* Learner Info */
+    .learner-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .learner-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .learner-name {
+        font-weight: 500;
+        color: var(--dark);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
+    }
+
+    /* Badges */
+    .cohort-badge {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Enhanced Status Badges with different colors */
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: center;
+        min-width: 120px;
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-transform: capitalize;
+    }
+
+    .status-active {
+        background-color: rgba(76, 175, 80, 0.15);
+        color: #2e7d32;
+    }
+
+    .status-inactive {
+        background-color: rgba(158, 158, 158, 0.15);
+        color: #424242;
+    }
+
+    .status-on-hold {
+        background-color: rgba(255, 152, 0, 0.15);
+        color: #ef6c00;
+    }
+
+    .status-completed {
+        background-color: rgba(33, 150, 243, 0.15);
+        color: #1565c0;
+    }
+
+    .status-dropped {
+        background-color: rgba(244, 67, 54, 0.15);
+        color: #c62828;
+    }
+
+    .status-pending {
+        background-color: rgba(156, 39, 176, 0.15);
+        color: #7b1fa2;
+    }
+
+    /* Add more status colors as needed */
+
+    .status-active {
+        background: rgba(76, 201, 240, 0.1);
+        color: #4cc9f0;
+        border: 1px solid #4cc9f0;
+    }
+
+    .status-active-deferred-in,
+    .status-active-prospective-deferral {
+        background: rgba(72, 149, 239, 0.1);
+        color: #4895ef;
+        border: 1px solid #4895ef;
+    }
+
+    .status-deferred-out {
+        background: rgba(249, 199, 79, 0.1);
+        color: #f9c74f;
+        border: 1px solid #f9c74f;
+    }
+
+    .status-in-process-of-deferral {
+        background: rgba(240, 98, 146, 0.1);
+        color: #f06292;
+        border: 1px solid #f06292;
+    }
+
+    .status-completed,
+    .status-graduated {
+        background: rgba(102, 187, 106, 0.1);
+        color: #66bb6a;
+        border: 1px solid #66bb6a;
+    }
+
+    .status-on-hold,
+    .status-inactive {
+        background: rgba(249, 199, 79, 0.1);
+        color: #f9c74f;
+        border: 1px solid #f9c74f;
+    }
+
+    .status-withdrawn {
+        background: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+        border: 1px solid #f44336;
+    }
+
+    .status-default {
+        background: rgba(158, 158, 158, 0.1);
+        color: #9e9e9e;
+        border: 1px solid #9e9e9e;
+    }
+
+    /* Courses Count */
+    .courses-count {
+        font-weight: 600;
+        color: var(--primary);
+        background: rgba(67, 97, 238, 0.1);
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .pagination-info {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pagination-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .pagination-btn:hover:not(.disabled) {
+        background: var(--primary);
+        color: white;
+    }
+
+    .pagination-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pagination-pages {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .pagination-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: var(--transition);
+    }
+
+    .pagination-page:hover {
+        background: var(--gray-200);
+    }
+
+    .pagination-page.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .pagination-ellipsis {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        color: var(--gray-500);
+    }
+
+    /* Loading State */
+    .table-section.loading {
+        position: relative;
+    }
+
+    .table-section.loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    .table-section.loading::before {
+        content: 'Loading...';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 11;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    /* Dark Mode Adjustments */
+    .dark-mode .stat-card,
+    .dark-mode .filter-section,
+    .dark-mode .table-section {
+        background: var(--gray-100);
+    }
+
+    .dark-mode .learners-table th {
+        background: var(--gray-200);
+    }
+
+    .dark-mode .learners-table tbody tr:hover {
+        background: var(--gray-200);
+    }
+
+    .dark-mode .cohort-badge {
+        background: var(--gray-300);
+        color: var(--gray-800);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .header-stats {
+            width: 100%;
+            justify-content: space-around;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+        }
+
+        .header-stats {
+            justify-content: flex-start;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-controls {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .results-count {
+            margin-left: 0;
+            text-align: center;
+        }
+
+        .pagination-container {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .pagination-controls {
+            justify-content: center;
+        }
+
+        .status-badge {
+            min-width: 100px;
+            max-width: 150px;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .learners-container {
+            padding: 0 0.5rem;
+        }
+
+        .filter-section,
+        .table-section {
+            border-radius: 0;
+            margin-left: -0.5rem;
+            margin-right: -0.5rem;
+        }
+
+        .learners-table {
+            font-size: 0.8rem;
+        }
+
+        .learners-table th,
+        .learners-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+        }
+
+        .status-badge {
+            min-width: 80px;
+            max-width: 120px;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

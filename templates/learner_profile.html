@@ -1,0 +1,786 @@
+<!-- templates/learner_profile.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learner Profile Journey - {{ learner['First Name'] }} {{ learner['Last Name'] }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .cohort-badge {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #2e7d32;
+            border: 1px solid #2e7d32;
+        }
+
+        .status-deferred {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #ef6c00;
+            border: 1px solid #ef6c00;
+        }
+
+        .status-inactive {
+            background-color: rgba(158, 158, 158, 0.15);
+            color: #424242;
+            border: 1px solid #424242;
+        }
+
+        /* Common Timeline Base */
+        .timeline-container {
+            position: relative;
+            padding-left: 4rem;
+            /* space for icons */
+            margin-bottom: 2rem;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 2rem;
+            top: 3.5rem;
+            bottom: 1rem;
+            width: 4px;
+            background: linear-gradient(to bottom, #3a86ff, #ff006e);
+            border-radius: 2px;
+        }
+
+        /* Common Item */
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        /* Common Icon */
+        .timeline-icon {
+            position: absolute;
+            left: 2rem;
+            top: 0;
+            transform: translate(-50%, 0);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        /* Section-specific gradients */
+        .professional-icon {
+            background: linear-gradient(135deg, #3a86ff, #ff006e);
+        }
+
+        .cohort-icon {
+            background: linear-gradient(135deg, #4361ee, #7209b7);
+        }
+
+        .dissertation-icon {
+            background: linear-gradient(135deg, #8338ec, #fb5607);
+        }
+
+        
+
+
+
+        /* Make Dissertation Mode, Chair, and Co-Chair data lighter in dark mode */
+        .dark-mode .text-purple-900,
+        .dark-mode .text-blue-900,
+        .dark-mode .text-indigo-900 {
+            color: #e5e7eb !important;
+            /* Light gray color for better readability */
+            font-weight: 500;
+        }
+
+        /* Specific targeting for dissertation info cards */
+        .dark-mode .bg-gradient-to-br.from-purple-50.to-blue-50 .text-purple-900,
+        .dark-mode .bg-gradient-to-br.from-blue-50.to-indigo-50 .text-blue-900,
+        .dark-mode .bg-gradient-to-br.from-indigo-50.to-purple-50 .text-indigo-900 {
+            color: #e5e7eb !important;
+        }
+
+        /* Make the labels (Dissertation Mode, Chair, Co-Chair) slightly lighter too */
+        .dark-mode .text-purple-700,
+        .dark-mode .text-blue-700,
+        .dark-mode .text-indigo-700 {
+            color: #9ca3af !important;
+            /* Medium gray for labels */
+            font-weight: 500;
+        }
+
+        /* Ensure all dissertation data text is readable in dark mode */
+        .dark-mode .bg-purple-50 .font-semibold.text-purple-700,
+        .dark-mode .bg-blue-50 .font-semibold.text-blue-700,
+        .dark-mode .bg-indigo-50 .font-semibold.text-indigo-700 {
+            color: #9ca3af !important;
+        }
+
+        .dark-mode .bg-purple-50 .text-purple-900,
+        .dark-mode .bg-blue-50 .text-blue-900,
+        .dark-mode .bg-indigo-50 .text-indigo-900 {
+            color: #e5e7eb !important;
+        }
+
+
+        /* Force dissertation status colors in dark mode */
+        .dark-mode .bg-gradient-to-br.from-green-500.to-emerald-500,
+        .dark-mode .bg-gradient-to-br.from-red-500.to-pink-500,
+        .dark-mode .bg-gradient-to-br.from-yellow-500.to-amber-500,
+        .dark-mode .bg-gradient-to-br.from-gray-400.to-gray-500 {
+            background-image: none !important;
+        }
+
+        .dark-mode .bg-gradient-to-br.from-green-500.to-emerald-500 {
+            background-color: #10b981 !important;
+        }
+
+        .dark-mode .bg-gradient-to-br.from-red-500.to-pink-500 {
+            background-color: #ef4444 !important;
+        }
+
+        .dark-mode .bg-gradient-to-br.from-yellow-500.to-amber-500 {
+            background-color: #eab308 !important;
+        }
+
+        .dark-mode .bg-gradient-to-br.from-gray-400.to-gray-500 {
+            background-color: #d1d5db !important;
+            /* Light gray for pending */
+        }
+
+        /* Make icons, numbers, and text black in dark mode for better visibility */
+        .dark-mode .bg-gradient-to-br.from-green-500.to-emerald-500 i,
+        .dark-mode .bg-gradient-to-br.from-red-500.to-pink-500 i,
+        .dark-mode .bg-gradient-to-br.from-yellow-500.to-amber-500 i,
+        .dark-mode .bg-gradient-to-br.from-gray-400.to-gray-500 i,
+        .dark-mode .bg-gradient-to-br.from-green-500.to-emerald-500 span,
+        .dark-mode .bg-gradient-to-br.from-red-500.to-pink-500 span,
+        .dark-mode .bg-gradient-to-br.from-yellow-500.to-amber-500 span,
+        .dark-mode .bg-gradient-to-br.from-gray-400.to-gray-500 span {
+            color: #000000 !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Ensure all text inside the status circles is black in dark mode */
+        .dark-mode .w-12.h-12.rounded-full.text-white i,
+        .dark-mode .w-12.h-12.rounded-full.text-white span {
+            color: #000000 !important;
+            font-weight: 600;
+        }
+
+        /* Specific targeting for the step numbers */
+        .dark-mode .w-12.h-12.rounded-full span.text-sm {
+            color: #000000 !important;
+            font-weight: bold;
+        }
+
+        /* Make sure Font Awesome icons are black */
+        .dark-mode .w-12.h-12.rounded-full .fas {
+            color: #000000 !important;
+        }
+
+        /* Add a slight text shadow for better readability on colored backgrounds */
+        .dark-mode .w-12.h-12.rounded-full * {
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+
+        .dark-mode .cohort-badge {
+            background: linear-gradient(135deg, #4895ef, #3a0ca3);
+            color: white;
+        }
+
+        .dark-mode .bg-gray-50 {
+            background-color: var(--gray-200) !important;
+            border-color: var(--gray-300) !important;
+        }
+
+        .dark-mode .bg-blue-50 {
+            background-color: rgba(59, 130, 246, 0.15) !important;
+            border-color: rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .dark-mode .bg-green-50 {
+            background-color: rgba(34, 197, 94, 0.15) !important;
+            border-color: rgba(34, 197, 94, 0.3) !important;
+        }
+
+        .dark-mode .bg-purple-50 {
+            background-color: rgba(168, 85, 247, 0.15) !important;
+            border-color: rgba(168, 85, 247, 0.3) !important;
+        }
+
+        .dark-mode .bg-orange-50 {
+            background-color: rgba(249, 115, 22, 0.15) !important;
+            border-color: rgba(249, 115, 22, 0.3) !important;
+        }
+
+        .dark-mode .bg-gradient-to-br {
+            background-image: none !important;
+        }
+
+        .dark-mode .from-purple-50,
+        .dark-mode .to-blue-50,
+        .dark-mode .from-blue-50,
+        .dark-mode .to-indigo-50,
+        .dark-mode .from-indigo-50,
+        .dark-mode .to-purple-50,
+        .dark-mode .from-gray-50,
+        .dark-mode .to-blue-50 {
+            background-color: var(--gray-200) !important;
+        }
+
+        /* Ensure all text is visible in dark mode */
+        .dark-mode .text-gray-900 {
+            color: var(--gray-900) !important;
+        }
+
+        .dark-mode .text-gray-800 {
+            color: var(--gray-800) !important;
+        }
+
+        .dark-mode .text-gray-700 {
+            color: var(--gray-700) !important;
+        }
+
+        .dark-mode .text-gray-600 {
+            color: var(--gray-600) !important;
+        }
+
+        /* Table styles */
+        .dark-mode table {
+            color: var(--gray-800) !important;
+        }
+
+        .dark-mode thead {
+            background-color: var(--gray-200) !important;
+        }
+
+        .dark-mode thead th {
+            color: var(--gray-900) !important;
+        }
+
+        .dark-mode tbody tr {
+            background-color: var(--gray-100) !important;
+            border-color: var(--gray-300) !important;
+        }
+
+        .dark-mode tbody tr:hover {
+            background-color: var(--gray-200) !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <!-- Profile Header -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+            <div class="flex flex-col md:flex-row items-center md:space-x-6">
+                <div class="mb-4 md:mb-0">
+                    <div
+                        class="h-24 w-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold ring-4 ring-blue-100">
+                        {{ learner['First Name'][0] }}{{ learner['Last Name'][0] }}
+                    </div>
+                </div>
+                <div class="text-center md:text-left flex-1">
+                    <h1 class="text-3xl font-bold text-gray-800">{{ learner['First Name'] }} {{ learner['Last Name'] }}
+                    </h1>
+                    <p class="text-gray-500 mt-1">
+                        User ID: <span class="font-medium text-gray-600">{{ learner.get('User ID', 'N/A') }}</span> |
+                        GGU ID: <span class="font-medium text-gray-600">{{ learner.get('GGU User ID', learner.get('GGU
+                            ID', 'N/A')) }}</span>
+                    </p>
+                    <div class="mt-3 flex flex-wrap justify-center md:justify-start gap-2">
+                        {% for cohort_data in all_cohorts_data %}
+                        <span class="cohort-badge">
+                            Cohort {{ cohort_data.cohort_number }}: {{ cohort_data.status }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0 text-center md:text-right">
+                    <p class="text-gray-500 flex items-center justify-center md:justify-end">
+                        <i class="fas fa-envelope mr-2"></i> {{ learner['Email'] }}
+                    </p>
+                    {% if learner.get('Contact') and learner['Contact'] != '0' %}
+                    <p class="text-gray-500 flex items-center justify-center md:justify-end mt-1">
+                        <i class="fas fa-phone mr-2"></i> {{ learner['Contact'] }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline-icon professional-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="timeline-item">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Professional Background</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="font-semibold text-gray-700 mb-2">Demographics</h4>
+                            <p class="text-sm text-gray-600 mb-1">
+                                <i class="fas fa-flag mr-2 text-blue-500"></i>
+                                Country of Origin: {{ learner.get('Country Of Origin', 'N/A') }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                                Country of Residence: {{ learner.get('Country Of Residence', 'N/A') }}
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="font-semibold text-gray-700 mb-2">Professional Information</h4>
+                            <p class="text-sm text-gray-600 mb-1">
+                                <i class="fas fa-building mr-2 text-green-500"></i>
+                                Company: {{ learner.get('Company', 'N/A') }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-briefcase mr-2 text-green-500"></i>
+                                Industry: {{ learner.get('Industry', 'N/A') }}
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="font-semibold text-gray-700 mb-2">Additional Information</h4>
+                            <p class="text-sm text-gray-600 mb-1">
+                                <i class="fas fa-user-tag mr-2 text-purple-500"></i>
+                                Designation: {{ learner.get('Designation', 'N/A') }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-chart-line mr-2 text-purple-500"></i>
+                                Seniority: {{ learner.get('Seniority', 'N/A') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learner Journey Timeline -->
+        {% for cohort_data in all_cohorts_data %}
+        <!-- Cohort Journey Section -->
+        <div class="timeline-container">
+            <div class="timeline-icon cohort-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="timeline-item">
+
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Cohort {{ cohort_data.cohort_number }} Journey
+                        </h3>
+                        <span
+                            class="status-badge status-{{ cohort_data.status.lower().replace(' ', '-').replace('/', '-') }} px-4 py-2 rounded-full">
+                            {{ cohort_data.status }}
+                        </span>
+                    </div>
+
+                    <!-- Cohort Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <h4 class="font-semibold text-blue-700 text-sm">Program Slot</h4>
+                            <p class="text-blue-800 font-bold">{{ cohort_data.slot[:6] if cohort_data.slot else
+                                'N/A' }}
+                            </p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <h4 class="font-semibold text-green-700 text-sm">Batch Type</h4>
+                            <p class="text-green-800 font-bold">{{ cohort_data.batch }}</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                            <h4 class="font-semibold text-purple-700 text-sm">Courses Completed</h4>
+                            <p class="text-purple-800 font-bold">{{ cohort_data.courses_completed }}/7</p>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                            <h4 class="font-semibold text-orange-700 text-sm">Overall CGPA</h4>
+                            <p class="text-orange-800 font-bold">{{ "%.2f"|format(cohort_data.cgpa) if
+                                cohort_data.cgpa
+                                else 'N/A' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Academic Performance -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-700 mb-3">Academic Performance</h4>
+                        {% if cohort_data.courses %}
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 border border-gray-200 rounded-lg">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3">Course</th>
+                                        <th scope="col" class="px-4 py-3">Grade</th>
+                                        <th scope="col" class="px-4 py-3">Credit</th>
+                                        <th scope="col" class="px-4 py-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in cohort_data.courses %}
+                                    {# Skip "I" grade courses for Deferred Out learners #}
+                                    {% if cohort_data.status != 'Deferred Out' or course.grade != 'I' %}
+
+                                    {# Grade categorization logic #}
+                                    {% set grade_category = 'low' %}
+                                    {% if course.grade in ['A+', 'A', 'A-'] %}
+                                    {% set grade_category = 'excellent' %}
+                                    {% elif course.grade in ['B+', 'B', 'B-'] %}
+                                    {% set grade_category = 'satisfactory' %}
+                                    {% endif %}
+
+                                    <tr class="bg-white border-b hover:bg-gray-50">
+                                        <td class="px-4 py-3 font-medium text-gray-900">{{ course.name }}</td>
+                                        <td
+                                            class="px-4 py-3 {% if grade_category == 'low' %}text-red-600 font-semibold{% elif grade_category == 'excellent' %}text-green-600 font-semibold{% else %}text-blue-600{% endif %}">
+                                            {{ course.grade }}
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-700">{{ course.credit }}</td>
+                                        <td class="px-4 py-3">
+                                            {% if grade_category == 'excellent' %}
+                                            <span
+                                                class="text-green-600 text-xs font-semibold bg-green-50 px-2 py-1 rounded">Excellent</span>
+                                            {% elif grade_category == 'satisfactory' %}
+                                            <span
+                                                class="text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded">Satisfactory</span>
+                                            {% else %}
+                                            <span
+                                                class="text-red-600 text-xs font-semibold bg-red-50 px-2 py-1 rounded">Low
+                                                Grade</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
+                            <i class="fas fa-exclamation-circle text-xl mb-2"></i>
+                            <p>No academic data available for this cohort</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+
+
+        <!-- Dissertation Progress Section - Display only once at the end -->
+        {% set has_dissertation_data = [] %}
+        {% for cohort_data in all_cohorts_data %}
+        {% if cohort_data.dissertation %}
+        {% set _ = has_dissertation_data.append(1) %}
+        {% endif %}
+        {% endfor %}
+
+        {% if has_dissertation_data %}
+        <div class="timeline-container">
+            <div class="timeline-icon dissertation-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="timeline-item">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Dissertation Progress</h3>
+
+                    {% for cohort_data in all_cohorts_data %}
+                    {% if cohort_data.dissertation %}
+                    <div class="mb-8 last:mb-0">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Cohort {{ cohort_data.cohort_number }}
+                        </h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div
+                                class="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200 shadow-sm">
+                                <h4 class="font-semibold text-purple-700 text-sm mb-2">Dissertation Mode</h4>
+                                <p class="text-purple-900 font-bold text-lg">{{
+                                    cohort_data.dissertation.get('Dissertation mode', 'Not Selected') }}</p>
+                            </div>
+                            <div
+                                class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200 shadow-sm">
+                                <h4 class="font-semibold text-blue-700 text-sm mb-2">Chair</h4>
+                                <p class="text-blue-900 font-bold text-lg">{{ cohort_data.dissertation.get('Chair','Not
+                                    Assigned') }}</p>
+                            </div>
+                            <div
+                                class="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200 shadow-sm">
+                                <h4 class="font-semibold text-indigo-700 text-sm mb-2">Co-Chair</h4>
+                                <p class="text-indigo-900 font-bold text-lg">{{
+                                    cohort_data.dissertation.get('Co-Chair','Not Assigned') }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Progress Stepper -->
+                        <div
+                            class="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h5 class="font-semibold text-gray-800 text-lg mb-6 flex items-center">
+                                <i class="fas fa-tasks text-blue-500 mr-3"></i>
+                                Progress Tracker
+                            </h5>
+
+                            <div class="flex flex-col md:flex-row md:items-center space-y-6 md:space-y-0 md:space-x-4">
+                                <!-- Step 1: Topic Proposal -->
+                                <div class="flex items-center flex-1">
+                                    <div class="flex flex-col items-center">
+                                        {% set topic_submitted = cohort_data.dissertation.get('Topic Proposal Submission', '')
+                                        %}
+                                        {% set topic_approved = cohort_data.dissertation.get('Topic Proposal Approval',
+                                        '') %}
+
+                                        {% set topic_status = 'pending' %}
+                                        {% set topic_text = 'Not Started' %}
+
+                                        {% if topic_submitted == 'Submitted' %}
+                                        {% if topic_approved == 'Approved' %}
+                                        {% set topic_status = 'approved' %}
+                                        {% set topic_text = 'Approved' %}
+                                        {% elif topic_approved == 'Not Approved' %}
+                                        {% set topic_status = 'not-approved' %}
+                                        {% set topic_text = 'Not Approved' %}
+                                        {% else %}
+                                        {% set topic_status = 'not-submitted' %}
+                                        {% set topic_text = 'Not Submitted' %}
+                                        {% endif %}
+                                        {% else %}
+                                        {% set topic_status = 'pending' %}
+                                        {% set topic_text = 'Not Started' %}
+                                        {% endif %}
+
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg transform transition-all duration-300 hover:scale-110
+                        {% if topic_status == 'approved' %}bg-gradient-to-br from-green-500 to-emerald-500
+                        {% elif topic_status == 'not-approved' %}bg-gradient-to-br from-red-500 to-pink-500
+                        {% elif topic_status == 'not-submitted' %}bg-gradient-to-br from-yellow-500 to-amber-500
+                        {% else %}bg-gradient-to-br from-gray-400 to-gray-500{% endif %}">
+                                            {% if topic_status == 'approved' %}<i class="fas fa-check"></i>
+                                            {% elif topic_status == 'not-approved' %}<i class="fas fa-times"></i>
+                                            {% elif topic_status == 'not-submitted' %}<i class="fas fa-exclamation"></i>
+                                            {% else %}<span class="text-sm">1</span>{% endif %}
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <div class="text-sm font-semibold text-gray-700">Topic Proposal</div>
+                                            <div class="text-xs text-gray-500 mt-1">{{ topic_text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-auto border-t-2 mx-4
+                    {% if topic_status == 'approved' %}border-green-300
+                    {% elif topic_status == 'not-approved' %}border-red-300
+                    {% elif topic_status == 'not-submitted' %}border-yellow-300
+                    {% else %}border-gray-300{% endif %}"></div>
+                                </div>
+
+                                <!-- Step 2: IRB -->
+                                <div class="flex items-center flex-1">
+                                    <div class="flex flex-col items-center">
+                                        {% set irb_status_value = cohort_data.dissertation.get('IRB', '') %}
+
+                                        {% set irb_status = 'pending' %}
+                                        {% set irb_text = 'Not Started' %}
+
+                                        {% if irb_status_value == 'Submitted' %}
+                                        {% set irb_status = 'approved' %}
+                                        {% set irb_text = 'Submitted' %}
+                                        {% elif irb_status_value == 'Not Submitted' %}
+                                        {% set irb_status = 'not-submitted' %}
+                                        {% set irb_text = 'Not Submitted' %}
+                                        {% else %}
+                                        {% set irb_status = 'pending' %}
+                                        {% set irb_text = 'Pending' %}
+                                        {% endif %}
+
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg transform transition-all duration-300 hover:scale-110
+                        {% if irb_status == 'approved' %}bg-gradient-to-br from-green-500 to-emerald-500
+                        {% elif irb_status == 'not-submitted' %}bg-gradient-to-br from-yellow-500 to-amber-500
+                        {% else %}bg-gradient-to-br from-gray-400 to-gray-500{% endif %}">
+                                            {% if irb_status == 'approved' %}<i class="fas fa-check"></i>
+                                            {% elif irb_status == 'not-submitted' %}<i class="fas fa-exclamation"></i>
+                                            {% else %}<span class="text-sm">2</span>{% endif %}
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <div class="text-sm font-semibold text-gray-700">IRB</div>
+                                            <div class="text-xs text-gray-500 mt-1">{{ irb_text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-auto border-t-2 mx-4
+                    {% if irb_status == 'approved' %}border-green-300
+                    {% elif irb_status == 'not-submitted' %}border-yellow-300
+                    {% else %}border-gray-300{% endif %}"></div>
+                                </div>
+
+                                <!-- Step 3: Research Proposal -->
+                                <div class="flex items-center flex-1">
+                                    <div class="flex flex-col items-center">
+                                        {% set research_submitted = cohort_data.dissertation.get('Research Proposal
+                                        Submission',
+                                        '') %}
+                                        {% set research_approved = cohort_data.dissertation.get('Research Proposal
+                                        Approval',
+                                        '') %}
+
+                                        {% set research_status = 'pending' %}
+                                        {% set research_text = 'Not Started' %}
+
+                                        {% if research_submitted == 'Submitted' %}
+                                        {% if research_approved == 'Approved' %}
+                                        {% set research_status = 'approved' %}
+                                        {% set research_text = 'Approved' %}
+                                        {% elif research_approved == 'Not Approved' %}
+                                        {% set research_status = 'not-approved' %}
+                                        {% set research_text = 'Not Approved' %}
+                                        {% else %}
+                                        {% set research_status = 'not-submitted' %}
+                                        {% set research_text = 'Not Submitted' %}
+                                        {% endif %}
+                                        {% else %}
+                                        {% set research_status = 'pending' %}
+                                        {% set research_text = 'Not Started' %}
+                                        {% endif %}
+
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg transform transition-all duration-300 hover:scale-110
+                        {% if research_status == 'approved' %}bg-gradient-to-br from-green-500 to-emerald-500
+                        {% elif research_status == 'not-approved' %}bg-gradient-to-br from-red-500 to-pink-500
+                        {% elif research_status == 'not-submitted' %}bg-gradient-to-br from-yellow-500 to-amber-500
+                        {% else %}bg-gradient-to-br from-gray-400 to-gray-500{% endif %}">
+                                            {% if research_status == 'approved' %}<i class="fas fa-check"></i>
+                                            {% elif research_status == 'not-approved' %}<i class="fas fa-times"></i>
+                                            {% elif research_status == 'not-submitted' %}<i
+                                                class="fas fa-exclamation"></i>
+                                            {% else %}<span class="text-sm">3</span>{% endif %}
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <div class="text-sm font-semibold text-gray-700">Research Proposal</div>
+                                            <div class="text-xs text-gray-500 mt-1">{{ research_text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-auto border-t-2 mx-4
+                    {% if research_status == 'approved' %}border-green-300
+                    {% elif research_status == 'not-approved' %}border-red-300
+                    {% elif research_status == 'not-submitted' %}border-yellow-300
+                    {% else %}border-gray-300{% endif %}"></div>
+                                </div>
+
+                                <!-- Step 4: Final Defence -->
+                                <div class="flex items-center">
+                                    <div class="flex flex-col items-center">
+                                        {% set final_submitted = cohort_data.dissertation.get('Final Proposal
+                                        Submission', '')
+                                        %}
+                                        {% set final_approved = cohort_data.dissertation.get('Final Proposal Approval',
+                                        '') %}
+
+                                        {% set final_status = 'pending' %}
+                                        {% set final_text = 'Not Started' %}
+
+                                        {% if final_submitted == 'Submitted' %}
+                                        {% if final_approved == 'Approved' %}
+                                        {% set final_status = 'approved' %}
+                                        {% set final_text = 'Approved' %}
+                                        {% elif final_approved == 'Not Approved' %}
+                                        {% set final_status = 'not-approved' %}
+                                        {% set final_text = 'Not Approved' %}
+                                        {% else %}
+                                        {% set final_status = 'not-submitted' %}
+                                        {% set final_text = 'Not Submitted' %}
+                                        {% endif %}
+                                        {% else %}
+                                        {% set final_status = 'pending' %}
+                                        {% set final_text = 'Not Started' %}
+                                        {% endif %}
+
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg transform transition-all duration-300 hover:scale-110
+                        {% if final_status == 'approved' %}bg-gradient-to-br from-green-500 to-emerald-500
+                        {% elif final_status == 'not-approved' %}bg-gradient-to-br from-red-500 to-pink-500
+                        {% elif final_status == 'not-submitted' %}bg-gradient-to-br from-yellow-500 to-amber-500
+                        {% else %}bg-gradient-to-br from-gray-400 to-gray-500{% endif %}">
+                                            {% if final_status == 'approved' %}<i class="fas fa-check"></i>
+                                            {% elif final_status == 'not-approved' %}<i class="fas fa-times"></i>
+                                            {% elif final_status == 'not-submitted' %}<i class="fas fa-exclamation"></i>
+                                            {% else %}<span class="text-sm">4</span>{% endif %}
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <div class="text-sm font-semibold text-gray-700">Final Defence</div>
+                                            <div class="text-xs text-gray-500 mt-1">{{ final_text }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status Summary -->
+                            <div class="mt-8 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="font-semibold text-gray-800">Latest Update:</span>
+                                        <span class="text-gray-600 ml-2">
+                                            {% if cohort_data.dissertation.get('Remarks') and
+                                            cohort_data.dissertation['Remarks'] != '0' %}
+                                            {{ cohort_data.dissertation['Remarks'] }}
+                                            {% else %}
+                                            Track learners dissertation progress above.
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-3 h-3 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 mr-2">
+                                            </div>
+                                            <span class="text-xs text-gray-600">Approved</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-3 h-3 rounded-full bg-gradient-to-br from-red-500 to-pink-500 mr-2">
+                                            </div>
+                                            <span class="text-xs text-gray-600">Not Approved</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-3 h-3 rounded-full bg-gradient-to-br from-yellow-500 to-amber-500 mr-2">
+                                            </div>
+                                            <span class="text-xs text-gray-600">Not Submitted</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-3 h-3 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 mr-2">
+                                            </div>
+                                            <span class="text-xs text-gray-600">Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
+{% endblock %}

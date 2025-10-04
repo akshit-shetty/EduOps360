@@ -1,0 +1,993 @@
+{% extends "automation_base.html" %}
+
+{% block title %}Session Reminders{% endblock %}
+
+{% block extra_css %}
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --success: #4cc9f0;
+        --danger: #f72585;
+        --warning: #f8961e;
+        --info: #4895ef;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray: #6c757d;
+        --light-gray: #e9ecef;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f5f7fb;
+        color: var(--dark);
+        line-height: 1.6;
+      }
+
+      header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 20px 0;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .logo i {
+        font-size: 2.5rem;
+      }
+
+      .logo h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+      }
+
+      .current-date {
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.9;
+      }
+
+      /* Rest of your CSS remains the same */
+      .dashboard {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 20px 0;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .logo i {
+        font-size: 2.5rem;
+      }
+
+      .logo h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--light-gray);
+      }
+
+      .card-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .stat-card {
+        text-align: center;
+        padding: 20px;
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 10px 0;
+      }
+
+      .stat-label {
+        font-size: 1rem;
+        color: var(--gray);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        outline: none;
+        text-decoration: none;
+      }
+
+      .btn-primary {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--secondary);
+        transform: translateY(-2px);
+      }
+
+      .btn-success {
+        background-color: var(--success);
+        color: white;
+      }
+
+      .btn-success:hover {
+        background-color: #3aafd6;
+        transform: translateY(-2px);
+      }
+
+      .btn-danger {
+        background-color: var(--danger);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #d1146a;
+        transform: translateY(-2px);
+      }
+
+      .btn-warning {
+        background-color: var(--warning);
+        color: white;
+      }
+
+      .btn-warning:hover {
+        background-color: #e4850f;
+        transform: translateY(-2px);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn:disabled:hover {
+        transform: none;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--light-gray);
+      }
+
+      th {
+        background-color: var(--light);
+        font-weight: 600;
+      }
+
+      tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .status-sent {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .status-error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .status-preview {
+        background-color: #cce5ff;
+        color: #004085;
+      }
+
+      .upload-area {
+        border: 2px dashed var(--primary);
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 20px;
+        background-color: rgba(67, 97, 238, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .upload-area:hover {
+        background-color: rgba(67, 97, 238, 0.1);
+      }
+
+      .upload-icon {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 15px;
+      }
+
+      .upload-text {
+        margin-bottom: 20px;
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      .file-name {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert-info {
+        background-color: #cce5ff;
+        color: #004085;
+        border: 1px solid #b8daff;
+      }
+
+      .email-preview {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border: 1px solid var(--light-gray);
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 800px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--light-gray);
+      }
+
+      .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray);
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 10px;
+        background-color: var(--light-gray);
+        border-radius: 5px;
+        margin: 20px 0;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background-color: var(--success);
+        border-radius: 5px;
+        transition: width 0.3s ease;
+      }
+
+      .session-list {
+        list-style-type: none;
+        margin: 15px 0;
+      }
+
+      .session-item {
+        background-color: var(--light);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--primary);
+      }
+
+      .session-date {
+        font-weight: 600;
+        color: var(--primary);
+      }
+
+      .session-topic {
+        margin: 5px 0;
+      }
+
+      .session-link {
+        color: var(--info);
+        text-decoration: none;
+      }
+
+      .session-link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 992px) {
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 576px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+      }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+      <div id="alert-area"></div>
+
+      <div class="stats-grid">
+        <div class="card stat-card">
+          <i class="fas fa-chalkboard-teacher fa-2x" style="color: #4361ee"></i>
+          <div class="stat-number" id="professor-count">0</div>
+          <div class="stat-label">Professors</div>
+        </div>
+        <div class="card stat-card">
+          <i class="fas fa-clock fa-2x" style="color: #f8961e"></i>
+          <div class="stat-number" id="session-count">0</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="card stat-card">
+          <i class="fas fa-paper-plane fa-2x" style="color: #4cc9f0"></i>
+          <div class="stat-number" id="email-sent">0</div>
+          <div class="stat-label">Emails Sent</div>
+        </div>
+        <div class="card stat-card">
+          <i class="fas fa-exclamation-circle fa-2x" style="color: #f72585"></i>
+          <div class="stat-number" id="error-count">0</div>
+          <div class="stat-label">Errors</div>
+        </div>
+      </div>
+
+      <div class="dashboard">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Upload Excel File</h2>
+            <i
+              class="fas fa-file-excel"
+              style="color: #1d6f42; font-size: 1.5rem"
+            ></i>
+          </div>
+          <div class="upload-area" id="drop-zone">
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <p class="upload-text">
+              Drag & drop your Excel file here or click to browse
+            </p>
+            <button class="btn btn-primary" id="browse-btn">
+              <i class="fas fa-search"></i> Browse Files
+            </button>
+            <input
+              type="file"
+              id="file-input"
+              class="file-input"
+              accept=".xlsx,.xls"
+            />
+            <p class="file-name" id="file-name">No file selected</p>
+          </div>
+          <div class="action-buttons">
+            <button class="btn btn-primary" id="load-btn" disabled>
+              <i class="fas fa-database"></i> Load Sessions
+            </button>
+            <button class="btn btn-danger" id="reset-btn">
+              <i class="fas fa-trash"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Email Actions</h2>
+            <i
+              class="fas fa-envelope"
+              style="color: #4361ee; font-size: 1.5rem"
+            ></i>
+          </div>
+          <p>
+            Send reminder emails to professors about their upcoming sessions.
+          </p>
+          <div class="action-buttons">
+            <button class="btn btn-success" id="send-btn" disabled>
+              <i class="fas fa-paper-plane"></i> Send Emails
+            </button>
+            <button class="btn btn-warning" id="preview-btn" disabled>
+              <i class="fas fa-eye"></i> Generate Previews
+            </button>
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              id="progress-fill"
+              style="width: 0%"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Professors & Sessions</h2>
+          <i class="fas fa-list" style="color: #4361ee; font-size: 1.5rem"></i>
+        </div>
+        <div id="professor-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Professor</th>
+                <th>Email</th>
+                <th>Sessions</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="professor-table-body">
+              <tr>
+                <td colspan="5" style="text-align: center">
+                  No data available. Please upload an Excel file.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="preview-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Email Preview</h2>
+          <button class="close-modal" id="close-preview">&times;</button>
+        </div>
+        <div id="email-preview-content"></div>
+      </div>
+    </div>
+    <script>
+      function setCurrentDate() {
+        const now = new Date();
+        const options = { day: '2-digit', month: 'long', year: 'numeric' };
+        const formattedDate = now.toLocaleDateString('en-US', options);
+        document.getElementById('current-date').textContent = formattedDate;
+      }
+
+      // Call the function when the page loads
+      setCurrentDate();
+      // DOM Elements
+      const fileInput = document.getElementById("file-input");
+      const browseBtn = document.getElementById("browse-btn");
+      const dropZone = document.getElementById("drop-zone");
+      const fileName = document.getElementById("file-name");
+      const loadBtn = document.getElementById("load-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const sendBtn = document.getElementById("send-btn");
+      const previewBtn = document.getElementById("preview-btn");
+      
+      const professorTableBody = document.getElementById(
+        "professor-table-body"
+      );
+      const alertArea = document.getElementById("alert-area");
+      const progressFill = document.getElementById("progress-fill");
+      const previewModal = document.getElementById("preview-modal");
+      const closePreview = document.getElementById("close-preview");
+      const emailPreviewContent = document.getElementById(
+        "email-preview-content"
+      );
+
+      // Stats elements
+      const professorCountEl = document.getElementById("professor-count");
+      const sessionCountEl = document.getElementById("session-count");
+      const emailSentEl = document.getElementById("email-sent");
+      const errorCountEl = document.getElementById("error-count");
+      
+
+      let selectedFile = null;
+
+      // Event Listeners
+      browseBtn.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", handleFileSelect);
+      loadBtn.addEventListener("click", loadSessions);
+      resetBtn.addEventListener("click", resetData);
+      sendBtn.addEventListener("click", () => sendEmails(false));
+      previewBtn.addEventListener("click", () => sendEmails(true));
+      closePreview.addEventListener(
+        "click",
+        () => (previewModal.style.display = "none")
+      );
+
+      // Drag and drop handlers
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = "rgba(67, 97, 238, 0.15)";
+      });
+
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.backgroundColor = "rgba(67, 97, 238, 0.05)";
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = "rgba(67, 97, 238, 0.05)";
+
+        if (e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          handleFileSelect(e);
+        }
+      });
+
+
+      // File selection handler
+      function handleFileSelect(e) {
+        const file = e.target.files[0] || e.dataTransfer.files[0];
+
+        if (file) {
+          if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
+            selectedFile = file;
+            fileName.textContent = file.name;
+            loadBtn.disabled = false;
+            showAlert(
+              "File selected successfully. Click 'Load Sessions' to process.",
+              "success"
+            );
+          } else {
+            showAlert("Please select an Excel file (.xlsx or .xls).", "error");
+          }
+        }
+      }
+
+      // Load sessions from Excel
+      function loadSessions() {
+        if (!selectedFile) {
+          showAlert("Please select an Excel file first.", "error");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        showAlert("Loading sessions from Excel file...", "info");
+
+        fetch("/reminder/api/upload-excel", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              showAlert(data.message, "success");
+              sendBtn.disabled = false;
+              previewBtn.disabled = false;
+              updateStats();
+              updateProfessorTable();
+            } else {
+              showAlert("Error: " + data.error, "error");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            showAlert("Failed to load sessions: " + error.message, "error");
+          });
+      }
+
+      // Send emails
+      function sendEmails(previewOnly) {
+        fetch("/reminder/api/send-emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ preview: previewOnly }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              const message = previewOnly
+                ? "Generating email previews..."
+                : "Sending emails started. This may take a few minutes.";
+              showAlert(message, "info");
+
+              // Start polling for status updates
+              pollEmailStatus();
+            } else {
+              showAlert("Error: " + data.error, "error");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            showAlert(
+              "Failed to start email sending: " + error.message,
+              "error"
+            );
+          });
+      }
+
+      // Poll email status
+      function pollEmailStatus() {
+        const interval = setInterval(() => {
+          fetch("/reminder/api/email-status")
+            .then((response) => response.json())
+            .then((status) => {
+              updateEmailStatusTable(status);
+              updateStats();
+
+              // Check if all emails are processed
+              const allProcessed = Object.values(status).every(
+                (s) => s.status !== "pending"
+              );
+
+              if (allProcessed) {
+                clearInterval(interval);
+                showAlert("All emails have been processed.", "success");
+              }
+            })
+            .catch((error) => {
+              console.error("Error polling status:", error);
+              clearInterval(interval);
+            });
+        }, 2000);
+      }
+
+      // Reset data
+      function resetData() {
+        fetch("/reminder/api/reset", {
+          method: "POST",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              selectedFile = null;
+              fileInput.value = "";
+              fileName.textContent = "No file selected";
+              loadBtn.disabled = true;
+              sendBtn.disabled = true;
+              previewBtn.disabled = true;
+              professorTableBody.innerHTML = `
+              <tr>
+                <td colspan="5" style="text-align: center">
+                  No data available. Please upload an Excel file.
+                </td>
+              </tr>
+            `;
+              updateStats();
+              showAlert("Data reset successfully.", "success");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            showAlert("Failed to reset data: " + error.message, "error");
+          });
+      }
+
+      // Update professor table
+      function updateProfessorTable() {
+        fetch("/reminder/api/email-status")
+          .then((response) => response.json())
+          .then((status) => {
+            updateEmailStatusTable(status);
+          })
+          .catch((error) => {
+            console.error("Error fetching email status:", error);
+          });
+      }
+
+      function updateEmailStatusTable(status) {
+        fetch("/reminder/api/stats")
+          .then((response) => response.json())
+          .then((stats) => {
+            professorCountEl.textContent = stats.professors;
+            sessionCountEl.textContent = stats.sessions;
+            emailSentEl.textContent = stats.emails_sent;
+            errorCountEl.textContent = stats.errors;
+
+            // Calculate progress
+            const total = stats.professors;
+            const completed = stats.emails_sent + stats.errors;
+            const progress = total > 0 ? (completed / total) * 100 : 0;
+            progressFill.style.width = `${progress}%`;
+          })
+          .catch((error) => {
+            console.error("Error fetching stats:", error);
+          });
+
+        // Update the table with professor data
+        fetch("/reminder/api/upload-excel", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success && data.sessions && data.sessions.length > 0) {
+              let tableHTML = "";
+
+              data.sessions.forEach((professor) => {
+                const emailStatus = status[professor.email] || {
+                  status: "pending",
+                  message: "Not sent yet",
+                };
+
+                const statusClass = `status-${emailStatus.status}`;
+
+                tableHTML += `
+                  <tr>
+                    <td>${professor.professor}</td>
+                    <td>${professor.email}</td>
+                    <td>${professor.sessions.length} session(s)</td>
+                    <td>
+                      <span class="status-badge ${statusClass}">
+                        ${emailStatus.status}
+                      </span>
+                      <br>
+                      <small>${emailStatus.message}</small>
+                    </td>
+                    <td>
+                      <button class="btn btn-primary" onclick="previewEmail('${professor.email}')">
+                        <i class="fas fa-eye"></i> Preview
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              });
+
+              professorTableBody.innerHTML = tableHTML;
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching sessions:", error);
+          });
+      }
+
+      // Preview email
+      function previewEmail(email) {
+        fetch(`/reminder/api/preview-email/${encodeURIComponent(email)}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              emailPreviewContent.innerHTML = data.preview;
+              previewModal.style.display = "flex";
+            } else {
+              showAlert("Error: " + data.error, "error");
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching preview:", error);
+            showAlert(
+              "Failed to load email preview: " + error.message,
+              "error"
+            );
+          });
+      }
+
+      // Update stats
+      function updateStats() {
+        fetch("/reminder/api/stats")
+          .then((response) => response.json())
+          .then((stats) => {
+            professorCountEl.textContent = stats.professors;
+            sessionCountEl.textContent = stats.sessions;
+            emailSentEl.textContent = stats.emails_sent;
+            errorCountEl.textContent = stats.errors;
+
+            // Calculate progress
+            const total = stats.professors;
+            const completed = stats.emails_sent + stats.errors;
+            const progress = total > 0 ? (completed / total) * 100 : 0;
+            progressFill.style.width = `${progress}%`;
+          })
+          .catch((error) => {
+            console.error("Error fetching stats:", error);
+          });
+      }
+
+      // Show alert
+      function showAlert(message, type) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type}`;
+
+        const icon =
+          type === "error"
+            ? "exclamation-circle"
+            : type === "success"
+            ? "check-circle"
+            : "info-circle";
+
+        alertDiv.innerHTML = `
+          <i class="fas fa-${icon}"></i>
+          <span>${message}</span>
+        `;
+
+        alertArea.innerHTML = "";
+        alertArea.appendChild(alertDiv);
+
+        // Auto dismiss after 5 seconds
+        if (type !== "error") {
+          setTimeout(() => {
+            alertDiv.remove();
+          }, 5000);
+        }
+      }
+
+      // Initialize
+      updateStats();
+    </script>
+{% endblock %}
