@@ -29,16 +29,15 @@ A comprehensive web application for managing educational operations, learner dat
 - **Frontend**: HTML, CSS, JavaScript, Tailwind CSS
 - **Document Processing**: python-docx
 - **Date/Time Processing**: python-dateutil
-- **Email Integration**: Windows Outlook (win32com)
+- **Email Integration**: Cross-platform SMTP
 - **Authentication**: Custom session-based auth with bcrypt
-- **Deployment**: Gunicorn (Production), Windows Server
+- **Deployment**: Gunicorn (Production), Render (Cloud Platform)
 
 ## 📋 Prerequisites
 
-- **Windows Operating System** (Required for Outlook integration)
 - Python 3.8 or higher
 - pip (Python package installer)
-- Microsoft Outlook installed and configured
+- Email account with SMTP access (Gmail, Outlook, Yahoo, etc.)
 - Modern web browser
 
 ## 🔧 Installation
@@ -68,9 +67,19 @@ FLASK_ENV=development
 FLASK_DEBUG=True
 DATABASE_URL=sqlite:///GGU DBA ET Learner Journey.db
 SESSION_TIMEOUT_HOURS=24
+
+# SMTP Email Configuration
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+FROM_EMAIL=your-email@gmail.com
 ```
 
-**Note**: No SMTP configuration needed as the application uses Windows Outlook integration.
+**Important SMTP Setup:**
+- **Gmail**: Enable 2FA and generate an App Password (not your regular password)
+- **Outlook**: Use `smtp.live.com`, port 587
+- **Yahoo**: Use `smtp.mail.yahoo.com`, port 587
 
 ### 5. Database Setup
 ```bash
@@ -128,13 +137,19 @@ The application uses SQLite with the following main tables:
 python app.py
 ```
 
-### Production (Windows Server)
-The application is configured for Windows Server deployment with:
+### Production (Render/Cloud)
+The application is configured for cloud deployment with:
 - `gunicorn` - Production WSGI server
-- Windows Outlook integration
+- Cross-platform SMTP email integration
 - Environment variables for configuration
+- `render.yaml` - Deployment configuration
 
-**Important**: This application requires Windows OS due to Outlook integration and cannot be deployed on Linux-based cloud platforms like Render, Heroku, etc.
+**Deploy to Render:**
+1. Connect your GitHub repository to Render
+2. Set environment variables in Render dashboard:
+   - `SMTP_USERNAME` - Your email address
+   - `SMTP_PASSWORD` - Your app password
+   - `FROM_EMAIL` - Your from email address
 
 ### Environment Variables for Production
 ```env

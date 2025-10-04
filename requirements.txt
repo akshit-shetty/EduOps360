@@ -18,8 +18,8 @@ python-dotenv==1.0.0
 # Password Hashing (Security Enhancement)
 bcrypt==4.0.1
 
-# Windows Email Integration (Required for Outlook)
-pywin32==306
+# Cross-platform Email Integration (SMTP)
+# pywin32==306  # Removed for cross-platform compatibility
 
 # Production Server
 gunicorn==20.1.0

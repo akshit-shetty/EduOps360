@@ -1,24 +1,31 @@
-# email_utils.py - Windows Outlook email utilities
+# email_utils.py - Cross-platform SMTP email utilities
 import os
+import smtplib
 import logging
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from dotenv import load_dotenv
 
+load_dotenv()
 logger = logging.getLogger(__name__)
 
-class OutlookEmailSender:
-    """Windows Outlook email sender using win32com"""
+class SMTPEmailSender:
+    """Cross-platform SMTP email sender"""
     
     def __init__(self):
-        try:
-            import win32com.client
-            self.outlook = win32com.client.Dispatch("Outlook.Application")
-        except ImportError:
-            raise ImportError("win32com.client is required for Outlook integration. Install with: pip install pywin32")
-        except Exception as e:
-            raise Exception(f"Failed to initialize Outlook: {str(e)}")
+        self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+        self.smtp_port = int(os.getenv('SMTP_PORT', 587))
+        self.username = os.getenv('SMTP_USERNAME', '')
+        self.password = os.getenv('SMTP_PASSWORD', '')
+        self.from_email = os.getenv('FROM_EMAIL', self.username)
+        
+        if not self.username or not self.password:
+            logger.warning("SMTP credentials not configured. Email functionality will not work.")
         
     def send_email(self, to_email, subject, body, attachments=None, is_html=True):
         """
-        Send email using Outlook
+        Send email using SMTP
         
         Args:
             to_email (str): Recipient email address
@@ -31,28 +38,41 @@ class OutlookEmailSender:
             dict: {'success': bool, 'message': str}
         """
         try:
-            mail = self.outlook.CreateItem(0)  # 0 is the mail item
+            # Create message
+            msg = MIMEMultipart('alternative')
+            msg['From'] = self.from_email
+            msg['To'] = to_email
+            msg['Subject'] = subject
             
-            mail.To = to_email
-            mail.Subject = subject
-            
-            # Set body based on format
+            # Add body
             if is_html:
-                mail.HTMLBody = body
+                msg.attach(MIMEText(body, 'html'))
             else:
-                mail.Body = body
+                msg.attach(MIMEText(body, 'plain'))
             
             # Add attachments if any
             if attachments:
                 for file_path in attachments:
                     if os.path.exists(file_path):
-                        mail.Attachments.Add(file_path)
+                        with open(file_path, 'rb') as attachment:
+                            part = MIMEApplication(attachment.read())
+                            part.add_header(
+                                'Content-Disposition',
+                                f'attachment; filename= {os.path.basename(file_path)}'
+                            )
+                            msg.attach(part)
                     else:
                         logger.warning(f"Attachment file not found: {file_path}")
             
-            mail.Send()
+            # Send email
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            server.starttls()  # Enable encryption
+            server.login(self.username, self.password)
+            server.send_message(msg)
+            server.quit()
+            
             logger.info(f"Email sent successfully to {to_email}")
-            return {'success': True, 'message': 'Email sent successfully via Outlook'}
+            return {'success': True, 'message': 'Email sent successfully via SMTP'}
             
         except Exception as e:
             error_msg = f"Failed to send email to {to_email}: {str(e)}"
@@ -112,10 +132,10 @@ class OutlookEmailSender:
         
         return results
 
-# Main function for sending emails via Outlook
-def send_outlook_email(to_email, subject, body, attachments=None):
+# Main function for sending emails via SMTP
+def send_smtp_email(to_email, subject, body, attachments=None):
     """
-    Send email using Outlook (Windows only)
+    Send email using SMTP (cross-platform)
     
     Args:
         to_email (str): Recipient email address
@@ -126,37 +146,13 @@ def send_outlook_email(to_email, subject, body, attachments=None):
     Returns:
         dict: {'success': bool, 'message': str}
     """
-    try:
-        import win32com.client
-        
-        outlook = win32com.client.Dispatch("Outlook.Application")
-        mail = outlook.CreateItem(0)  # 0 is the mail item
-        
-        mail.To = to_email
-        mail.Subject = subject
-        mail.HTMLBody = body
-        
-        # Add attachments if any
-        if attachments:
-            for file_path in attachments:
-                if os.path.exists(file_path):
-                    mail.Attachments.Add(file_path)
-                else:
-                    logger.warning(f"Attachment file not found: {file_path}")
-        
-        mail.Send()
-        logger.info(f"Email sent successfully to {to_email}")
-        return {'success': True, 'message': 'Email sent via Outlook'}
-        
-    except ImportError:
-        error_msg = "win32com.client is required for Outlook integration. Install with: pip install pywin32"
-        logger.error(error_msg)
-        return {'success': False, 'message': error_msg}
-        
-    except Exception as e:
-        error_msg = f"Failed to send email via Outlook: {str(e)}"
-        logger.error(error_msg)
-        return {'success': False, 'message': error_msg}
+    sender = SMTPEmailSender()
+    return sender.send_email(to_email, subject, body, attachments, is_html=True)
 
 # Global instance for easy use
-email_sender = OutlookEmailSender()
+email_sender = SMTPEmailSender()
+
+# Backward compatibility function names
+def send_outlook_email(to_email, subject, body, attachments=None):
+    """Backward compatibility - now uses SMTP"""
+    return send_smtp_email(to_email, subject, body, attachments)

@@ -1,7 +1,6 @@
 import csv
 import sys
 from dateutil.parser import parse
-import win32com.client
 import time
 from flask import (
     Flask,
@@ -33,6 +32,7 @@ import threading
 import logging
 import queue
 import traceback
+from email_utils import SMTPEmailSender, send_smtp_email
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -295,51 +295,32 @@ def generate_documents():
                             clean_email = email.strip().lower()
                             if clean_email in email_to_documents:
                                 email_to_documents[clean_email].append(docx_filename)
-
         # Update progress after DOCX generation
         generation_progress[task_id]["processed"] = len(records)
         generation_progress[task_id]["current_file"] = "Converting to PDF..."
 
-        # Step 2: Convert DOCX → PDF in batch
+        # Step 2: PDF conversion note
+        # Note: PDF conversion requires additional libraries like python-docx2pdf or docx2pdf
+        # For now, we'll skip PDF conversion to maintain cross-platform compatibility
+        # Users can download DOCX files and convert them manually if needed
+        
+        print("PDF conversion skipped - DOCX files available for download")
+        # If you need PDF conversion, consider using: pip install docx2pdf
+        # and uncomment the following code:
+        
         try:
-            import pythoncom
-            
-            # Initialize COM only once
-            pythoncom.CoInitialize()
-            
-            word = win32com.client.Dispatch("Word.Application")
-            word.Visible = False
-            
-            for i, docx_path in enumerate(generated_docx_files):
-                generation_progress[task_id]["processed"] = len(records) + i + 1
-                generation_progress[task_id][
-                    "current_file"
-                ] = f"Converting to PDF {i+1} of {len(generated_docx_files)}"
-                
-                pdf_path = os.path.join(
-                    pdf_dir, os.path.basename(docx_path).replace(".docx", ".pdf")
-                )
-                
+            from docx2pdf import convert
+            for docx_path in generated_docx_files:
                 try:
-                    doc = word.Documents.Open(docx_path)
-                    doc.SaveAs(pdf_path, FileFormat=17)
-                    doc.Close()
+                    pdf_path = docx_path.replace('.docx', '.pdf')
+                    convert(docx_path, pdf_path)
+                    generated_pdf_files.append(pdf_path)
+                    print(f"Converted to PDF: {pdf_path}")
                 except Exception as e:
                     print(f"Error converting {docx_path} to PDF: {str(e)}")
                     continue
-            
-            word.Quit()
-            
-        except Exception as e:
-            generation_progress[task_id]["status"] = "error"
-            generation_progress[task_id]["error"] = f"PDF conversion failed: {str(e)}"
-            return jsonify({"error": str(e)}), 500
-        finally:
-            # Always uninitialize COM
-            try:
-                pythoncom.CoUninitialize()
-            except:
-                pass
+        except ImportError:
+            print("docx2pdf not installed - PDF conversion skipped")
 
         # Also create PDF filename mapping
         for email, doc_filenames in email_to_documents.items():
@@ -397,31 +378,16 @@ def generate_documents():
 # Other routes remain the same until email sending...
 
 
-def ensure_outlook_initialized():
-    """Ensure Outlook is properly initialized before sending emails"""
+def ensure_smtp_configured():
+    """Ensure SMTP is properly configured"""
     try:
-        import pythoncom
-
-        pythoncom.CoInitialize()
-
-        # Try to get the Outlook application instance
-        try:
-            outlook = win32com.client.GetActiveObject("Outlook.Application")
-        except:
-            # If not running, create a new instance
-            outlook = win32com.client.Dispatch("Outlook.Application")
-
-        # Force initialization by accessing a property
-        _ = outlook.Version
-
-        pythoncom.CoUninitialize()
+        email_sender = SMTPEmailSender()
+        if not email_sender.username or not email_sender.password:
+            print("SMTP credentials not configured")
+            return False
         return True
     except Exception as e:
-        try:
-            pythoncom.CoUninitialize()
-        except:
-            pass
-        print(f"Outlook initialization failed: {str(e)}")
+        print(f"SMTP configuration failed: {str(e)}")
         return False
 
 
@@ -474,7 +440,7 @@ def clean_email_address(email):
     
     return email
 
-def send_email_via_outlook(to_email, subject, body, attachment_paths=None, account=None, record=None, save_as_draft=False):
+def send_email_via_smtp(to_email, subject, body, attachment_paths=None, account=None, record=None, save_as_draft=False):
     """Send email via Outlook or save as draft if specified"""
     max_retries = 3
     base_delay = 2  # seconds
@@ -580,10 +546,12 @@ def send_email_via_outlook(to_email, subject, body, attachment_paths=None, accou
     
     return False
 
-@document_bp.route("/api/send-emails", methods=["POST"])
-def send_emails():
-    try:
-        data = request.json
+def send_email_via_smtp_simple(to_email, subject, body, attachment_paths=None, record=None):
+    """Simple SMTP email sending function"""
+    # Clean and validate email first
+    clean_to_email = clean_email_address(to_email)
+    if not is_valid_email(clean_to_email):
+        print(f"Invalid email format: {to_email} -> {clean_to_email}")
         document_task_id = data.get("task_id")
         email_subject = data.get("subject")
         email_body = data.get("body")

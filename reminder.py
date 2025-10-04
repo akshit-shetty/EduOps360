@@ -1,7 +1,6 @@
-# app.py
+# reminder.py
 from flask import Flask, jsonify, request, send_file,render_template, Blueprint
 from flask_cors import CORS
-import win32com.client as win32
 import pandas as pd
 from datetime import datetime, timedelta
 import re
@@ -12,8 +11,8 @@ import urllib.parse
 import json
 import threading
 from functools import wraps
-import pythoncom
 import tempfile
+from email_utils import SMTPEmailSender, send_smtp_email
 
 
 reminders_bp = Blueprint("reminder", __name__)
@@ -168,23 +167,13 @@ def load_sessions_from_excel(file_path):
 def send_emails(preview_only=False):
     global email_status, sessions_data
     
-    pythoncom.CoInitialize()  # Initialize COM for this thread
-    
     try:
-        outlook = win32.Dispatch("Outlook.Application")
-        namespace = outlook.GetNamespace("MAPI")
+        # Initialize SMTP email sender
+        email_sender = SMTPEmailSender()
         
-        from_address = "ggugenai.operations@upgrad.com"
-        
-        # Find the correct account
-        account = None
-        for acc in namespace.Accounts:
-            if acc.SmtpAddress.lower() == from_address.lower():
-                account = acc
-                break
-        
-        if not account:
-            raise Exception(f"Account {from_address} not found in Outlook profiles")
+        # Check if SMTP is configured
+        if not email_sender.username or not email_sender.password:
+            raise Exception("SMTP credentials not configured. Please check your .env file.")
         
         # Create preview folder if needed
         preview_folder = "Email_Previews"
@@ -243,18 +232,23 @@ def send_emails(preview_only=False):
             <p>Best regards,<br>Operations Team</p>
             """
             
-            # Create mail
-            mail = outlook.CreateItem(0)
-            mail.To = email
-            mail.CC = "akshit1.shetty@upgrad.com"
-            mail.Subject = subject
-            mail.HTMLBody = body
-            mail._oleobj_.Invoke(*(64209, 0, 8, 0, account))  # Force sending from this account
-            
             if preview_only:
-                # Save as draft file (.msg) instead of sending
-                preview_path = os.path.join(preview_folder, f"{prof_name}_{email}.msg".replace(" ", "_"))
-                mail.SaveAs(preview_path)
+                # Save preview as HTML file instead of .msg
+                preview_path = os.path.join(preview_folder, f"{prof_name}_{email}.html".replace(" ", "_"))
+                with open(preview_path, 'w', encoding='utf-8') as f:
+                    f.write(f"""
+                    <html>
+                    <head><title>{subject}</title></head>
+                    <body>
+                    <h3>Email Preview</h3>
+                    <p><strong>To:</strong> {email}</p>
+                    <p><strong>CC:</strong> akshit1.shetty@upgrad.com</p>
+                    <p><strong>Subject:</strong> {subject}</p>
+                    <hr>
+                    {body}
+                    </body>
+                    </html>
+                    """)
                 email_status[email] = {
                     "professor": prof_name,
                     "status": "preview",
@@ -262,12 +256,26 @@ def send_emails(preview_only=False):
                 }
             else:
                 try:
-                    mail.Send()
-                    email_status[email] = {
-                        "professor": prof_name,
-                        "status": "sent",
-                        "message": "Email sent successfully"
-                    }
+                    # Send email using SMTP
+                    result = email_sender.send_email(
+                        to_email=email,
+                        subject=subject,
+                        body=body,
+                        is_html=True
+                    )
+                    
+                    if result['success']:
+                        email_status[email] = {
+                            "professor": prof_name,
+                            "status": "sent",
+                            "message": "Email sent successfully via SMTP"
+                        }
+                    else:
+                        email_status[email] = {
+                            "professor": prof_name,
+                            "status": "error",
+                            "message": f"Failed to send email: {result['message']}"
+                        }
                 except Exception as e:
                     email_status[email] = {
                         "professor": prof_name,
@@ -277,8 +285,15 @@ def send_emails(preview_only=False):
     
     except Exception as e:
         print(f"Error in email sending: {e}")
-    finally:
-        pythoncom.CoUninitialize()  # Uninitialize COM
+        # Update all remaining emails as failed
+        for professor in sessions_data:
+            email = professor["email"]
+            if email not in email_status:
+                email_status[email] = {
+                    "professor": professor["professor"],
+                    "status": "error",
+                    "message": f"Email sending failed: {str(e)}"
+                }
 
 # ==============================
 # Flask Routes
