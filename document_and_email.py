@@ -552,6 +552,47 @@ def send_email_via_smtp_simple(to_email, subject, body, attachment_paths=None, r
     clean_to_email = clean_email_address(to_email)
     if not is_valid_email(clean_to_email):
         print(f"Invalid email format: {to_email} -> {clean_to_email}")
+        return False
+
+    try:
+        # Clean and prepare subject and body
+        clean_subject = str(subject or "")
+        clean_body = str(body or "")
+
+        # Replace placeholders if record is provided
+        if record:
+            for key, value in record.items():
+                placeholder = "{" + key + "}"
+                safe_value = str(value or "")
+                clean_subject = clean_subject.replace(placeholder, safe_value)
+                clean_body = clean_body.replace(placeholder, safe_value)
+
+        # Send email using SMTP
+        result = send_smtp_email(
+            to_email=clean_to_email,
+            subject=clean_subject,
+            body=clean_body,
+            attachments=attachment_paths
+        )
+
+        if result['success']:
+            print(f"Email sent to: {clean_to_email}")
+            return True
+        else:
+            print(f"Failed to send email to {clean_to_email}: {result['message']}")
+            return False
+
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Failed to send email to {clean_to_email}: {error_msg}")
+        return False
+
+
+@document_bp.route("/api/send-emails", methods=["POST"])
+def send_emails():
+    """Send emails with generated documents"""
+    try:
+        data = request.get_json()
         document_task_id = data.get("task_id")
         email_subject = data.get("subject")
         email_body = data.get("body")
