@@ -28,8 +28,8 @@ MANIFEST
 .env.test.local
 .env.production.local
 
-# Database
-*.db
+# Database (excluding main application database)
+# *.db (commented out to include main database)
 *.sqlite
 *.sqlite3
 
