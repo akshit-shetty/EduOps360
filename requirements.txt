@@ -1,34 +1,32 @@
 # Core Flask Framework
-Flask==2.3.3
+Flask==3.0.0
 Flask-CORS==4.0.0
+Werkzeug==3.0.1
 
-# Data Processing
-pandas==2.1.4
-openpyxl==3.1.2
+# Data Processing - Using latest stable versions with pre-built wheels
+pandas==2.2.3
+numpy==1.26.4
+openpyxl==3.1.5
 
 # Document Processing
-python-docx==0.8.11
+python-docx==1.1.2
+lxml==5.3.0
 
 # Date/Time Processing
-python-dateutil==2.8.2
+python-dateutil==2.9.0
 
 # Environment Configuration
-python-dotenv==1.0.0
+python-dotenv==1.0.1
 
-# Password Hashing (Security Enhancement)
-bcrypt==4.0.1
-
-# Cross-platform Email Integration (SMTP)
-# pywin32==306  # Removed for cross-platform compatibility
+# Security & Authentication
+bcrypt==4.2.0
 
 # Production Server
-gunicorn==20.1.0
+gunicorn==22.0.0
 
-# Note: The following packages were removed as they are not used in the codebase:
-# - transformers (AI/ML library - not used)
-# - torch (Deep learning - not used) 
-# - google-genai (Google AI - not used)
-# - openai (OpenAI API - not used)
+# Additional dependencies for stability
+setuptools==75.1.0
+wheel==0.44.0
 # - XlsxWriter (Excel writing - not used)
 # - SQLAlchemy (ORM - not used, using raw SQLite)
 # - flask_sqlalchemy (Flask ORM - not used)

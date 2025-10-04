@@ -2,8 +2,9 @@ services:
   - type: web
     name: eduops360
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
+    runtime: python
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120"
     plan: free
     envVars:
       - key: FLASK_SECRET_KEY
