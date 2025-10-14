@@ -87,9 +87,6 @@ class SMTPEmailSender:
             dict: {'success': bool, 'message': str}
         """
         try:
-            print(f"🔍 DEBUG: Attempting to send email to {to_email} via {self.smtp_server}:{self.smtp_port}")
-            print(f"🔍 DEBUG: Using account: {self.sender_name} <{self.smtp_username}>")
-            
             # Create message with anti-spam headers
             msg = MIMEMultipart('alternative')
             
@@ -126,17 +123,12 @@ class SMTPEmailSender:
                         logger.warning(f"Attachment file not found: {file_path}")
             
             # Send email with timeout
-            print(f"🔍 DEBUG: Connecting to SMTP server...")
             server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=15)
-            print(f"🔍 DEBUG: Starting TLS...")
             server.starttls()  # Enable encryption
-            print(f"🔍 DEBUG: Logging in...")
             server.login(self.smtp_username, self.smtp_password)
-            print(f"🔍 DEBUG: Sending message...")
             server.send_message(msg)
             server.quit()
             
-            print(f"✅ DEBUG: Email sent successfully to {to_email}")
             logger.info(f"Email sent successfully to {to_email}")
             return {'success': True, 'message': 'Email sent successfully via SMTP'}
             

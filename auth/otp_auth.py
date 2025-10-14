@@ -164,13 +164,10 @@ class OTPAuthenticator:
                 
                 def send_email_async():
                     try:
-                        print(f"🔍 DEBUG: Starting email send to {email} with account {account_key}")
                         result = self.send_otp_email(email, otp_code, user_name, account_key)
                         email_result['success'] = result
                         email_result['message'] = 'Email sent' if result else 'Email failed'
-                        print(f"🔍 DEBUG: Email send result: {result}")
                     except Exception as e:
-                        print(f"❌ DEBUG: Email send exception: {e}")
                         email_result['success'] = False
                         email_result['message'] = f'Email error: {e}'
                 
@@ -185,11 +182,15 @@ class OTPAuthenticator:
                 if email_thread.is_alive():
                     # Email is still sending, but return success since OTP is stored
                     logger.warning(f"Email sending taking longer than expected for {email}")
-                    return True, "OTP generated successfully. Email is being sent in background."
+                    # For testing - log OTP to file
+                    self.send_simple_otp(email, otp_code, user_name)
+                    return True, f"OTP generated successfully. Email is being sent in background. [TEST: OTP is {otp_code}]"
                 elif email_result['success']:
                     return True, "OTP sent successfully"
                 else:
-                    return True, "OTP generated successfully. Email delivery may be delayed."
+                    # For testing - log OTP to file and show in message
+                    self.send_simple_otp(email, otp_code, user_name)
+                    return True, f"OTP generated successfully. Email delivery may be delayed. [TEST: OTP is {otp_code}]"
                     
             except Exception as e:
                 logger.error(f"Error in async email sending: {e}")
