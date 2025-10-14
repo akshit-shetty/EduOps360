@@ -1,568 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduOps360</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>{% block title %}EduOps360 - Educational Operations Management{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-light: #4895ef;
-            --primary-gradient: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
-            --secondary: #7209b7;
-            --accent: #f72585;
-            --success: #4cc9f0;
-            --warning: #f9c74f;
-            --danger: #f94144;
-            --dark: #2b2d42;
-            --light: #f8f9fa;
-            --gray-100: #f1f3f9;
-            --gray-200: #e9ecef;
-            --gray-300: #dee2e6;
-            --gray-400: #ced4da;
-            --gray-500: #adb5bd;
-            --gray-600: #6c757d;
-            --gray-700: #495057;
-            --gray-800: #343a40;
-            --gray-900: #212529;
-            --border-radius: 16px;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 6px 10px rgba(0, 0, 0, 0.05);
-            --card-shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12), 0 8px 15px rgba(0, 0, 0, 0.08);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            font-size: 0.875rem;
-        }
-
-        .user-email {
-            font-weight: 500;
-            color: var(--gray-700);
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            color: var(--gray-500);
-        }
-
-        .logout-btn {
-            color: var(--gray-600);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        .logout-btn:hover {
-            color: var(--danger);
-            background: rgba(249, 65, 68, 0.1);
-        }
-
-        .dark-mode {
-            --primary-gradient: linear-gradient(135deg, #4895ef 0%, #3a0ca3 100%);
-            --light: #121826;
-            --gray-100: #1a243a;
-            --gray-200: #243043;
-            --gray-300: #2d3b52;
-            --gray-400: #3c4861;
-            --gray-500: #5a6782;
-            --gray-600: #7e8ba6;
-            --gray-700: #a3adc5;
-            --gray-800: #c9d0de;
-            --gray-900: #e2e7f2;
-            --dark: #f8f9fa;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), 0 6px 10px rgba(0, 0, 0, 0.22);
-            --card-shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.25);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
         }
-
+        
         body {
-            background-color: var(--light);
-            color: var(--gray-800);
-            overflow-x: hidden;
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             min-height: 100vh;
         }
-
-        /* Enhanced dark mode styles for all elements */
-        .dark-mode body {
-            background-color: var(--light);
-            color: var(--gray-800);
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-
-        .dark-mode .bg-white {
-            background-color: var(--gray-100) !important;
-            color: var(--gray-800) !important;
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
         }
-
-        .dark-mode .text-gray-800 {
-            color: var(--gray-900) !important;
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 10px;
         }
-
-        .dark-mode .text-gray-700 {
-            color: var(--gray-800) !important;
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
         }
-
-        .dark-mode .text-gray-600 {
-            color: var(--gray-700) !important;
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-
-        .dark-mode .text-gray-500 {
-            color: var(--gray-600) !important;
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-
-        .dark-mode .bg-gray-50 {
-            background-color: var(--gray-200) !important;
-            color: var(--gray-800) !important;
-        }
-
-        .dark-mode .border-gray-200 {
-            border-color: var(--gray-300) !important;
-        }
-
-        .dark-mode .border-gray-100 {
-            border-color: var(--gray-200) !important;
-        }
-
-        /* Enhanced background colors for cards and containers */
-        .dark-mode .bg-blue-50 {
-            background-color: rgba(59, 130, 246, 0.15) !important;
-            color: var(--gray-800) !important;
-        }
-
-        .dark-mode .bg-green-50 {
-            background-color: rgba(34, 197, 94, 0.15) !important;
-            color: var(--gray-800) !important;
-        }
-
-        .dark-mode .bg-purple-50 {
-            background-color: rgba(168, 85, 247, 0.15) !important;
-            color: var(--gray-800) !important;
-        }
-
-        .dark-mode .bg-orange-50 {
-            background-color: rgba(249, 115, 22, 0.15) !important;
-            color: var(--gray-800) !important;
-        }
-
-        .dark-mode .bg-indigo-50 {
-            background-color: rgba(99, 102, 241, 0.15) !important;
-            color: var(--gray-800) !important;
-        }
-
-        .dark-mode .bg-gradient-to-br {
-            opacity: 0.9;
-        }
-
-        /* Ensure text colors are visible */
-        .dark-mode .text-blue-700,
-        .dark-mode .text-green-700,
-        .dark-mode .text-purple-700,
-        .dark-mode .text-orange-700,
-        .dark-mode .text-indigo-700,
-        .dark-mode .text-blue-800,
-        .dark-mode .text-green-800,
-        .dark-mode .text-purple-800,
-        .dark-mode .text-orange-800,
-        .dark-mode .text-indigo-800 {
-            color: var(--gray-900) !important;
-        }
-
-        /* Table styles for dark mode */
-        .dark-mode table {
-            color: var(--gray-800) !important;
-        }
-
-        .dark-mode thead {
-            background-color: var(--gray-200) !important;
-        }
-
-        .dark-mode tbody tr {
-            border-color: var(--gray-300) !important;
-        }
-
-        .dark-mode tbody tr:hover {
-            background-color: var(--gray-200) !important;
-        }
-
-        /* Header Styles */
-        .header {
-            background: var(--light);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .dark-mode .header {
-            background: var(--light);
-            border-bottom-color: var(--gray-300);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .logo {
-            width: 40px;
-            height: 40px;
-            background: var(--primary-gradient);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .app-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .dark-mode .app-name {
-            color: var(--dark);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: var(--gray-700);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: var(--transition);
+        
+        /* Button hover effects */
+        .btn-hover {
+            transition: all 0.3s ease;
             position: relative;
+            overflow: hidden;
         }
-
-        .dark-mode .nav-link {
-            color: var(--gray-700);
+        
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
         }
-
-        .nav-link:hover {
-            color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
-        }
-
-        .dark-mode .nav-link:hover {
-            color: var(--primary-light);
-            background: rgba(67, 97, 238, 0.2);
-        }
-
-        .nav-link.active {
-            color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
-        }
-
-        .dark-mode .nav-link.active {
-            color: var(--primary-light);
-            background: rgba(67, 97, 238, 0.2);
-        }
-
-        .nav-link.active::after {
+        
+        .btn-hover::before {
             content: '';
             position: absolute;
-            bottom: -2px;
-            left: 1rem;
-            right: 1rem;
-            height: 2px;
-            background: var(--primary-gradient);
-            border-radius: 1px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .theme-toggle span {
-            font-size: 0.875rem;
-            color: var(--gray-600);
-        }
-
-        .dark-mode .theme-toggle span {
-            color: var(--gray-600);
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
             top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-hover:hover::before {
+            left: 100%;
+        }
+        
+        /* Card hover effects */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation active state */
+        .nav-active {
+            position: relative;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+        
+        .nav-active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background-color: var(--gray-400);
-            transition: .4s;
-            border-radius: 34px;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            border-radius: 3px 3px 0 0;
         }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+        
+        /* Animated background */
+        .animated-bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
         }
-
-        input:checked+.slider {
-            background: var(--primary-gradient);
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-
-        input:checked+.slider:before {
-            transform: translateX(26px);
+        
+        /* Floating animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
-
-        /* Main Content Styles */
-        .main-content {
-            flex: 1;
-            padding: 2rem;
-            transition: var(--transition);
-            background-color: var(--light);
-        }
-
-        .dark-mode .main-content {
-            background-color: var(--light);
-        }
-
-        /* Footer Styles */
-        .footer {
-            background: var(--light);
-            border-top: 1px solid var(--gray-200);
-            padding: 1.5rem 2rem;
-            text-align: center;
-            color: var(--gray-600);
-            font-size: 0.875rem;
-        }
-
-        .dark-mode .footer {
-            background: var(--light);
-            border-top-color: var(--gray-300);
-            color: var(--gray-600);
-        }
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-                padding: 1rem;
-            }
-
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .nav-links {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .header-actions {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .theme-toggle {
-                order: 2;
-            }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
         }
     </style>
+    
+    {% block extra_styles %}{% endblock %}
 </head>
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo-container">
-            <div class="logo">360</div>
-            <div class="app-name">EduOps360</div>
-        </div>
-
-        <!-- Add this to the nav-links section in base.html -->
-        <nav class="nav-links">
-            <a href="{{ url_for('dashboard') }}"
-                class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </a>
-            <a href="{{ url_for('learners') }}"
-                class="nav-link {% if request.path == url_for('learners') %}active{% endif %}">
-                <i class="fas fa-users"></i> Learners
-            </a>
-            <a href="{{ url_for('automation_tools') }}"
-                class="nav-link {% if request.path == url_for('automation_tools') %}active{% endif %}">
-                <i class="fas fa-cogs"></i> Automation Tools
-            </a>
-            {% if session.get('role') == 'admin' %}
-            <a href="{{ url_for('admin_users') }}"
-                class="nav-link {% if request.path == url_for('admin_users') %}active{% endif %}">
-                <i class="fas fa-user-plus"></i> Admin
-            </a>
-            {% endif %}
-        </nav>
-
-        <div class="header-actions">
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-            <div class="theme-toggle">
-                <span>Dark Mode</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="themeToggle">
-                    <span class="slider"></span>
-                </label>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <!-- Navigation Header -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text">EduOps360</span>
+                </div>
+                
+                <!-- Main Navigation -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="{{ url_for('dashboard') }}" 
+                       class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 {% if request.endpoint == 'dashboard' %}nav-active text-blue-600 font-semibold{% endif %}">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('learners') }}" 
+                       class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 {% if request.endpoint == 'learners' %}nav-active text-blue-600 font-semibold{% endif %}">
+                        <i class="fas fa-users mr-2"></i>Learners
+                    </a>
+                    <a href="{{ url_for('automation_tools') }}" 
+                       class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 {% if request.endpoint == 'automation_tools' %}nav-active text-blue-600 font-semibold{% endif %}">
+                        <i class="fas fa-robot mr-2"></i>Automation
+                    </a>
+                    {% if session.get('role') == 'admin' %}
+                    <a href="{{ url_for('admin_users') }}" 
+                       class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 {% if request.endpoint == 'admin_users' %}nav-active text-blue-600 font-semibold{% endif %}">
+                        <i class="fas fa-user-shield mr-2"></i>Admin Panel
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Logout Button -->
+                    <a href="{{ url_for('logout') }}" 
+                       class="btn-hover bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden text-gray-700 hover:text-blue-600" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
             </div>
         </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-200">
+            <div class="px-4 py-3 space-y-1">
+                <a href="{{ url_for('dashboard') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                </a>
+                <a href="{{ url_for('learners') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                    <i class="fas fa-users mr-2"></i>Learners
+                </a>
+                <a href="{{ url_for('automation_tools') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                    <i class="fas fa-robot mr-2"></i>Automation
+                </a>
+                {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin_users') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                    <i class="fas fa-user-shield mr-2"></i>Admin Panel
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% block content %}{% endblock %}
     </main>
-
+    
     <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2025 EduOps360. All rights reserved.</p>
+    <footer class="mt-auto glass border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <p class="text-gray-600 text-sm">© 2025 EduOps360. All rights reserved.</p>
+                    <p class="text-gray-500 text-xs mt-1">Educational Operations Management Platform</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                        <i class="fab fa-linkedin text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                        <i class="fab fa-github text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </footer>
-
-    <script>
-        // Enhanced Dark mode toggle
-        const themeToggle = document.getElementById('themeToggle');
-
-        function applyDarkMode(isDark) {
-            if (isDark) {
-                document.body.classList.add('dark-mode');
-                themeToggle.checked = true;
-            } else {
-                document.body.classList.remove('dark-mode');
-                themeToggle.checked = false;
-            }
-        }
-
-        themeToggle.addEventListener('change', function () {
-            const isDarkMode = this.checked;
-            applyDarkMode(isDarkMode);
-            localStorage.setItem('darkMode', isDarkMode);
-        });
-
-        // Check for saved dark mode preference
-        document.addEventListener('DOMContentLoaded', function () {
-            const savedDarkMode = localStorage.getItem('darkMode');
-            const isDarkMode = savedDarkMode === 'true';
-            applyDarkMode(isDarkMode);
-
-            // Add a small delay to ensure all elements are loaded
-            setTimeout(() => {
-                applyDarkMode(isDarkMode);
-            }, 100);
-        });
-
-        // Chatbot button functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            const navChatButton = document.getElementById('nav-chat-button');
-            const chatWidget = document.getElementById('chat-widget');
-            const chatFloatButton = document.getElementById('chat-float-button');
-
-            // Ensure chat button is visible on page load
-            if (chatFloatButton) {
-                chatFloatButton.style.display = 'flex';
-            }
-            if (chatWidget) {
-                chatWidget.style.display = 'none';
-            }
-
-            // Nav chat button functionality
-            if (navChatButton && chatWidget && chatFloatButton) {
-                navChatButton.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    chatWidget.style.display = 'flex';
-                    chatFloatButton.style.display = 'none';
-                });
-            }
-
-            // Floating chat button functionality
-            if (chatFloatButton && chatWidget) {
-                chatFloatButton.addEventListener('click', function () {
-                    chatWidget.style.display = 'flex';
-                    chatFloatButton.style.display = 'none';
-                });
-            }
-
-            // Close chat functionality
-            const closeChat = document.getElementById('close-chat');
-            if (closeChat && chatWidget && chatFloatButton) {
-                closeChat.addEventListener('click', function () {
-                    chatWidget.style.display = 'none';
-                    chatFloatButton.style.display = 'flex';
-                });
-            }
-        });
-    </script>
-
-    {% block scripts %}{% endblock %}
-
+    
     <!-- Include Chat Widget -->
     {% include 'chat_widget.html' %}
+    
+    <!-- Base Scripts -->
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+        
+    </script>
+    
+    {% block scripts %}{% endblock %}
 </body>
-
 </html>

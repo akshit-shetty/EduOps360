@@ -475,8 +475,8 @@
             <p>Send generated documents via Outlook</p>
           </div>
         </div>
-        <a href="/" class="btn btn-outline">
-          <i class="fas fa-arrow-left"></i> Back to Generator
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
       </header>
 
@@ -511,8 +511,27 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="outlook-account">Select Outlook Account</label>
+          <label for="smtp-account">
+            <i class="fas fa-server mr-2"></i>SMTP Email Account
+          </label>
+          <select id="smtp-account" required>
+            {% for account in email_accounts %}
+              <option value="{{ account.key }}" selected>
+                {{ account.name }} ({{ account.email }})
+              </option>
+            {% endfor %}
+          </select>
+          <small class="text-muted">
+            <i class="fas fa-info-circle mr-1"></i>Choose which SMTP account will send the emails
+          </small>
+        </div>
+        
+        <div class="form-group">
+          <label for="outlook-account">Select Outlook Account (Legacy)</label>
           <select id="outlook-account"></select>
+          <small class="text-muted">
+            <i class="fas fa-exclamation-triangle mr-1"></i>Legacy Outlook integration - Use SMTP account above instead
+          </small>
         </div>
         <!-- Add this after the format options section -->
         <div class="form-group">
@@ -774,7 +793,7 @@
 
         if (!state.taskId) {
           alert("No task ID provided. Please generate documents first.");
-          window.location.href = "/";
+          window.location.href = "{{ url_for('dashboard') }}";
           return;
         }
 
@@ -1027,11 +1046,15 @@
         }
 
         const format = formatPdf.checked ? "pdf" : "word";
-        const account = document.getElementById("outlook-account").value;
+        const smtpAccount = document.getElementById("smtp-account").value;
+        const outlookAccount = document.getElementById("outlook-account").value;
         const saveDrafts = document.getElementById("save-drafts").checked;
 
-        if (!account) {
-          alert("Please select an Outlook account");
+        // Prefer SMTP account over Outlook account
+        const selectedAccount = smtpAccount || outlookAccount;
+        
+        if (!selectedAccount) {
+          alert("Please select an email account (SMTP recommended)");
           return;
         }
 
@@ -1050,8 +1073,9 @@
               subject: emailSubject.value,
               body: emailBody.innerHTML,
               format: format,
-              account: account,
-              save_drafts: saveDrafts, // Add this line
+              account: selectedAccount,
+              smtp_account: smtpAccount, // Add SMTP account specifically
+              save_drafts: saveDrafts,
             }),
           });
 

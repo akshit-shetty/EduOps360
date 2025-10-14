@@ -1,0 +1,761 @@
+{% extends "base.html" %}
+
+{% block title %}Coursework Management - EduOps360{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                    <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        Coursework Management
+                    </span>
+                </h1>
+                <p class="text-gray-600">Track coursework progress and live session attendance across all DBA courses</p>
+                {% if last_updated %}
+                <p class="text-sm text-gray-500 mt-1">
+                    <i class="fas fa-clock mr-1"></i>Last updated: {{ last_updated.strftime('%B %d, %Y at %I:%M %p') }}
+                </p>
+                {% endif %}
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="flex space-x-3">
+                <button onclick="openAttendanceModal()"
+                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-user-check mr-2"></i>Attendance
+                </button>
+                <button onclick="openRatingsModal()"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-star mr-2"></i>Ratings
+                </button>
+                <a href="{{ url_for('dissertation') }}"
+                    class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-graduation-cap mr-2"></i>Dissertation
+                </a>
+                <a href="{{ url_for('dashboard') }}"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coursework Overview Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Learners -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-user-graduate text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                    Learners
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.total_learners|default(0) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">Total Learners</p>
+        </div>
+
+        <!-- Completion Rate -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-check-circle text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                    Progress
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.avg_completion_rate|default(0) }}%</h3>
+            <p class="text-sm text-gray-600 mt-1">Completion Rate</p>
+        </div>
+
+        <!-- Attendance Percentage -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">
+                    Attendance
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.avg_attendance_rate|default(0) }}%</h3>
+            <p class="text-sm text-gray-600 mt-1">Attendance Rate</p>
+        </div>
+
+        <!-- Average Ratings -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-star text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
+                    Rating
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.avg_course_rating|default(0) }}/5</h3>
+            <p class="text-sm text-gray-600 mt-1">Average Rating</p>
+        </div>
+    </div>
+
+
+    <!-- Sessions Filter and Search -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 mb-6">
+        <div class="p-6 border-b border-gray-100">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h2 class="text-xl font-bold text-gray-800">All Live Sessions</h2>
+                
+                <!-- Filters -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <select id="courseFilter" class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                        <option value="">All Courses</option>
+                        {% if course_summary %}
+                        {% for course in course_summary %}
+                        <option value="{{ course.course_code }}" {{ 'selected' if current_filters.course == course.course_code else '' }}>{{ course.course_code }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                    
+                    <select id="attendanceFilter" class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                        <option value="">All Attendance</option>
+                        <option value="high" {{ 'selected' if current_filters.attendance == 'high' else '' }}>High (≥80%)</option>
+                        <option value="medium" {{ 'selected' if current_filters.attendance == 'medium' else '' }}>Medium (60-79%)</option>
+                        <option value="low" {{ 'selected' if current_filters.attendance == 'low' else '' }}>Low (<60%)</option>
+                    </select>
+                    
+                    <input type="text" id="searchSessions" placeholder="Search sessions..." 
+                           value="{{ current_filters.search }}"
+                           class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions Table -->
+        <div class="overflow-x-auto">
+            {% if sessions %}
+            <table class="w-full" id="sessionsTable">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left py-4 px-6 font-semibold text-gray-700">Session Details</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-700">Date</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-700">Duration</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-700">Students</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-700">Attendance</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-700">Rating</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-700">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 session-row" 
+                        data-course="{{ session.course_code }}" 
+                        data-attendance="{{ session.attendance_rate|default(0) }}"
+                        data-topic="{{ session.session_topic|lower }}">
+                        <td class="py-4 px-6">
+                            <div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+                                        <span class="text-white text-xs font-bold">{{ session.session_number }}</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">{{ session.course_code }} - Session {{ session.session_number }}</div>
+                                        <div class="text-sm text-gray-600">{{ session.session_topic }}</div>
+                                        <div class="text-xs text-gray-500">{{ session.instructor }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center py-4 px-4">
+                            <div class="text-sm font-medium text-gray-800">{{ session.session_date }}</div>
+                        </td>
+                        <td class="text-center py-4 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ session.duration_minutes|default(90) }} min
+                            </span>
+                        </td>
+                        <td class="text-center py-4 px-4">
+                            <div class="text-sm">
+                                <div class="font-medium text-gray-800">{{ session.attended_students|default(0) }}/{{ session.total_students|default(0) }}</div>
+                                <div class="text-xs text-gray-500">attended</div>
+                            </div>
+                        </td>
+                        <td class="text-center py-4 px-4">
+                            <div class="flex items-center justify-center space-x-2">
+                                <div class="w-12 bg-gray-200 rounded-full h-2">
+                                    <div class="{% if session.attendance_rate >= 80 %}bg-gradient-to-r from-green-400 to-green-600{% elif session.attendance_rate >= 60 %}bg-gradient-to-r from-yellow-400 to-yellow-600{% else %}bg-gradient-to-r from-red-400 to-red-600{% endif %} h-2 rounded-full" 
+                                         style="width: {{ session.attendance_rate|default(0) }}%"></div>
+                                </div>
+                                <span class="text-sm font-medium {% if session.attendance_rate >= 80 %}text-green-600{% elif session.attendance_rate >= 60 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                    {{ session.attendance_rate|default(0) }}%
+                                </span>
+                            </div>
+                        </td>
+                        <td class="text-center py-4 px-4">
+                            {% if session.avg_rating %}
+                            <div class="flex items-center justify-center space-x-1">
+                                <span class="text-sm font-medium text-gray-800">{{ session.avg_rating }}</span>
+                                <div class="flex">
+                                    {% for i in range(5) %}
+                                    <i class="fas fa-star text-xs {% if i < session.avg_rating %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-sm text-gray-400">No ratings</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center py-4 px-4">
+                            {% if session.attendance_rate >= 80 %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>Excellent
+                            </span>
+                            {% elif session.attendance_rate >= 60 %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-exclamation mr-1"></i>Good
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times mr-1"></i>Needs Attention
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-video text-gray-300 text-6xl mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Session Data Available</h3>
+                <p class="text-gray-500">Live session information will appear here once data is loaded.</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Pagination -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-600">Show</span>
+                <select id="entriesPerPage" class="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onchange="changeEntriesPerPage()">
+                    <option value="10" {{ 'selected' if pagination.per_page == 10 else '' }}>10</option>
+                    <option value="25" {{ 'selected' if pagination.per_page == 25 else '' }}>25</option>
+                    <option value="50" {{ 'selected' if pagination.per_page == 50 else '' }}>50</option>
+                    <option value="100" {{ 'selected' if pagination.per_page == 100 else '' }}>100</option>
+                </select>
+                <span class="text-sm text-gray-600">entries</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <p class="text-sm text-gray-600">
+                    Showing <span class="font-medium">{{ ((pagination.page - 1) * pagination.per_page) + 1 }}</span> 
+                    to <span class="font-medium">{{ pagination.page * pagination.per_page if pagination.page * pagination.per_page < pagination.total else pagination.total }}</span> 
+                    of <span class="font-medium">{{ pagination.total }}</span> sessions
+                </p>
+            </div>
+            <div class="flex space-x-2">
+                {% if pagination.has_prev %}
+                <a href="javascript:void(0)" onclick="navigateToPage({{ pagination.prev_num }})" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% else %}
+                <button class="px-3 py-1 border border-gray-300 rounded-lg opacity-50 cursor-not-allowed" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                {% endif %}
+                
+                {% for page_num in range(1, pagination.pages + 1) %}
+                    {% if page_num == pagination.page %}
+                    <button class="px-3 py-1 bg-purple-600 text-white rounded-lg">{{ page_num }}</button>
+                    {% elif page_num <= 3 or page_num > pagination.pages - 3 or (page_num >= pagination.page - 1 and page_num <= pagination.page + 1) %}
+                    <a href="javascript:void(0)" onclick="navigateToPage({{ page_num }})" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">{{ page_num }}</a>
+                    {% elif page_num == 4 or page_num == pagination.pages - 3 %}
+                    <span class="px-3 py-1">...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <a href="javascript:void(0)" onclick="navigateToPage({{ pagination.next_num }})" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% else %}
+                <button class="px-3 py-1 border border-gray-300 rounded-lg opacity-50 cursor-not-allowed" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- CGPA Requirements Info -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-6">
+        <div class="flex items-start space-x-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-info text-white text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">CGPA Requirements</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-check-circle text-green-500"></i>
+                        <span><strong>Individual Course:</strong> CGPA ≥ 2.7 required to pass</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-trophy text-yellow-500"></i>
+                        <span><strong>Overall Program:</strong> CGPA ≥ 3.0 required for graduation</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calendar text-blue-500"></i>
+                        <span><strong>Duration:</strong> 14 months for all 7 courses</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-video text-purple-500"></i>
+                        <span><strong>Live Sessions:</strong> 15+ sessions per course required</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filter and search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const courseFilter = document.getElementById('courseFilter');
+    const attendanceFilter = document.getElementById('attendanceFilter');
+    const searchInput = document.getElementById('searchSessions');
+    const sessionRows = document.querySelectorAll('.session-row');
+
+    function filterSessions() {
+        const courseValue = courseFilter.value.toLowerCase();
+        const attendanceValue = attendanceFilter.value;
+        const searchValue = searchInput.value.toLowerCase();
+
+        sessionRows.forEach(row => {
+            const course = row.dataset.course.toLowerCase();
+            const attendance = parseFloat(row.dataset.attendance);
+            const topic = row.dataset.topic;
+
+            let showRow = true;
+
+            // Course filter
+            if (courseValue && !course.includes(courseValue)) {
+                showRow = false;
+            }
+
+            // Attendance filter
+            if (attendanceValue) {
+                if (attendanceValue === 'high' && attendance < 80) showRow = false;
+                if (attendanceValue === 'medium' && (attendance < 60 || attendance >= 80)) showRow = false;
+                if (attendanceValue === 'low' && attendance >= 60) showRow = false;
+            }
+
+            // Search filter
+            if (searchValue && !topic.includes(searchValue) && !course.includes(searchValue)) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+        });
+    }
+
+    courseFilter.addEventListener('change', applyServerFilters);
+    attendanceFilter.addEventListener('change', applyServerFilters);
+    searchInput.addEventListener('input', debounceServerFilters);
+});
+
+// Server-side filtering functions
+let filterTimeout;
+
+function debounceServerFilters() {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(applyServerFilters, 500);
+}
+
+function applyServerFilters() {
+    const courseFilter = document.getElementById('courseFilter');
+    const attendanceFilter = document.getElementById('attendanceFilter');
+    const searchInput = document.getElementById('searchSessions');
+    
+    const params = new URLSearchParams();
+    
+    // Add current filters
+    if (courseFilter.value) {
+        params.set('course', courseFilter.value);
+    }
+    if (attendanceFilter.value) {
+        params.set('attendance', attendanceFilter.value);
+    }
+    if (searchInput.value.trim()) {
+        params.set('search', searchInput.value.trim());
+    }
+    
+    // Preserve current per_page setting
+    const perPageSelect = document.getElementById('entriesPerPage');
+    if (perPageSelect) {
+        params.set('per_page', perPageSelect.value);
+    }
+    
+    // Reset to page 1 when filters change
+    params.set('page', '1');
+    
+    // Navigate to filtered results
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+
+// Function to handle entries per page change
+function changeEntriesPerPage() {
+    const select = document.getElementById('entriesPerPage');
+    const perPage = select.value;
+    
+    // Get current filters to preserve them
+    const courseFilter = document.getElementById('courseFilter');
+    const attendanceFilter = document.getElementById('attendanceFilter');
+    const searchInput = document.getElementById('searchSessions');
+    
+    const params = new URLSearchParams();
+    
+    // Add current filters
+    if (courseFilter.value) {
+        params.set('course', courseFilter.value);
+    }
+    if (attendanceFilter.value) {
+        params.set('attendance', attendanceFilter.value);
+    }
+    if (searchInput.value.trim()) {
+        params.set('search', searchInput.value.trim());
+    }
+    
+    // Update per_page parameter
+    params.set('per_page', perPage);
+    
+    // Reset to page 1 when changing entries per page
+    params.set('page', '1');
+    
+    // Redirect to updated URL with all filters preserved
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+
+// Function to navigate to a specific page while preserving filters
+function navigateToPage(pageNum) {
+    const courseFilter = document.getElementById('courseFilter');
+    const attendanceFilter = document.getElementById('attendanceFilter');
+    const searchInput = document.getElementById('searchSessions');
+    
+    const params = new URLSearchParams();
+    
+    // Add current filters
+    if (courseFilter.value) {
+        params.set('course', courseFilter.value);
+    }
+    if (attendanceFilter.value) {
+        params.set('attendance', attendanceFilter.value);
+    }
+    if (searchInput.value.trim()) {
+        params.set('search', searchInput.value.trim());
+    }
+    
+    // Add current per_page setting
+    const perPageSelect = document.getElementById('entriesPerPage');
+    if (perPageSelect) {
+        params.set('per_page', perPageSelect.value);
+    }
+    
+    // Set the target page
+    params.set('page', pageNum);
+    
+    // Navigate to the new URL
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+
+// Modal functions for attendance and ratings
+function openAttendanceModal() {
+    // Clear any existing messages
+    const messageDiv = document.getElementById('attendanceMessage');
+    messageDiv.classList.add('hidden');
+    messageDiv.innerHTML = '';
+    
+    // Reset form
+    const form = document.getElementById('attendanceForm');
+    if (form) form.reset();
+    
+    // Add debug info
+    console.log('Opening attendance modal - JavaScript updated');
+    
+    document.getElementById('attendanceModal').classList.remove('hidden');
+    setTimeout(() => {
+        document.getElementById('attendanceModalContent').classList.remove('scale-95', 'opacity-0');
+        document.getElementById('attendanceModalContent').classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function closeAttendanceModal() {
+    const modal = document.getElementById('attendanceModal');
+    const modalContent = document.getElementById('attendanceModalContent');
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('attendanceForm').reset();
+        document.getElementById('attendanceMessage').classList.add('hidden');
+    }, 300);
+}
+
+function openRatingsModal() {
+    // Clear any existing messages
+    const messageDiv = document.getElementById('ratingsMessage');
+    messageDiv.classList.add('hidden');
+    messageDiv.innerHTML = '';
+    
+    // Reset form
+    const form = document.getElementById('ratingsForm');
+    if (form) form.reset();
+    
+    document.getElementById('ratingsModal').classList.remove('hidden');
+    setTimeout(() => {
+        document.getElementById('ratingsModalContent').classList.remove('scale-95', 'opacity-0');
+        document.getElementById('ratingsModalContent').classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function closeRatingsModal() {
+    const modal = document.getElementById('ratingsModal');
+    const modalContent = document.getElementById('ratingsModalContent');
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('ratingsForm').reset();
+        document.getElementById('ratingsMessage').classList.add('hidden');
+    }, 300);
+}
+
+// Handle attendance form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const attendanceForm = document.getElementById('attendanceForm');
+    const ratingsForm = document.getElementById('ratingsForm');
+    
+    if (attendanceForm) {
+        attendanceForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const fileInput = document.getElementById('attendanceFile');
+            
+            if (!fileInput.files[0]) {
+                showMessage('attendanceMessage', 'error', 'Error', 'Please select a file to upload.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/coursework/upload-attendance', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('attendanceMessage', 'success', 'Success!', result.message);
+                    setTimeout(() => {
+                        closeAttendanceModal();
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showMessage('attendanceMessage', 'error', 'Feature Disabled', result.message);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showMessage('attendanceMessage', 'error', 'Error', 'Network error occurred. Please try again.');
+            }
+        });
+    }
+    
+    if (ratingsForm) {
+        ratingsForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const fileInput = document.getElementById('ratingsFile');
+            
+            if (!fileInput.files[0]) {
+                showMessage('ratingsMessage', 'error', 'Error', 'Please select a file to upload.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/coursework/upload-ratings', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('ratingsMessage', 'success', 'Success!', result.message);
+                    setTimeout(() => {
+                        closeRatingsModal();
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showMessage('ratingsMessage', 'error', 'Feature Disabled', result.message);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showMessage('ratingsMessage', 'error', 'Error', 'Network error occurred. Please try again.');
+            }
+        });
+    }
+});
+
+function showMessage(elementId, type, title, message) {
+    const messageDiv = document.getElementById(elementId);
+    const bgColor = type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+    const textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
+    const iconColor = type === 'success' ? 'text-green-500' : 'text-red-500';
+    const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-times-circle';
+    
+    messageDiv.innerHTML = `
+        <div class="flex items-start space-x-3 p-4 ${bgColor} rounded-lg border">
+            <i class="${icon} ${iconColor} mt-0.5"></i>
+            <div class="${textColor}">
+                <p class="font-medium">${title}</p>
+                <p class="text-sm mt-1">${message}</p>
+            </div>
+        </div>
+    `;
+    messageDiv.classList.remove('hidden');
+    
+    if (type === 'success') {
+        setTimeout(() => {
+            messageDiv.classList.add('hidden');
+        }, 3000);
+    }
+}
+</script>
+
+<!-- Attendance Upload Modal -->
+<div id="attendanceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="attendanceModalContent">
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-user-check text-2xl"></i>
+                    <h3 class="text-xl font-bold">Update Attendance Data</h3>
+                </div>
+                <button onclick="closeAttendanceModal()" class="text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Success/Error Messages -->
+            <div id="attendanceMessage" class="hidden mb-4"></div>
+            
+            <div class="mb-4">
+                <div class="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                    <div class="text-sm text-blue-700">
+                        <p class="font-medium mb-2">Upload Instructions:</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>File must be in Excel format (.xlsx)</li>
+                            <li><strong>Format 1:</strong> Student Name, Session ID, Attended (Yes/No)</li>
+                            <li><strong>Format 2:</strong> User Name (Original Name), Email, Time in Session (minutes)</li>
+                            <li>Data will be appended to existing attendance records</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="attendanceForm" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Attendance File</label>
+                    <input type="file" id="attendanceFile" name="file" accept=".xlsx,.xls" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 hover:border-green-300">
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeAttendanceModal()" 
+                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center">
+                        <i class="fas fa-upload mr-2"></i>
+                        Upload Attendance
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Ratings Upload Modal -->
+<div id="ratingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="ratingsModalContent">
+        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-6 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-star text-2xl"></i>
+                    <h3 class="text-xl font-bold">Update Ratings Data</h3>
+                </div>
+                <button onclick="closeRatingsModal()" class="text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Success/Error Messages -->
+            <div id="ratingsMessage" class="hidden mb-4"></div>
+            
+            <div class="mb-4">
+                <div class="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                    <div class="text-sm text-blue-700">
+                        <p class="font-medium mb-2">Upload Instructions:</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>File must be in Excel format (.xlsx)</li>
+                            <li>Required columns: User Name, Email Address, Topic</li>
+                            <li>Optional: All rating questions and feedback columns</li>
+                            <li>Data will be appended to existing ratings records</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="ratingsForm" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Ratings File</label>
+                    <input type="file" id="ratingsFile" name="file" accept=".xlsx,.xls" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 hover:border-yellow-300">
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeRatingsModal()" 
+                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-3 rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 flex items-center justify-center">
+                        <i class="fas fa-upload mr-2"></i>
+                        Upload Ratings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,4 +1,90 @@
-# EduOps360 - Educational Operations Management System
+# 🎓 EduOps360 - Educational Operations Management System
+
+A comprehensive web-based platform for managing educational operations, student tracking, and academic analytics.
+
+## ✨ Features
+
+- **📊 Dashboard Analytics** - Real-time insights into student performance and program statistics
+- **👥 Student Management** - Complete learner profiles with academic journey tracking
+- **📚 Coursework Tracking** - Monitor 7 DBA courses with CGPA requirements
+- **🎓 Dissertation Management** - Track research progress through all milestones
+- **📧 Email Campaigns** - Bulk email system with templates and analytics
+- **🔔 Session Reminders** - Automated reminder system for live sessions
+- **💬 AI Chatbot** - NVIDIA-powered assistant for educational queries
+- **👨‍💼 User Management** - Role-based access control (Admin/User)
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.11+
+- Flask 2.3.3+
+- SQLite database
+
+### Installation
+1. Clone the repository
+2. Install dependencies: `pip install -r requirements.txt`
+3. Run the application: `python app.py`
+4. Access at `http://localhost:5000`
+
+## 📁 Project Structure
+
+```
+EduOps360/
+├── app.py                 # Main Flask application
+├── requirements.txt       # Python dependencies
+├── Procfile              # Deployment configuration
+├── static/               # Static assets (favicon, etc.)
+├── templates/            # HTML templates
+├── auth/                 # Authentication modules
+├── routes/               # Application routes
+├── utils/                # Utility functions
+└── config/               # Configuration files
+```
+
+## 🌐 Deployment
+
+Ready for deployment on:
+- **Render** (recommended with UptimeRobot)
+- **Railway** 
+- **Fly.io**
+- **PythonAnywhere**
+
+## 📊 Program Overview
+
+**36-Month DBA Program:**
+- **14 Months**: Coursework Phase (7 courses, CGPA ≥3.0)
+- **22 Months**: Dissertation Phase (Research & Thesis)
+
+## 🔧 Configuration
+
+- Health check endpoint: `/health`
+- Production-ready with proper port handling
+- Optimized for cloud deployment
+- Comprehensive error handling
+
+## 📈 Analytics & Tracking
+
+- Student progress monitoring
+- Course completion rates
+- Live session attendance
+- Dissertation milestone tracking
+- Email campaign performance
+
+## 🛡️ Security Features
+
+- Session-based authentication
+- Role-based access control
+- Input validation and sanitization
+- Secure file upload handling
+- CSRF protection
+
+## 📞 Support
+
+For technical support or feature requests, contact the development team.
+
+---
+
+**EduOps360 v14.0** - Professional Educational Management Platform
 
 A comprehensive web application for managing educational operations, learner data, and administrative tasks for the GGU DBA ET program.
 

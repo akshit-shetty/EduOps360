@@ -1,36 +1,9 @@
-# Core Flask Framework
-Flask==3.0.0
+Flask==2.3.3
+pandas==2.0.3
+Werkzeug==2.3.7
+openpyxl==3.1.2
+python-dotenv==1.0.0
+openai==1.50.0
 Flask-CORS==4.0.0
-Werkzeug==3.0.1
-
-# Data Processing - Using latest stable versions with pre-built wheels
-pandas==2.2.3
-numpy==1.26.4
-openpyxl==3.1.5
-
-# Document Processing
-python-docx==1.1.2
-lxml==5.3.0
-
-# Date/Time Processing
-python-dateutil==2.9.0
-
-# HTTP Requests
-requests==2.32.3
-
-# Environment Configuration
-python-dotenv==1.0.1
-
-# Security & Authentication
-bcrypt==4.2.0
-
-# Production Server
-gunicorn==22.0.0
-
-# Additional dependencies for stability
-setuptools==75.1.0
-wheel==0.44.0
-# - XlsxWriter (Excel writing - not used)
-# - SQLAlchemy (ORM - not used, using raw SQLite)
-# - flask_sqlalchemy (Flask ORM - not used)
-# - flask_migrate (DB migrations - not used)
+requests==2.31.0
+gunicorn==21.2.0

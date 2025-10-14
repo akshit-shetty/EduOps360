@@ -1,0 +1,1253 @@
+{% extends "base.html" %}
+
+{% block title %}Dissertation Progress - EduOps360{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                    <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                        Dissertation Progress
+                    </span>
+                </h1>
+                <p class="text-gray-600">Monitor dissertation milestones and track student progress across all cohorts
+                </p>
+                {% if last_updated %}
+                <p class="text-sm text-gray-500 mt-1">
+                    <i class="fas fa-clock mr-1"></i>Last updated: {{ last_updated.strftime('%B %d, %Y at %I:%M %p') }}
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex space-x-3">
+                <a href="{{ url_for('coursework') }}"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-book-open mr-2"></i>Coursework
+                </a>
+                <a href="{{ url_for('learners') }}"
+                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-users mr-2"></i>Learners
+                </a>
+                <a href="{{ url_for('dashboard') }}"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dissertation Overview Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Students in Dissertation -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">
+                    Students
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ dissertation_analytics.total_dissertation|default(0) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">In Dissertation Phase</p>
+        </div>
+
+        <!-- Total Approvals -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-thumbs-up text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                    Approved
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ dissertation_analytics.total_approvals|default(0) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">Total Approvals</p>
+        </div>
+        <!-- Pending Review -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
+                    Pending
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ dissertation_analytics.overall_pending_review|default(0) }}
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Pending Review</p>
+        </div>
+        <!-- Total Not Approved -->
+        <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <i class="fas fa-times-circle text-3xl text-red-500"></i>
+                <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    <i class="fas fa-times mr-1"></i>
+                    Not Approved
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ dissertation_analytics.total_not_approved|default(0) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">Total Not Approved</p>
+        </div>
+    </div>
+
+    <!-- Dissertation Analytics Section -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8">
+        <!-- Header with Filter -->
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Dissertation Progress Analytics</h2>
+                        <p class="text-sm text-gray-600">Track milestone completion across all cohorts</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <select id="cohortFilter"
+                        class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        <option value="">All Cohorts</option>
+                        {% for cohort in cohorts %}
+                        <option value="{{ cohort }}" {% if cohort in selected_cohorts %}selected{% endif %}>Cohort {{
+                            cohort }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="p-2 hover:bg-white rounded-lg transition-colors" title="Refresh Data"
+                        onclick="location.reload()">
+                        <i class="fas fa-sync-alt text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dissertation Status Breakdown -->
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Topic Proposal Status -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border border-green-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-lightbulb text-white"></i>
+                        </div>
+                        <span class="text-xs bg-green-200 text-green-700 px-3 py-1 rounded-full font-semibold">Step
+                            1</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-green-800 mb-4">Topic Proposal</h3>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-green-600">{{
+                                    dissertation_analytics.topic_proposal.approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.topic_proposal.approved.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-red-600">{{
+                                    dissertation_analytics.topic_proposal.not_approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.topic_proposal.not_approved.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-yellow-600">{{
+                                    dissertation_analytics.topic_proposal.submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.topic_proposal.submitted.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-gray-600">{{
+                                    dissertation_analytics.topic_proposal.not_submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.topic_proposal.not_submitted.percent }}%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IRB Status -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-search text-white text-lg"></i>
+                        </div>
+                        <span class="text-xs bg-blue-200 text-blue-700 px-3 py-1 rounded-full font-semibold">Step
+                            2</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-blue-800 mb-4">IRB</h3>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-green-600">{{
+                                    dissertation_analytics.irb.approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{ dissertation_analytics.irb.approved.percent
+                                    }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-red-600">{{
+                                    dissertation_analytics.irb.not_approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.irb.not_approved.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-yellow-600">{{
+                                    dissertation_analytics.irb.submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.irb.submitted.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-gray-600">{{
+                                    dissertation_analytics.irb.not_submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.irb.not_submitted.percent }}%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Proposal Status -->
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border border-orange-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-file-alt text-white text-lg"></i>
+                        </div>
+                        <span class="text-xs bg-orange-200 text-orange-700 px-3 py-1 rounded-full font-semibold">Step
+                            3</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-orange-800 mb-4">Research Proposal</h3>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-green-600">{{
+                                    dissertation_analytics.research_proposal.approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.research_proposal.approved.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-red-600">{{
+                                    dissertation_analytics.research_proposal.not_approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.research_proposal.not_approved.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-yellow-600">{{
+                                    dissertation_analytics.research_proposal.submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.research_proposal.submitted.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-gray-600">{{
+                                    dissertation_analytics.research_proposal.not_submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.research_proposal.not_submitted.percent }}%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Defense Status -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border border-purple-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-trophy text-white text-lg"></i>
+                        </div>
+                        <span
+                            class="text-xs bg-purple-200 text-purple-700 px-3 py-1 rounded-full font-semibold">Final</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-purple-800 mb-4">Final Defense</h3>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-green-600">{{
+                                    dissertation_analytics.final_defense.approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.final_defense.approved.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Approved</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-red-600">{{
+                                    dissertation_analytics.final_defense.not_approved.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.final_defense.not_approved.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-yellow-600">{{
+                                    dissertation_analytics.final_defense.submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.final_defense.submitted.percent }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                                <span class="text-sm text-gray-700">Not Submitted</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-gray-600">{{
+                                    dissertation_analytics.final_defense.not_submitted.count }}</span>
+                                <span class="text-xs text-gray-500 ml-1">({{
+                                    dissertation_analytics.final_defense.not_submitted.percent }}%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Statistics -->
+            <div class="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-indigo-800 mb-2">Dissertation Overview</h3>
+                        <p class="text-sm text-indigo-600">Total students in dissertation phase: <span
+                                class="font-bold">{{ dissertation_analytics.total_dissertation }}</span></p>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600">{{ dissertation_analytics.total_approvals }}
+                            </div>
+                            <div class="text-xs text-gray-600">Total Approved</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-red-600">{{ dissertation_analytics.total_not_approved }}
+                            </div>
+                            <div class="text-xs text-gray-600">Total Not Approved</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-orange-600">{{
+                                dissertation_analytics.overall_pending_review }}</div>
+                            <div class="text-xs text-gray-600">Pending Review</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Learner Progress Table -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-table text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Detailed Learner Progress</h3>
+                    <p class="text-sm text-gray-600">Individual milestone status for all dissertation students</p>
+                </div>
+            </div>
+            <div class="text-sm text-gray-500">
+                Total: {{ students_list|length }} students
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-100">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Search & Filter Students</h3>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <div class="relative">
+                        <input type="text" id="emailFilter" placeholder="Search students by name, email..."
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+                        <div id="clearSearch" class="absolute right-3 top-3.5 hidden">
+                            <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-4 items-end">
+                    <!-- Cohort Dropdown -->
+                    <div class="min-w-[200px] relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-users mr-1 text-green-600"></i>
+                            Cohorts
+                            <span id="cohortCount" class="text-xs text-gray-500 ml-1">(0 selected)</span>
+                        </label>
+                        <div class="relative">
+                            <button type="button" onclick="toggleDropdown('cohort')"
+                                class="w-full px-3 py-2 text-left border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white flex items-center justify-between">
+                                <span id="cohortText" class="text-gray-700">Select cohorts...</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="cohort-dropdown"
+                                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto">
+                                {% for cohort in cohorts %}
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="{{ cohort }}"
+                                        onchange="updateDropdownSelection('cohort')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Cohort {{ cohort }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Milestone Dropdown -->
+                    <div class="min-w-[200px] relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tasks mr-1 text-blue-600"></i>
+                            Milestone
+                            <span id="milestoneCount" class="text-xs text-gray-500 ml-1">(0 selected)</span>
+                        </label>
+                        <div class="relative">
+                            <button type="button" onclick="toggleDropdown('milestone')"
+                                class="w-full px-3 py-2 text-left border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white flex items-center justify-between">
+                                <span id="milestoneText" class="text-gray-700">Select milestones...</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="milestone-dropdown"
+                                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto">
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="Topic Proposal"
+                                        onchange="updateDropdownSelection('milestone')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Topic Proposal</span>
+                                </label>
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="IRB" onchange="updateDropdownSelection('milestone')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">IRB</span>
+                                </label>
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="Research Proposal"
+                                        onchange="updateDropdownSelection('milestone')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Research Proposal</span>
+                                </label>
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="Final Defense"
+                                        onchange="updateDropdownSelection('milestone')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Final Defense</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Dropdown -->
+                    <div class="min-w-[200px] relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-info-circle mr-1 text-purple-600"></i>
+                            Status
+                            <span id="statusCount" class="text-xs text-gray-500 ml-1">(0 selected)</span>
+                        </label>
+                        <div class="relative">
+                            <button type="button" onclick="toggleDropdown('status')"
+                                class="w-full px-3 py-2 text-left border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white flex items-center justify-between">
+                                <span id="statusText" class="text-gray-700">Select status...</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="status-dropdown"
+                                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto">
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="Submitted"
+                                        onchange="updateDropdownSelection('status')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Submitted</span>
+                                </label>
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="Not Submitted"
+                                        onchange="updateDropdownSelection('status')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Not Submitted</span>
+                                </label>
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="Approved" onchange="updateDropdownSelection('status')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Approved</span>
+                                </label>
+                                <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" value="Not Approved"
+                                        onchange="updateDropdownSelection('status')"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm">Not Approved</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clear All Button -->
+                    <button type="button" onclick="clearAllFilters()"
+                        class="px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 transition-colors text-sm whitespace-nowrap">
+                        <i class="fas fa-times mr-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div id="activeFilters" class="mt-6 hidden">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <span class="text-sm text-gray-700 font-semibold">Active Filters:</span>
+                        <div id="activeFiltersList" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Results Summary -->
+            <div class="mt-4 pt-3 border-t border-gray-200">
+                <div class="flex items-center justify-between text-xs text-gray-600">
+                    <span id="filterResults">Showing all {{ students_list|length }} students</span>
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                            Approved
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
+                            Not Approved
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full mr-1"></div>
+                            Submitted
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>
+                            Not Submitted
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-2 h-2 bg-gray-500 rounded-full mr-1"></div>
+                            Pending
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead
+                    class="text-xs text-gray-700 uppercase bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
+                    <tr>
+                        <th scope="col" class="px-4 py-4 font-semibold">Learner Name</th>
+                        <th scope="col" class="px-4 py-4 font-semibold">Email</th>
+                        <th scope="col" class="px-4 py-4 font-semibold">Cohort</th>
+                        <th scope="col" class="px-4 py-4 font-semibold text-center">Topic Proposal</th>
+                        <th scope="col" class="px-4 py-4 font-semibold text-center">IRB</th>
+                        <th scope="col" class="px-4 py-4 font-semibold text-center">Research Proposal</th>
+                        <th scope="col" class="px-4 py-4 font-semibold text-center">Final Defense</th>
+                        <th scope="col" class="px-4 py-4 font-semibold text-center">Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students_list %}
+                    <tr class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
+                        <!-- Learner Name -->
+                        <td class="px-4 py-4 font-medium text-gray-900">
+                            {{ student.full_name }}
+                        </td>
+
+                        <!-- Email -->
+                        <td class="px-4 py-4 text-gray-700">
+                            {{ student.email }}
+                        </td>
+
+                        <!-- Cohort -->
+                        <td class="px-4 py-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                {{ student.cohort }}
+                            </span>
+                        </td>
+
+                        <!-- Topic Proposal Status -->
+                        <td class="px-4 py-4 text-center">
+                            {% set topic_detail = student.milestone_details[0] if student.milestone_details|length > 0
+                            else 'Topic Proposal: Pending' %}
+                            {% if 'Not Approved' in topic_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times mr-1"></i>
+                                Not Approved
+                            </span>
+                            {% elif 'Not Submitted' in topic_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-exclamation mr-1"></i>
+                                Not Submitted
+                            </span>
+                            {% elif 'Approved' in topic_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>
+                                Approved
+                            </span>
+                            {% elif 'Submitted' in topic_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-clock mr-1"></i>
+                                Submitted
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-minus mr-1"></i>
+                                Pending
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- IRB Status -->
+                        <td class="px-4 py-4 text-center">
+                            {% set irb_detail = student.milestone_details[1] if student.milestone_details|length > 1
+                            else 'IRB: Pending' %}
+                            {% if 'Not Approved' in irb_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times mr-1"></i>
+                                Not Approved
+                            </span>
+                            {% elif 'Not Submitted' in irb_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-exclamation mr-1"></i>
+                                Not Submitted
+                            </span>
+                            {% elif 'Approved' in irb_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>
+                                Approved
+                            </span>
+                            {% elif 'Submitted' in irb_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-clock mr-1"></i>
+                                Submitted
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-minus mr-1"></i>
+                                Pending
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Research Proposal Status -->
+                        <td class="px-4 py-4 text-center">
+                            {% set research_detail = student.milestone_details[2] if student.milestone_details|length >
+                            2 else 'Research Proposal: Pending' %}
+                            {% if 'Not Approved' in research_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times mr-1"></i>
+                                Not Approved
+                            </span>
+                            {% elif 'Not Submitted' in research_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-exclamation mr-1"></i>
+                                Not Submitted
+                            </span>
+                            {% elif 'Approved' in research_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>
+                                Approved
+                            </span>
+                            {% elif 'Submitted' in research_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-clock mr-1"></i>
+                                Submitted
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-minus mr-1"></i>
+                                Pending
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Final Defense Status -->
+                        <td class="px-4 py-4 text-center">
+                            {% set final_detail = student.milestone_details[3] if student.milestone_details|length > 3
+                            else 'Final Defense: Pending' %}
+                            {% if 'Not Approved' in final_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times mr-1"></i>
+                                Not Approved
+                            </span>
+                            {% elif 'Not Submitted' in final_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-exclamation mr-1"></i>
+                                Not Submitted
+                            </span>
+                            {% elif 'Approved' in final_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>
+                                Approved
+                            </span>
+                            {% elif 'Submitted' in final_detail %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-clock mr-1"></i>
+                                Submitted
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-minus mr-1"></i>
+                                Pending
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Overall Progress -->
+                        <td class="px-4 py-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                                        style="width: {{ student.progress_percent }}%"></div>
+                                </div>
+                                <span class="text-xs font-medium text-gray-700">{{ student.progress_percent|round|int
+                                    }}%</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                {{ student.milestones_completed }}/4 completed
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-600">Show</span>
+                <select id="entriesPerPage"
+                    class="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onchange="changeEntriesPerPage()">
+                    <option value="10" {{ 'selected' if pagination.per_page==10 else '' }}>10</option>
+                    <option value="25" {{ 'selected' if pagination.per_page==25 else '' }}>25</option>
+                    <option value="50" {{ 'selected' if pagination.per_page==50 else '' }}>50</option>
+                    <option value="100" {{ 'selected' if pagination.per_page==100 else '' }}>100</option>
+                </select>
+                <span class="text-sm text-gray-600">entries</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <p class="text-sm text-gray-600">
+                    Showing <span class="font-medium">{{ ((pagination.page - 1) * pagination.per_page) + 1 }}</span>
+                    to <span class="font-medium">{{ pagination.page * pagination.per_page if pagination.page *
+                        pagination.per_page < pagination.total else pagination.total }}</span>
+                            of <span class="font-medium">{{ pagination.total }}</span> students
+                </p>
+            </div>
+            <div class="flex space-x-2">
+                {% if pagination.has_prev %}
+                <a href="javascript:void(0)" onclick="navigateToPage({{ pagination.prev_num }})"
+                    class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% else %}
+                <button
+                    class="px-3 py-1 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                {% endif %}
+
+                {% for page_num in range(1, pagination.pages + 1) %}
+                {% if page_num == pagination.page %}
+                <button class="px-3 py-1 bg-blue-600 text-white rounded-lg">{{ page_num }}</button>
+                {% elif page_num <= 3 or page_num> pagination.pages - 3 or (page_num >= pagination.page - 1 and page_num
+                    <= pagination.page + 1) %} <a href="javascript:void(0)" onclick="navigateToPage({{ page_num }})"
+                        class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">{{
+                        page_num }}</a>
+                        {% elif page_num == 4 or page_num == pagination.pages - 3 %}
+                        <span class="px-3 py-1">...</span>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <a href="javascript:void(0)" onclick="navigateToPage({{ pagination.next_num }})"
+                            class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% else %}
+                        <button
+                            class="px-3 py-1 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        {% endif %}
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Status Legend:</h4>
+            <div class="flex flex-wrap gap-4 text-xs">
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800">
+                        <i class="fas fa-check mr-1"></i>
+                        Approved
+                    </span>
+                    <span class="text-gray-600">Milestone completed and approved</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800">
+                        <i class="fas fa-times mr-1"></i>
+                        Not Approved
+                    </span>
+                    <span class="text-gray-600">Submitted but not approved</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                        <i class="fas fa-clock mr-1"></i>
+                        Submitted
+                    </span>
+                    <span class="text-gray-600">Awaiting review</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                        <i class="fas fa-exclamation mr-1"></i>
+                        Not Submitted
+                    </span>
+                    <span class="text-gray-600">Explicitly marked as not submitted</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-800">
+                        <i class="fas fa-minus mr-1"></i>
+                        Pending
+                    </span>
+                    <span class="text-gray-600">Not yet started or no data</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dissertation Requirements Info -->
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100 p-6">
+        <div class="flex items-start space-x-4">
+            <div
+                class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-info text-white text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Dissertation Phase Requirements</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-lightbulb text-blue-500"></i>
+                        <span><strong>Topic Proposal:</strong> Research topic approval required</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-search text-green-500"></i>
+                        <span><strong>IRB Approval:</strong> Institutional Review Board clearance</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-file-alt text-orange-500"></i>
+                        <span><strong>Research Proposal:</strong> Detailed research methodology</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-trophy text-purple-500"></i>
+                        <span><strong>Final Defense:</strong> Dissertation presentation and approval</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calendar text-indigo-500"></i>
+                        <span><strong>Duration:</strong> 22 months for dissertation phase</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-graduation-cap text-pink-500"></i>
+                        <span><strong>Completion:</strong> All milestones required for graduation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get all table rows
+        const tableRows = document.querySelectorAll('tbody tr');
+        const totalStudents = tableRows.length;
+        const filterResults = document.getElementById('filterResults');
+        const activeFilters = document.getElementById('activeFilters');
+        const activeFiltersList = document.getElementById('activeFiltersList');
+        const emailFilter = document.getElementById('emailFilter');
+        const clearSearch = document.getElementById('clearSearch');
+
+        // Initialize filters from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        let selectedFilters = {
+            search: urlParams.get('search') || '',
+            cohort: urlParams.getAll('cohort') || [],
+            milestone: urlParams.getAll('milestone') || [],
+            status: urlParams.getAll('status') || []
+        };
+
+        // Set initial values from URL
+        if (selectedFilters.search) {
+            emailFilter.value = selectedFilters.search;
+            clearSearch.classList.remove('hidden');
+        }
+
+        // Set checkboxes based on URL parameters
+        ['cohort', 'milestone', 'status'].forEach(type => {
+            selectedFilters[type].forEach(value => {
+                const checkbox = document.querySelector(`#${type}-dropdown input[value="${value}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            updateDropdownSelection(type);
+        });
+
+        // Function to toggle dropdown visibility
+        window.toggleDropdown = function (type) {
+            const dropdown = document.getElementById(type + '-dropdown');
+            const allDropdowns = document.querySelectorAll('[id$="-dropdown"]');
+
+            // Close all other dropdowns
+            allDropdowns.forEach(dd => {
+                if (dd !== dropdown) {
+                    dd.classList.add('hidden');
+                }
+            });
+
+            // Toggle current dropdown
+            dropdown.classList.toggle('hidden');
+        };
+
+        // Function to update dropdown selection
+        window.updateDropdownSelection = function (type) {
+            const checkboxes = document.querySelectorAll(`#${type}-dropdown input[type="checkbox"]`);
+            const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+            const textElement = document.getElementById(type + 'Text');
+            const countElement = document.getElementById(type + 'Count');
+
+            // Update selected filters
+            selectedFilters[type] = selected;
+
+            // Update display text
+            if (selected.length === 0) {
+                if (type === 'cohort') {
+                    textElement.textContent = 'Select cohorts...';
+                } else if (type === 'milestone') {
+                    textElement.textContent = 'Select milestones...';
+                } else if (type === 'status') {
+                    textElement.textContent = 'Select status...';
+                }
+            } else {
+                let label = '';
+                if (type === 'cohort') {
+                    label = 'cohort';
+                } else if (type === 'milestone') {
+                    label = 'milestone';
+                } else if (type === 'status') {
+                    label = 'status';
+                }
+                textElement.textContent = `${selected.length} ${label}${selected.length > 1 ? 's' : ''} selected`;
+            }
+
+            // Update count
+            countElement.textContent = `(${selected.length} selected)`;
+
+            // Apply filters
+            applyFilters();
+        };
+
+        // Function to extract status text from badge
+        function getStatusFromBadge(cell) {
+            const badge = cell.querySelector('span');
+            if (!badge) return 'Pending';
+            const text = badge.textContent.trim();
+            return text;
+        }
+
+        // Function to apply filters (now redirects to server)
+        function applyFilters() {
+            // Build URL with current filters
+            const urlParams = new URLSearchParams();
+
+            // Add search parameter
+            if (selectedFilters.search) {
+                urlParams.set('search', selectedFilters.search);
+            }
+
+            // Add filter parameters
+            selectedFilters.cohort.forEach(cohort => {
+                urlParams.append('cohort', cohort);
+            });
+
+            selectedFilters.milestone.forEach(milestone => {
+                urlParams.append('milestone', milestone);
+            });
+
+            selectedFilters.status.forEach(status => {
+                urlParams.append('status', status);
+            });
+
+            // Preserve pagination settings
+            const currentParams = new URLSearchParams(window.location.search);
+            const perPage = currentParams.get('per_page') || '10';
+            urlParams.set('per_page', perPage);
+            urlParams.set('page', '1'); // Reset to first page when filtering
+
+            // Navigate to filtered results
+            window.location.search = urlParams.toString();
+        }
+
+        // Function to update active filters display
+        function updateActiveFilters() {
+            const hasActiveFilters = selectedFilters.search ||
+                selectedFilters.cohort.length > 0 ||
+                selectedFilters.milestone.length > 0 ||
+                selectedFilters.status.length > 0;
+
+            if (hasActiveFilters) {
+                activeFilters.classList.remove('hidden');
+                activeFiltersList.innerHTML = '';
+
+                // Search filter badge
+                if (selectedFilters.search) {
+                    const badge = createFilterBadge('search', `Search: "${selectedFilters.search}"`, 'blue');
+                    activeFiltersList.appendChild(badge);
+                }
+
+                // Cohort filter badges
+                selectedFilters.cohort.forEach(cohort => {
+                    const badge = createFilterBadge('cohort', `Cohort ${cohort}`, 'green', cohort);
+                    activeFiltersList.appendChild(badge);
+                });
+
+                // Milestone filter badges
+                selectedFilters.milestone.forEach(milestone => {
+                    const badge = createFilterBadge('milestone', `Milestone: ${milestone}`, 'blue', milestone);
+                    activeFiltersList.appendChild(badge);
+                });
+
+                // Status filter badges
+                selectedFilters.status.forEach(status => {
+                    const badge = createFilterBadge('status', `Status: ${status}`, 'purple', status);
+                    activeFiltersList.appendChild(badge);
+                });
+            } else {
+                activeFilters.classList.add('hidden');
+            }
+        }
+
+        // Function to create filter badge
+        function createFilterBadge(type, text, color, value) {
+            const badge = document.createElement('span');
+            badge.className = `inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-${color}-100 text-${color}-800 border border-${color}-200`;
+            badge.innerHTML = `
+            <i class="fas fa-${getIconForType(type)} mr-2 text-xs"></i>
+            ${text}
+            <button type="button" onclick="removeFilter('${type}', '${value || ''}')" class="ml-2 text-${color}-600 hover:text-${color}-900 transition-colors">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        `;
+            return badge;
+        }
+
+        // Function to get icon for filter type
+        function getIconForType(type) {
+            const icons = {
+                search: 'search',
+                cohort: 'users',
+                milestone: 'tasks',
+                status: 'info-circle'
+            };
+            return icons[type] || 'filter';
+        }
+
+        // Function to remove specific filter
+        window.removeFilter = function (type, value) {
+            if (type === 'search') {
+                selectedFilters.search = '';
+                emailFilter.value = '';
+                clearSearch.classList.add('hidden');
+            } else {
+                const index = selectedFilters[type].indexOf(value);
+                if (index > -1) {
+                    selectedFilters[type].splice(index, 1);
+                    // Uncheck the corresponding checkbox
+                    const checkbox = document.querySelector(`#${type}-dropdown input[value="${value}"]`);
+                    if (checkbox) checkbox.checked = false;
+                    updateDropdownSelection(type);
+                }
+            }
+            applyFilters();
+        };
+
+        // Function to clear all filters
+        window.clearAllFilters = function () {
+            // Navigate to page without any filters
+            const urlParams = new URLSearchParams();
+            const currentParams = new URLSearchParams(window.location.search);
+            const perPage = currentParams.get('per_page') || '10';
+            urlParams.set('per_page', perPage);
+            urlParams.set('page', '1');
+
+            window.location.search = urlParams.toString();
+        };
+
+        // Search input event listeners
+        emailFilter.addEventListener('input', function () {
+            selectedFilters.search = this.value.toLowerCase();
+            if (this.value) {
+                clearSearch.classList.remove('hidden');
+            } else {
+                clearSearch.classList.add('hidden');
+            }
+            applyFilters();
+        });
+
+        // Clear search button
+        clearSearch.querySelector('button').addEventListener('click', function () {
+            emailFilter.value = '';
+            selectedFilters.search = '';
+            clearSearch.classList.add('hidden');
+            applyFilters();
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.relative')) {
+                document.querySelectorAll('[id$="-dropdown"]').forEach(dropdown => {
+                    dropdown.classList.add('hidden');
+                });
+            }
+        });
+    });
+
+    // Pagination functions
+    function navigateToPage(page) {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('page', page);
+        window.location.search = urlParams.toString();
+    }
+
+    function changeEntriesPerPage() {
+        const select = document.getElementById('entriesPerPage');
+        const perPage = select.value;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('per_page', perPage);
+        urlParams.set('page', 1); // Reset to first page when changing entries per page
+        window.location.search = urlParams.toString();
+    }
+</script>
+
+{% endblock %}

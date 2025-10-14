@@ -314,7 +314,7 @@
                             ID', 'N/A')) }}</span>
                     </p>
                     <div class="mt-3 flex flex-wrap justify-center md:justify-start gap-2">
-                        {% for cohort_data in all_cohorts_data %}
+                        {% for cohort_data in [all_cohorts_data[-1]] if all_cohorts_data %}
                         <span class="cohort-badge">
                             Cohort {{ cohort_data.cohort_number }}: {{ cohort_data.status }}
                         </span>
@@ -490,7 +490,7 @@
 
 
 
-        <!-- Dissertation Progress Section - Display only once at the end -->
+        <!-- Dissertation Progress Section - Display only for the last cohort -->
         {% set has_dissertation_data = [] %}
         {% for cohort_data in all_cohorts_data %}
         {% if cohort_data.dissertation %}
@@ -507,7 +507,7 @@
                 <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
                     <h3 class="text-2xl font-bold text-gray-800 mb-6">Dissertation Progress</h3>
 
-                    {% for cohort_data in all_cohorts_data %}
+                    {% for cohort_data in [all_cohorts_data[-1]] if all_cohorts_data %}
                     {% if cohort_data.dissertation %}
                     <div class="mb-8 last:mb-0">
                         <h4 class="text-xl font-semibold text-gray-700 mb-4">Cohort {{ cohort_data.cohort_number }}
@@ -562,9 +562,12 @@
                                         {% set topic_status = 'not-approved' %}
                                         {% set topic_text = 'Not Approved' %}
                                         {% else %}
+                                        {% set topic_status = 'pending' %}
+                                        {% set topic_text = 'Pending' %}
+                                        {% endif %}
+                                        {% elif topic_submitted == 'Not Submitted' %}
                                         {% set topic_status = 'not-submitted' %}
                                         {% set topic_text = 'Not Submitted' %}
-                                        {% endif %}
                                         {% else %}
                                         {% set topic_status = 'pending' %}
                                         {% set topic_text = 'Not Started' %}
@@ -651,9 +654,12 @@
                                         {% set research_status = 'not-approved' %}
                                         {% set research_text = 'Not Approved' %}
                                         {% else %}
+                                        {% set research_status = 'pending' %}
+                                        {% set research_text = 'Pending' %}
+                                        {% endif %}
+                                        {% elif research_submitted == 'Not Submitted' %}
                                         {% set research_status = 'not-submitted' %}
                                         {% set research_text = 'Not Submitted' %}
-                                        {% endif %}
                                         {% else %}
                                         {% set research_status = 'pending' %}
                                         {% set research_text = 'Not Started' %}
@@ -702,9 +708,12 @@
                                         {% set final_status = 'not-approved' %}
                                         {% set final_text = 'Not Approved' %}
                                         {% else %}
+                                        {% set final_status = 'pending' %}
+                                        {% set final_text = 'Pending' %}
+                                        {% endif %}
+                                        {% elif final_submitted == 'Not Submitted' %}
                                         {% set final_status = 'not-submitted' %}
                                         {% set final_text = 'Not Submitted' %}
-                                        {% endif %}
                                         {% else %}
                                         {% set final_status = 'pending' %}
                                         {% set final_text = 'Not Started' %}

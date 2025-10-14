@@ -202,15 +202,15 @@
       <a href="{{ url_for('automation_tools') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
         <i class="fas fa-home"></i> Automation tools
       </a>
-      <a href="{{ url_for('document.document_home') }}"
+      <a href="{{ url_for('document_home') }}"
         class="nav-link {% if request.path.startswith('/document') %}active{% endif %}">
         <i class="fas fa-file-word"></i> Document Creator
       </a>
-      <a href="{{ url_for('reminder.reminder_home') }}"
+      <a href="{{ url_for('reminder_home') }}"
         class="nav-link {% if request.path.startswith('/reminder') %}active{% endif %}">
         <i class="fas fa-bell"></i> Session Reminder
       </a>
-      <a href="{{ url_for('folders.folder_home') }}"
+      <a href="{{ url_for('folder_home') }}"
         class="nav-link {% if request.path.startswith('/folders') %}active{% endif %}">
         <i class="fas fa-folder"></i> Folder Creator
       </a>
@@ -218,7 +218,6 @@
   </header>
 
   <!-- Main Content -->
-  <main class="main-content">
     {% block content %}{% endblock %}
   </main>
 

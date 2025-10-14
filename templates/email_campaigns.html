@@ -1,0 +1,1464 @@
+{% extends "base.html" %}
+
+{% block title %}Email Campaigns - EduOps360{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold gradient-text mb-2">Email Campaigns</h1>
+                    <p class="text-slate-600">Send bulk emails and manage email campaigns with tracking</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl" id="new-campaign-btn">
+                        <i class="fas fa-plus mr-2"></i>New Campaign
+                    </button>
+                    <button class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl" id="new-template-btn">
+                        <i class="fas fa-file-alt mr-2"></i>New Template
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div id="flash-messages" class="mb-6"></div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-600 text-sm font-medium">Total Campaigns</p>
+                        <p class="text-3xl font-bold text-blue-600" id="total-campaigns" data-stat="total-campaigns">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-bullhorn text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-600 text-sm font-medium">Emails Sent</p>
+                        <p class="text-3xl font-bold text-green-600" id="total-sent" data-stat="total-emails-sent">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-paper-plane text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-600 text-sm font-medium">Active Templates</p>
+                        <p class="text-3xl font-bold text-purple-600" id="total-templates" data-stat="total-templates">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-file-alt text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-600 text-sm font-medium">Success Rate</p>
+                        <p class="text-3xl font-bold text-orange-600" id="success-rate" data-stat="success-rate">0%</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-orange-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campaigns Table -->
+        <div class="glass rounded-2xl p-8 hover:shadow-lg transition-all duration-300 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Recent Campaigns</h2>
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search campaigns..." class="pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="search-campaigns">
+                        <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                        <button type="button" class="absolute right-3 top-2 text-slate-400 hover:text-slate-600 hidden" id="clear-search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="search-results-info" class="text-sm text-slate-600 hidden">
+                        <span id="search-results-count">0</span> results found
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-slate-200">
+                            <th class="text-left py-4 px-4 font-semibold text-slate-700">Campaign</th>
+                            <th class="text-left py-4 px-4 font-semibold text-slate-700">Subject</th>
+                            <th class="text-left py-4 px-4 font-semibold text-slate-700">Recipients</th>
+                            <th class="text-left py-4 px-4 font-semibold text-slate-700">Status</th>
+                            <th class="text-left py-4 px-4 font-semibold text-slate-700">Sent</th>
+                            <th class="text-left py-4 px-4 font-semibold text-slate-700">Created</th>
+                            <th class="text-left py-4 px-4 font-semibold text-slate-700">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaigns-table-body">
+                        <tr>
+                            <td colspan="7" class="text-center py-12 text-slate-500">
+                                <div class="flex flex-col items-center gap-3">
+                                    <i class="fas fa-bullhorn text-4xl text-slate-300"></i>
+                                    <p>No campaigns found. Create your first campaign!</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Campaign Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden items-center justify-center z-50" id="campaign-modal">
+    <div class="glass rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-slate-800">Create New Campaign</h2>
+            <button class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center hover:bg-red-200 transition-colors duration-300" id="close-campaign-modal">
+                <i class="fas fa-times text-red-600"></i>
+            </button>
+        </div>
+        
+        <form id="campaign-form" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Campaign Name</label>
+                    <input type="text" name="name" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter campaign name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email Account</label>
+                    <select name="email_account" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        {% for account in email_accounts %}
+                        <option value="{{ account.key }}">{{ account.email }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Subject Line</label>
+                <input type="text" name="subject" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter email subject" required>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Email Template</label>
+                <select name="template_id" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    <option value="">Select a template</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Recipients</label>
+                <div class="flex gap-2 mb-3">
+                    <button type="button" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors" id="upload-recipients-btn">
+                        <i class="fas fa-upload mr-1"></i>Upload CSV
+                    </button>
+                    <button type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors" id="download-sample-csv">
+                        <i class="fas fa-download mr-1"></i>Sample
+                    </button>
+                </div>
+                <input type="file" id="recipients-file" class="hidden" accept=".csv,.xlsx,.xls">
+                <div id="recipients-preview" class="hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p class="text-sm text-green-700">✓ <span id="recipients-count">0</span> recipients loaded</p>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-400 mt-2">
+                    CSV format: email, name (optional)
+                </div>
+            </div>
+            
+            <!-- Email Preview Section -->
+            <div id="email-preview-section" class="hidden">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Email Preview</label>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="text-sm text-slate-600">
+                            <i class="fas fa-eye mr-1"></i>Preview for: <span id="preview-recipient-name" class="font-medium"></span>
+                        </div>
+                        <button type="button" class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" id="refresh-preview">
+                            <i class="fas fa-refresh mr-1"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="bg-white border border-slate-300 rounded-lg overflow-hidden">
+                        <div class="bg-slate-100 px-3 py-2 border-b border-slate-300">
+                            <div class="text-xs text-slate-600">
+                                <strong>Subject:</strong> <span id="preview-subject">Select template to see preview</span>
+                            </div>
+                        </div>
+                        <div id="email-preview-content" class="p-4 max-h-64 overflow-y-auto text-sm">
+                            <div class="text-slate-400 text-center py-8">
+                                <i class="fas fa-envelope-open text-2xl mb-2"></i>
+                                <p>Upload recipients and select template to see email preview</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        This preview shows how the email will appear to the first recipient with personalized content.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <i class="fas fa-rocket mr-2"></i>Create & Send Campaign
+                </button>
+                <button type="button" class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl" id="save-draft-btn">
+                    <i class="fas fa-save mr-2"></i>Save as Draft
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- New Template Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden items-center justify-center z-50" id="template-modal">
+    <div class="glass rounded-2xl p-8 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-slate-800">Create Email Template</h2>
+            <button class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center hover:bg-red-200 transition-colors duration-300" id="close-template-modal">
+                <i class="fas fa-times text-red-600"></i>
+            </button>
+        </div>
+        
+        <form id="template-form" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Template Name</label>
+                    <input type="text" name="name" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Enter template name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Category</label>
+                    <select name="category" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <option value="general">General</option>
+                        <option value="newsletter">Newsletter</option>
+                        <option value="announcement">Announcement</option>
+                        <option value="reminder">Reminder</option>
+                        <option value="promotional">Promotional</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Subject Line</label>
+                <input type="text" name="subject" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Enter email subject" required>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Email Content</label>
+                
+                <!-- Formatting Toolbar -->
+                <div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button type="button" class="px-3 py-1 bg-white border border-slate-300 rounded-lg text-sm hover:bg-slate-100 transition-colors" id="load-sample-template">
+                            <i class="fas fa-file-text mr-1"></i>Load Sample
+                        </button>
+                        <button type="button" class="px-3 py-1 bg-white border border-slate-300 rounded-lg text-sm hover:bg-slate-100 transition-colors" id="show-template-guide">
+                            <i class="fas fa-question-circle mr-1"></i>Guide
+                        </button>
+                        <div class="border-l border-slate-300 mx-2"></div>
+                        <button type="button" class="px-3 py-1 bg-white border border-slate-300 rounded-lg text-sm hover:bg-slate-100 transition-colors" id="insert-greeting">
+                            <i class="fas fa-hand-wave mr-1"></i>Greeting
+                        </button>
+                        <button type="button" class="px-3 py-1 bg-white border border-slate-300 rounded-lg text-sm hover:bg-slate-100 transition-colors" id="insert-signature">
+                            <i class="fas fa-signature mr-1"></i>Signature
+                        </button>
+                        <button type="button" class="px-3 py-1 bg-white border border-slate-300 rounded-lg text-sm hover:bg-slate-100 transition-colors" id="insert-separator">
+                            <i class="fas fa-minus mr-1"></i>Separator
+                        </button>
+                    </div>
+                    <div class="text-xs text-slate-600">
+                        <span class="font-semibold">Quick Insert:</span> Use buttons above to add common email elements
+                    </div>
+                </div>
+                
+                <textarea name="html_content" rows="15" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm font-mono" placeholder="Write your email content in simple English. Use {{name}}, {{email}}, {{first_name}}, {{last_name}} for personalization..." required></textarea>
+                
+                <div class="text-sm text-slate-500 mt-2 bg-slate-50 rounded-lg p-3">
+                    <p class="font-semibold mb-2">Available Variables:</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <p><code class="bg-slate-200 px-1 rounded">{{name}}</code> - Recipient full name</p>
+                        <p><code class="bg-slate-200 px-1 rounded">{{email}}</code> - Recipient email</p>
+                        <p><code class="bg-slate-200 px-1 rounded">{{first_name}}</code> - First name only</p>
+                        <p><code class="bg-slate-200 px-1 rounded">{{last_name}}</code> - Last name only</p>
+                    </div>
+                    <div class="mt-2 p-2 bg-blue-50 rounded border-l-4 border-blue-400">
+                        <p class="text-xs text-blue-700">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Professional Email:</strong> Your content will be formatted with EduOps360 branding and professional styling
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>Save Template
+                </button>
+                <button type="button" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl" id="preview-template-btn">
+                    <i class="fas fa-eye mr-2"></i>Preview
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Template Guide Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden items-center justify-center z-50" id="template-guide-modal">
+    <div class="glass rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-slate-800">Email Template Guide</h2>
+            <button class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center hover:bg-red-200 transition-colors duration-300" id="close-template-guide">
+                <i class="fas fa-times text-red-600"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-6">
+            <!-- Variables Section -->
+            <div class="bg-blue-50 rounded-xl p-6">
+                <h3 class="text-lg font-bold text-blue-800 mb-4">Available Variables</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-lg p-4">
+                        <code class="text-blue-600 font-bold">{{name}}</code>
+                        <p class="text-sm text-slate-600 mt-1">Full name of the recipient</p>
+                        <p class="text-xs text-slate-500">Example: "John Doe"</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4">
+                        <code class="text-blue-600 font-bold">{{email}}</code>
+                        <p class="text-sm text-slate-600 mt-1">Email address of the recipient</p>
+                        <p class="text-xs text-slate-500">Example: "john@example.com"</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4">
+                        <code class="text-blue-600 font-bold">{{first_name}}</code>
+                        <p class="text-sm text-slate-600 mt-1">First name only</p>
+                        <p class="text-xs text-slate-500">Example: "John"</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4">
+                        <code class="text-blue-600 font-bold">{{last_name}}</code>
+                        <p class="text-sm text-slate-600 mt-1">Last name only</p>
+                        <p class="text-xs text-slate-500">Example: "Doe"</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sample Template -->
+            <div class="bg-green-50 rounded-xl p-6">
+                <h3 class="text-lg font-bold text-green-800 mb-4">Sample Template (Plain Text)</h3>
+                <div class="bg-white rounded-lg p-4 text-sm">
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <p class="text-slate-700 leading-relaxed">
+                            <strong>Subject:</strong> Important Update for {{first_name}}
+                        </p>
+                        <br>
+                        <p class="text-slate-700 leading-relaxed">
+                            Dear {{name}},<br><br>
+                            
+                            I hope this email finds you well.<br><br>
+                            
+                            This is a sample email template that demonstrates how to create professional, clean emails without branding.<br><br>
+                            
+                            Your contact email is: {{email}}<br><br>
+                            
+                            Key features of this template:<br>
+                            • Clean, professional appearance<br>
+                            • No company branding or logos<br>
+                            • Personalization with variables<br>
+                            • Mobile-friendly responsive design<br><br>
+                            
+                            If you have any questions, please don't hesitate to contact us.<br><br>
+                            
+                            Best regards,<br>
+                            [Your Name/Organization]<br><br>
+                            
+                            ---<br>
+                            This is an automated message. Please do not reply directly to this email.
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-green-700 bg-green-100 rounded-lg p-3">
+                    <p><strong>Note:</strong> This plain text will be automatically converted to a beautiful HTML email with proper formatting, colors, and styling.</p>
+                </div>
+            </div>
+            
+            <!-- Best Practices -->
+            <div class="bg-purple-50 rounded-xl p-6">
+                <h3 class="text-lg font-bold text-purple-800 mb-4">Writing Guidelines</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-lg p-4">
+                        <h4 class="font-semibold text-purple-700 mb-2">Content Structure</h4>
+                        <ul class="text-sm text-slate-600 space-y-1">
+                            <li>• Start with a personalized greeting using {{name}} or {{first_name}}</li>
+                            <li>• Write in clear, simple English</li>
+                            <li>• Use line breaks for paragraphs (double enter)</li>
+                            <li>• Use bullet points with • symbol for lists</li>
+                            <li>• End with a professional signature</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-lg p-4">
+                        <h4 class="font-semibold text-purple-700 mb-2">Personalization Tips</h4>
+                        <ul class="text-sm text-slate-600 space-y-1">
+                            <li>• Use {{first_name}} for casual, friendly tone</li>
+                            <li>• Use {{name}} for formal communications</li>
+                            <li>• Include {{email}} when referencing their account</li>
+                            <li>• Keep subject lines under 50 characters</li>
+                            <li>• Write as if speaking to one person</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 bg-white rounded-lg p-4">
+                    <h4 class="font-semibold text-purple-700 mb-2">Formatting Tips</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm text-slate-600">
+                        <div>
+                            <p><strong>Line breaks:</strong> Press Enter twice for new paragraph</p>
+                            <p><strong>Lists:</strong> Use • symbol for bullet points</p>
+                        </div>
+                        <div>
+                            <p><strong>Emphasis:</strong> System will auto-format important text</p>
+                            <p><strong>Links:</strong> Just write the URL, it will be clickable</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Details Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden items-center justify-center z-50" id="campaign-details-modal">
+    <div class="glass rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-slate-800">Campaign Details</h2>
+            <button class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center hover:bg-red-200 transition-colors duration-300" id="close-campaign-details">
+                <i class="fas fa-times text-red-600"></i>
+            </button>
+        </div>
+        
+        <div id="campaign-details-content">
+            <!-- Campaign details will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Global variables
+let campaigns = [];
+let templates = [];
+let currentRecipients = [];
+let currentTemplates = [];
+let recipients = [];
+
+// DOM Elements
+const newCampaignBtn = document.getElementById('new-campaign-btn');
+const newTemplateBtn = document.getElementById('new-template-btn');
+const campaignModal = document.getElementById('campaign-modal');
+const templateModal = document.getElementById('template-modal');
+const closeCampaignModal = document.getElementById('close-campaign-modal');
+const closeTemplateModal = document.getElementById('close-template-modal');
+const campaignForm = document.getElementById('campaign-form');
+const templateForm = document.getElementById('template-form');
+const uploadRecipientsBtn = document.getElementById('upload-recipients-btn');
+const recipientsFile = document.getElementById('recipients-file');
+const recipientsList = document.getElementById('recipients-list');
+const recipientsPreview = document.getElementById('recipients-preview');
+const recipientsCount = document.getElementById('recipients-count');
+const downloadSampleCsv = document.getElementById('download-sample-csv');
+const loadSampleTemplate = document.getElementById('load-sample-template');
+const showTemplateGuide = document.getElementById('show-template-guide');
+const templateGuideModal = document.getElementById('template-guide-modal');
+const closeTemplateGuide = document.getElementById('close-template-guide');
+const insertGreeting = document.getElementById('insert-greeting');
+const insertSignature = document.getElementById('insert-signature');
+const insertSeparator = document.getElementById('insert-separator');
+const emailPreviewSection = document.getElementById('email-preview-section');
+const previewRecipientName = document.getElementById('preview-recipient-name');
+const previewSubject = document.getElementById('preview-subject');
+const emailPreviewContent = document.getElementById('email-preview-content');
+const refreshPreview = document.getElementById('refresh-preview');
+const campaignDetailsModal = document.getElementById('campaign-details-modal');
+const closeCampaignDetails = document.getElementById('close-campaign-details');
+const campaignDetailsContent = document.getElementById('campaign-details-content');
+
+// Event Listeners
+newCampaignBtn.addEventListener('click', () => {
+    campaignModal.classList.remove('hidden');
+    campaignModal.classList.add('flex');
+    loadTemplates();
+});
+
+newTemplateBtn.addEventListener('click', () => {
+    templateModal.classList.remove('hidden');
+    templateModal.classList.add('flex');
+});
+
+closeCampaignModal.addEventListener('click', () => {
+    campaignModal.classList.add('hidden');
+    campaignModal.classList.remove('flex');
+});
+
+closeTemplateModal.addEventListener('click', () => {
+    templateModal.classList.add('hidden');
+    templateModal.classList.remove('flex');
+});
+
+uploadRecipientsBtn.addEventListener('click', () => {
+    recipientsFile.click();
+});
+
+recipientsFile.addEventListener('change', handleRecipientsUpload);
+campaignForm.addEventListener('submit', handleCampaignSubmit);
+templateForm.addEventListener('submit', handleTemplateSubmit);
+
+// New event listeners
+downloadSampleCsv.addEventListener('click', downloadSampleCsvFile);
+loadSampleTemplate.addEventListener('click', loadSampleTemplateContent);
+showTemplateGuide.addEventListener('click', () => {
+    templateGuideModal.classList.remove('hidden');
+    templateGuideModal.classList.add('flex');
+});
+closeTemplateGuide.addEventListener('click', () => {
+    templateGuideModal.classList.add('hidden');
+    templateGuideModal.classList.remove('flex');
+});
+
+// Formatting button event listeners
+insertGreeting.addEventListener('click', () => insertTextAtCursor('Dear {{name}},\n\n'));
+insertSignature.addEventListener('click', () => insertTextAtCursor('\n\nBest regards,\n[Your Name]'));
+insertSeparator.addEventListener('click', () => insertTextAtCursor('\n\n---\n\n'));
+
+// Preview functionality
+refreshPreview.addEventListener('click', updateEmailPreview);
+
+// Template selection change listener
+document.querySelector('select[name="template_id"]').addEventListener('change', updateEmailPreview);
+
+// Campaign details modal
+closeCampaignDetails.addEventListener('click', () => {
+    campaignDetailsModal.classList.add('hidden');
+    campaignDetailsModal.classList.remove('flex');
+});
+
+// Functions
+function getCurrentUser() {
+    // Try to get user info from various sources
+    
+    // Check navigation bar for user name (common in EduOps360)
+    const navUser = document.querySelector('nav .text-slate-800, nav .font-semibold, .navbar .user-name');
+    if (navUser && navUser.textContent.trim() && !navUser.textContent.includes('EduOps')) {
+        return navUser.textContent.trim();
+    }
+    
+    // Check header area for user greeting
+    const headerUser = document.querySelector('.welcome-user, .user-greeting, [class*="welcome"]');
+    if (headerUser) {
+        const text = headerUser.textContent.trim();
+        // Extract name from "Welcome, John Doe" or similar
+        const match = text.match(/(?:Welcome,?\s+|Hello,?\s+|Hi,?\s+)(.+?)(?:\s*!|$)/i);
+        if (match && match[1]) {
+            return match[1].trim();
+        }
+    }
+    
+    // Check for user dropdown or profile area
+    const userDropdown = document.querySelector('.user-dropdown .font-semibold, .profile-name, .user-profile');
+    if (userDropdown && userDropdown.textContent.trim()) {
+        return userDropdown.textContent.trim();
+    }
+    
+    // Look for breadcrumb or page title with user info
+    const breadcrumb = document.querySelector('.breadcrumb, .page-title');
+    if (breadcrumb) {
+        const text = breadcrumb.textContent.trim();
+        const match = text.match(/Dashboard\s*-\s*(.+)|(.+)\s*Dashboard/i);
+        if (match && (match[1] || match[2])) {
+            return (match[1] || match[2]).trim();
+        }
+    }
+    
+    // Try to fetch from session endpoint
+    fetch('/api/current-user', { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.user) {
+                sessionStorage.setItem('currentUser', data.user.name || data.user.full_name);
+                return data.user.name || data.user.full_name;
+            }
+        })
+        .catch(() => {});
+    
+    // Check session/local storage
+    const storedUser = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+    if (storedUser && storedUser !== 'Current User') {
+        return storedUser;
+    }
+    
+    // Final fallback - try to get from any text element that looks like a name
+    const allElements = document.querySelectorAll('*');
+    for (let element of allElements) {
+        const text = element.textContent?.trim();
+        if (text && text.length > 2 && text.length < 50 && 
+            /^[A-Z][a-z]+\s+[A-Z][a-z]+$/.test(text) && // Matches "First Last" pattern
+            !text.includes('EduOps') && !text.includes('Campaign') && !text.includes('Template')) {
+            return text;
+        }
+    }
+    
+    // Final fallback
+    return 'Admin User';
+}
+
+function loadCampaigns() {
+    fetch('/campaigns/api/campaigns')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                campaigns = data.campaigns;
+                updateCampaignsTable();
+                updateStats();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading campaigns:', error);
+            showFlashMessage('Failed to load campaigns', 'error');
+        });
+}
+
+function loadTemplates() {
+    fetch('/campaigns/api/templates')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                templates = data.templates;
+                currentTemplates = data.templates;
+                updateTemplateSelect();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading templates:', error);
+        });
+}
+
+function updateTemplateSelect() {
+    const select = document.querySelector('select[name="template_id"]');
+    select.innerHTML = '<option value="">Select a template</option>';
+    
+    templates.forEach(template => {
+        const option = document.createElement('option');
+        option.value = template.id;
+        option.textContent = `${template.name} (${template.category})`;
+        select.appendChild(option);
+    });
+}
+
+function handleRecipientsUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    showFlashMessage('Uploading recipients...', 'info');
+    
+    fetch('/campaigns/api/upload-recipients', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            recipients = data.recipients;
+            currentRecipients = data.recipients;
+            updateRecipientsPreview();
+            updateEmailPreview();
+            showFlashMessage(data.message, 'success');
+        } else {
+            showFlashMessage('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading recipients:', error);
+        showFlashMessage('Failed to upload recipients', 'error');
+    });
+}
+
+function updateRecipientsPreview() {
+    if (recipients.length === 0) {
+        recipientsPreview.classList.add('hidden');
+        emailPreviewSection.classList.add('hidden');
+        return;
+    }
+    
+    recipientsPreview.classList.remove('hidden');
+    recipientsCount.textContent = recipients.length;
+    
+    // Show email preview section when recipients are loaded
+    emailPreviewSection.classList.remove('hidden');
+}
+
+function updateEmailPreview() {
+    if (!currentRecipients.length) {
+        emailPreviewContent.innerHTML = `
+            <div class="text-slate-400 text-center py-8">
+                <i class="fas fa-envelope-open text-2xl mb-2"></i>
+                <p>Upload recipients to see email preview</p>
+            </div>
+        `;
+        return;
+    }
+
+    const selectedTemplateId = document.querySelector('select[name="template_id"]').value;
+    if (!selectedTemplateId) {
+        emailPreviewContent.innerHTML = `
+            <div class="text-slate-400 text-center py-8">
+                <i class="fas fa-template text-2xl mb-2"></i>
+                <p>Select a template to see email preview</p>
+            </div>
+        `;
+        previewSubject.textContent = 'Select template to see preview';
+        return;
+    }
+
+    // Get the selected template - try to fetch full details if not available
+    let selectedTemplate = currentTemplates.find(t => t.id === selectedTemplateId);
+    
+    if (!selectedTemplate || (!selectedTemplate.text_content && !selectedTemplate.html_content)) {
+        // Fetch full template details
+        fetch(`/campaigns/api/templates/${selectedTemplateId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    selectedTemplate = data.template;
+                    renderPreview(selectedTemplate, currentRecipients[0]);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching template:', error);
+                emailPreviewContent.innerHTML = `
+                    <div class="text-red-400 text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p>Error loading template content</p>
+                    </div>
+                `;
+            });
+        return;
+    }
+    
+    renderPreview(selectedTemplate, currentRecipients[0]);
+}
+
+function renderPreview(selectedTemplate, firstRecipient) {
+    // Update preview recipient name
+    previewRecipientName.textContent = firstRecipient.name || firstRecipient.email;
+    
+    // Update preview subject with personalization
+    let personalizedSubject = selectedTemplate.subject || 'No Subject';
+    personalizedSubject = personalizedSubject.replace(/\{\{name\}\}/g, firstRecipient.name || 'Valued Learner');
+    personalizedSubject = personalizedSubject.replace(/\{\{first_name\}\}/g, (firstRecipient.name || 'Valued').split(' ')[0]);
+    personalizedSubject = personalizedSubject.replace(/\{\{last_name\}\}/g, (firstRecipient.name || 'Learner').split(' ').slice(1).join(' ') || 'Learner');
+    personalizedSubject = personalizedSubject.replace(/\{\{email\}\}/g, firstRecipient.email);
+    previewSubject.textContent = personalizedSubject;
+    
+    // Get template content (use text_content if available, otherwise html_content)
+    let templateContent = selectedTemplate.text_content || selectedTemplate.html_content || 'No content available';
+    
+    // Debug log
+    console.log('Template content:', templateContent);
+    
+    // Personalize the content
+    templateContent = templateContent.replace(/\{\{name\}\}/g, firstRecipient.name || 'Valued Learner');
+    templateContent = templateContent.replace(/\{\{first_name\}\}/g, (firstRecipient.name || 'Valued').split(' ')[0]);
+    templateContent = templateContent.replace(/\{\{last_name\}\}/g, (firstRecipient.name || 'Learner').split(' ').slice(1).join(' ') || 'Learner');
+    templateContent = templateContent.replace(/\{\{email\}\}/g, firstRecipient.email);
+    
+    // Convert plain text to basic HTML for preview
+    if (!templateContent.includes('<')) {
+        templateContent = templateContent
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/\n/g, '<br>')
+            .replace(/^/, '<p>')
+            .replace(/$/, '</p>')
+            .replace(/• /g, '<li>')
+            .replace(/<li>/g, '</li><li>')
+            .replace(/<\/li><li>/g, '<li>')
+            .replace(/<li>(.*?)<\/p>/g, '<ul><li>$1</li></ul>');
+    }
+    
+    // Update preview content
+    emailPreviewContent.innerHTML = `
+        <div class="prose prose-sm max-w-none">
+            ${templateContent}
+        </div>
+    `;
+}
+
+function handleCampaignSubmit(event) {
+    event.preventDefault();
+    
+    if (recipients.length === 0) {
+        showFlashMessage('Please upload recipients first', 'error');
+        return;
+    }
+    
+    const formData = new FormData(campaignForm);
+    const campaignData = {
+        name: formData.get('name'),
+        subject: formData.get('subject'),
+        template_id: formData.get('template_id'),
+        email_account: formData.get('email_account'),
+        recipients: recipients,
+        created_by: getCurrentUser()
+    };
+    
+    showFlashMessage('Creating campaign...', 'info');
+    
+    fetch('/campaigns/api/campaigns', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(campaignData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showFlashMessage('Campaign created successfully!', 'success');
+            campaignModal.classList.add('hidden');
+            campaignModal.classList.remove('flex');
+            campaignForm.reset();
+            recipients = [];
+            updateRecipientsPreview();
+            
+            // Send campaign immediately
+            sendCampaign(data.campaign_id);
+            loadCampaigns();
+        } else {
+            showFlashMessage('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating campaign:', error);
+        showFlashMessage('Failed to create campaign', 'error');
+    });
+}
+
+function handleTemplateSubmit(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(templateForm);
+    const templateData = {
+        name: formData.get('name'),
+        subject: formData.get('subject'),
+        html_content: formData.get('html_content'),
+        category: formData.get('category'),
+        created_by: getCurrentUser()
+    };
+    
+    showFlashMessage('Creating template...', 'info');
+    
+    fetch('/campaigns/api/templates', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(templateData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showFlashMessage('Template created successfully!', 'success');
+            templateModal.classList.add('hidden');
+            templateModal.classList.remove('flex');
+            templateForm.reset();
+            loadTemplates();
+        } else {
+            showFlashMessage('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating template:', error);
+        showFlashMessage('Failed to create template', 'error');
+    });
+}
+
+function sendCampaign(campaignId) {
+    fetch(`/campaigns/api/campaigns/${campaignId}/send`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showFlashMessage('Campaign sending started!', 'info');
+        } else {
+            showFlashMessage('Error sending campaign: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error sending campaign:', error);
+        showFlashMessage('Failed to send campaign', 'error');
+    });
+}
+
+function updateCampaignsTable(campaignsToShow = campaigns) {
+    const tbody = document.getElementById('campaigns-table-body');
+    
+    if (!campaignsToShow || campaignsToShow.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-12 text-slate-500">
+                    <div class="flex flex-col items-center gap-3">
+                        <i class="fas fa-bullhorn text-4xl text-slate-300"></i>
+                        <p>No campaigns found. Create your first campaign!</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = campaignsToShow.map(campaign => {
+        const statusColors = {
+            draft: 'bg-gray-100 text-gray-800',
+            sending: 'bg-blue-100 text-blue-800',
+            completed: 'bg-green-100 text-green-800',
+            failed: 'bg-red-100 text-red-800',
+            partial: 'bg-yellow-100 text-yellow-800'
+        };
+        
+        const statusClass = statusColors[campaign.status] || 'bg-gray-100 text-gray-800';
+        const createdDate = new Date(campaign.created_at).toLocaleDateString();
+        
+        return `
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200">
+                <td class="py-4 px-4 font-medium text-slate-800">${campaign.name}</td>
+                <td class="py-4 px-4 text-slate-600">${campaign.subject}</td>
+                <td class="py-4 px-4 text-slate-600">${campaign.total_recipients}</td>
+                <td class="py-4 px-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
+                        ${campaign.status}
+                    </span>
+                </td>
+                <td class="py-4 px-4 text-slate-600">${campaign.emails_sent || 0}/${campaign.total_recipients}</td>
+                <td class="py-4 px-4 text-slate-600">${createdDate}</td>
+                <td class="py-4 px-4">
+                    <button class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300" onclick="viewCampaign('${campaign.id}')">
+                        <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function viewCampaign(campaignId) {
+    console.log('viewCampaign called with ID:', campaignId);
+    
+    // Show loading state
+    campaignDetailsContent.innerHTML = `
+        <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
+            <p>Loading campaign details...</p>
+        </div>
+    `;
+    
+    campaignDetailsModal.classList.remove('hidden');
+    campaignDetailsModal.classList.add('flex');
+    
+    // Fetch campaign details
+    fetch(`/campaigns/api/campaigns/${campaignId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderCampaignDetails(data.campaign);
+            } else {
+                campaignDetailsContent.innerHTML = `
+                    <div class="text-center py-8 text-red-500">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p>Error loading campaign details: ${data.error}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching campaign details:', error);
+            campaignDetailsContent.innerHTML = `
+                <div class="text-center py-8 text-red-500">
+                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                    <p>Failed to load campaign details</p>
+                </div>
+            `;
+        });
+}
+
+// Make viewCampaign globally accessible
+window.viewCampaign = viewCampaign;
+
+function renderCampaignDetails(campaign) {
+    const statusColors = {
+        draft: 'bg-gray-100 text-gray-800',
+        sending: 'bg-blue-100 text-blue-800',
+        completed: 'bg-green-100 text-green-800',
+        failed: 'bg-red-100 text-red-800',
+        partial: 'bg-yellow-100 text-yellow-800'
+    };
+    
+    const statusClass = statusColors[campaign.status] || 'bg-gray-100 text-gray-800';
+    const failedCount = campaign.emails_failed || 0;
+    const sentCount = campaign.emails_sent || 0;
+    const totalCount = campaign.total_recipients || 0;
+    
+    campaignDetailsContent.innerHTML = `
+        <div class="space-y-6">
+            <!-- Campaign Overview -->
+            <div class="bg-white rounded-xl p-6 border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Campaign Overview</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-slate-600">Campaign Name</p>
+                        <p class="font-semibold text-slate-800">${campaign.name}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-600">Subject</p>
+                        <p class="font-semibold text-slate-800">${campaign.subject}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-600">Status</p>
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
+                            ${campaign.status}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-600">Created</p>
+                        <p class="font-semibold text-slate-800">${new Date(campaign.created_at).toLocaleString()}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-600">Sent By</p>
+                        <p class="font-semibold text-slate-800">${campaign.created_by || 'Unknown User'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-600">Email Account</p>
+                        <p class="font-semibold text-slate-800" id="email-account-display">Loading...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Statistics -->
+            <div class="bg-white rounded-xl p-6 border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Email Statistics</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600">${sentCount}</div>
+                        <div class="text-sm text-green-700">Successfully Sent</div>
+                    </div>
+                    <div class="text-center p-4 bg-red-50 rounded-lg">
+                        <div class="text-2xl font-bold text-red-600">${failedCount}</div>
+                        <div class="text-sm text-red-700">Failed to Send</div>
+                    </div>
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">${totalCount}</div>
+                        <div class="text-sm text-blue-700">Total Recipients</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Failed Emails Section -->
+            ${failedCount > 0 ? `
+            <div class="bg-red-50 rounded-xl p-6 border border-red-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-red-800">Failed Emails</h3>
+                    <button class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition-colors" onclick="downloadFailedEmails('${campaign.id}')">
+                        <i class="fas fa-download mr-2"></i>Download Failed Emails CSV
+                    </button>
+                </div>
+                <p class="text-red-700 text-sm mb-4">
+                    ${failedCount} emails failed to send. Download the CSV file to see the email addresses and failure reasons.
+                </p>
+                <div class="bg-white rounded-lg p-4 border border-red-200">
+                    <h4 class="font-semibold text-red-800 mb-2">Common Failure Reasons:</h4>
+                    <ul class="text-sm text-red-700 space-y-1">
+                        <li>• Invalid email address format</li>
+                        <li>• Email address does not exist</li>
+                        <li>• Recipient's mailbox is full</li>
+                        <li>• Email server temporarily unavailable</li>
+                        <li>• Email blocked by spam filter</li>
+                    </ul>
+                </div>
+            </div>
+            ` : `
+            <div class="bg-green-50 rounded-xl p-6 border border-green-200">
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                    <h3 class="text-lg font-bold text-green-800">All Emails Sent Successfully!</h3>
+                    <p class="text-green-700">No failed emails in this campaign.</p>
+                </div>
+            </div>
+            `}
+        </div>
+    `;
+    
+    // Fetch and display email account information
+    fetchEmailAccountInfo(campaign.email_account);
+}
+
+function fetchEmailAccountInfo(accountKey) {
+    if (!accountKey) {
+        document.getElementById('email-account-display').textContent = 'No account specified';
+        return;
+    }
+    
+    // Try multiple approaches to get email account information
+    console.log('Fetching email account info for:', accountKey);
+    
+    // First, try to get from the email accounts in the campaign form
+    const emailSelect = document.querySelector('select[name="email_account"]');
+    if (emailSelect) {
+        const option = emailSelect.querySelector(`option[value="${accountKey}"]`);
+        if (option && option.textContent.includes('@')) {
+            // If the option text contains an email, use it
+            const optionText = option.textContent.trim();
+            const emailMatch = optionText.match(/([^<]+)<([^>]+)>|(.+@.+)/);
+            if (emailMatch) {
+                const name = emailMatch[1] ? emailMatch[1].trim() : 'Email Account';
+                const email = emailMatch[2] || emailMatch[3];
+                document.getElementById('email-account-display').innerHTML = `
+                    <span class="text-slate-800">${name}</span><br>
+                    <span class="text-sm text-slate-500">${email}</span>
+                `;
+                return;
+            }
+        }
+    }
+    
+    // Try the API approach
+    fetch('/email-accounts/api/accounts')
+        .then(response => {
+            console.log('Email accounts API response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`API responded with status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Email accounts API data:', data);
+            if (data.success && data.accounts) {
+                const account = data.accounts.find(acc => 
+                    acc.key === accountKey || 
+                    acc.id === accountKey || 
+                    acc.name === accountKey ||
+                    acc.account_name === accountKey
+                );
+                console.log('Found account:', account);
+                if (account) {
+                    const accountName = account.name || account.account_name || account.display_name || accountKey;
+                    const accountEmail = account.email || account.smtp_username || account.from_email || account.username;
+                    
+                    document.getElementById('email-account-display').innerHTML = `
+                        <span class="text-slate-800">${accountName}</span><br>
+                        <span class="text-sm text-slate-500">${accountEmail || 'Email not configured'}</span>
+                    `;
+                } else {
+                    // Account not found in API
+                    displayFallbackAccountInfo(accountKey);
+                }
+            } else {
+                displayFallbackAccountInfo(accountKey);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching email account info:', error);
+            displayFallbackAccountInfo(accountKey);
+        });
+}
+
+function displayFallbackAccountInfo(accountKey) {
+    // Create a more user-friendly display for common account keys
+    let displayName = accountKey;
+    let displayEmail = 'Email address not available';
+    
+    // Map common account keys to user-friendly names
+    const accountMappings = {
+        'primary': 'Primary Email Account',
+        'default': 'Default Email Account',
+        'gmail': 'Gmail Account',
+        'outlook': 'Outlook Account',
+        'smtp': 'SMTP Account',
+        'main': 'Main Email Account'
+    };
+    
+    if (accountMappings[accountKey.toLowerCase()]) {
+        displayName = accountMappings[accountKey.toLowerCase()];
+    }
+    
+    // Try to get email from form options one more time
+    const emailSelect = document.querySelector('select[name="email_account"]');
+    if (emailSelect) {
+        const option = emailSelect.querySelector(`option[value="${accountKey}"]`);
+        if (option) {
+            const optionText = option.textContent.trim();
+            // Check if option text looks like it contains useful info
+            if (optionText && optionText !== accountKey && optionText.length > accountKey.length) {
+                displayName = optionText;
+            }
+        }
+    }
+    
+    document.getElementById('email-account-display').innerHTML = `
+        <span class="text-slate-800">${displayName}</span><br>
+        <span class="text-sm text-slate-400">${displayEmail}</span>
+    `;
+}
+
+function downloadFailedEmails(campaignId) {
+    // Show loading message
+    showFlashMessage('Preparing failed emails CSV...', 'info');
+    
+    fetch(`/campaigns/api/campaigns/${campaignId}/failed-emails-csv`)
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            }
+            throw new Error('Failed to generate CSV');
+        })
+        .then(blob => {
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `campaign_${campaignId}_failed_emails.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showFlashMessage('Failed emails CSV downloaded successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Error downloading failed emails CSV:', error);
+            showFlashMessage('Failed to download CSV file', 'error');
+        });
+}
+
+// Make downloadFailedEmails globally accessible
+window.downloadFailedEmails = downloadFailedEmails;
+
+function updateStats() {
+    const totalCampaigns = campaigns.length;
+    const totalSent = campaigns.reduce((sum, campaign) => sum + (campaign.emails_sent || 0), 0);
+    const totalRecipients = campaigns.reduce((sum, campaign) => sum + campaign.total_recipients, 0);
+    const successRate = totalRecipients > 0 ? ((totalSent / totalRecipients) * 100).toFixed(1) : 0;
+    
+    document.getElementById('total-campaigns').textContent = totalCampaigns;
+    document.getElementById('total-sent').textContent = totalSent;
+    document.getElementById('total-templates').textContent = templates.length;
+    document.getElementById('success-rate').textContent = successRate + '%';
+}
+
+function showFlashMessage(message, type) {
+    const messageDiv = document.createElement("div");
+    
+    const colors = {
+        success: "bg-green-100 border-green-500 text-green-700",
+        error: "bg-red-100 border-red-500 text-red-700",
+        info: "bg-blue-100 border-blue-500 text-blue-700",
+        warning: "bg-yellow-100 border-yellow-500 text-yellow-700"
+    };
+    
+    const icons = {
+        success: "fas fa-check-circle",
+        error: "fas fa-exclamation-circle",
+        info: "fas fa-info-circle",
+        warning: "fas fa-exclamation-triangle"
+    };
+    
+    messageDiv.className = `border-l-4 p-4 rounded-r-lg ${colors[type]} mb-4 flex items-center gap-3 animate-pulse`;
+    messageDiv.innerHTML = `
+        <i class="${icons[type]}"></i>
+        <span>${message}</span>
+        <button class="ml-auto text-xl hover:opacity-70" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    document.getElementById('flash-messages').appendChild(messageDiv);
+    
+    if (type !== "error") {
+        setTimeout(() => {
+            if (messageDiv.parentElement) {
+                messageDiv.remove();
+            }
+        }, 5000);
+    }
+}
+
+// New Functions for Enhanced Features
+
+function downloadSampleCsvFile() {
+    const csvContent = `email,name
+john.doe@example.com,John Doe
+jane.smith@example.com,Jane Smith
+mike.johnson@example.com,Mike Johnson
+sarah.wilson@example.com,Sarah Wilson
+david.brown@example.com,David Brown`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_recipients.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    showFlashMessage('Sample CSV file downloaded successfully!', 'success');
+}
+
+function insertTextAtCursor(text) {
+    const textarea = document.querySelector('textarea[name="html_content"]');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentValue = textarea.value;
+    
+    // Insert text at cursor position
+    const newValue = currentValue.substring(0, start) + text + currentValue.substring(end);
+    textarea.value = newValue;
+    
+    // Move cursor to end of inserted text
+    const newCursorPos = start + text.length;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+    textarea.focus();
+}
+
+function loadSampleTemplateContent() {
+    const sampleTemplate = `Dear {{name}},
+
+I hope this email finds you well.
+
+This is a sample email template that you can customize according to your needs. You can personalize it using the available variables.
+
+Your email address on file is: {{email}}
+
+Here are some key points you might want to include:
+• Important information or updates
+• Action items or next steps
+• Relevant links or resources
+• Contact information for questions
+
+If you have any questions or need assistance, please don't hesitate to reach out.
+
+Best regards,
+[Your Name/Organization]
+
+---
+This is an automated message. Please do not reply directly to this email.`;
+    
+    document.querySelector('textarea[name="html_content"]').value = sampleTemplate;
+    showFlashMessage('Sample template loaded successfully!', 'success');
+}
+
+// Search functionality
+document.getElementById('search-campaigns').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    const clearButton = document.getElementById('clear-search');
+    
+    // Show/hide clear button
+    if (searchTerm) {
+        clearButton.classList.remove('hidden');
+    } else {
+        clearButton.classList.add('hidden');
+    }
+    
+    filterCampaigns(searchTerm);
+});
+
+// Clear search functionality
+document.getElementById('clear-search').addEventListener('click', function() {
+    const searchInput = document.getElementById('search-campaigns');
+    searchInput.value = '';
+    this.classList.add('hidden');
+    filterCampaigns('');
+});
+
+
+function filterCampaigns(searchTerm) {
+    if (!campaigns || campaigns.length === 0) {
+        return;
+    }
+    
+    let filteredCampaigns;
+    
+    if (!searchTerm) {
+        // Show all campaigns if search is empty
+        filteredCampaigns = campaigns;
+        // Reset to original stats and hide search info
+        updateStats();
+        updateCampaignsTable();
+        document.getElementById('search-results-info').classList.add('hidden');
+        return;
+    } else {
+        // Filter campaigns based on search term
+        filteredCampaigns = campaigns.filter(campaign => {
+            return (
+                campaign.name.toLowerCase().includes(searchTerm) ||
+                campaign.subject.toLowerCase().includes(searchTerm) ||
+                campaign.status.toLowerCase().includes(searchTerm) ||
+                campaign.created_by.toLowerCase().includes(searchTerm) ||
+                campaign.email_account.toLowerCase().includes(searchTerm)
+            );
+        });
+    }
+    
+    // Update the table with filtered results
+    updateCampaignsTable(filteredCampaigns);
+    
+    // Update stats to reflect filtered results
+    updateFilteredStats(filteredCampaigns);
+    
+    // Show search results info
+    const searchResultsInfo = document.getElementById('search-results-info');
+    const searchResultsCount = document.getElementById('search-results-count');
+    searchResultsCount.textContent = filteredCampaigns.length;
+    searchResultsInfo.classList.remove('hidden');
+}
+
+function updateFilteredStats(filteredCampaigns) {
+    const totalCampaigns = filteredCampaigns.length;
+    const totalEmailsSent = filteredCampaigns.reduce((sum, c) => sum + (c.emails_sent || 0), 0);
+    const totalEmailsAttempted = filteredCampaigns.reduce((sum, c) => sum + (c.total_recipients || 0), 0);
+    const successRate = totalEmailsAttempted > 0 ? Math.round((totalEmailsSent / totalEmailsAttempted) * 100) : 0;
+    
+    // Update stats display
+    const totalCampaignsEl = document.querySelector('[data-stat="total-campaigns"]');
+    const totalEmailsSentEl = document.querySelector('[data-stat="total-emails-sent"]');
+    const successRateEl = document.querySelector('[data-stat="success-rate"]');
+    
+    if (totalCampaignsEl) totalCampaignsEl.textContent = totalCampaigns;
+    if (totalEmailsSentEl) totalEmailsSentEl.textContent = totalEmailsSent;
+    if (successRateEl) successRateEl.textContent = successRate + '%';
+    
+    // Templates count doesn't change with campaign filtering
+    // So we don't update it here
+}
+
+// Initialize
+loadCampaigns();
+loadTemplates();
+</script>
+
+{% endblock %}

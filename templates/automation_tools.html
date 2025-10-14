@@ -1,192 +1,221 @@
 {% extends "base.html" %}
 
-{% block title %}EduOps360 - Dashboard{% endblock %}
+{% block title %}Automation Tools - EduOps360{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-  <div class="dashboard-header">
-    <h1 class="dashboard-title">Process Automation Dashboard</h1>
-    <p class="dashboard-subtitle">Manage all your automation tasks from one centralized location</p>
-  </div>
-  
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon doc-icon">
-        <i class="fas fa-file-word"></i>
-      </div>
-      <h2 class="feature-title">Document Creation</h2>
-      <p class="feature-description">Generate multiple documents in bulk using Word templates and CSV data. Supports both DOCX and PDF output formats with email capabilities.</p>
-      <a href="{{ url_for('document.document_home') }}" class="btn">
-        <i class="fas fa-rocket"></i> Go to Document Creator
-      </a>
-    </div>
-    
-    <div class="feature-card">
-      <div class="feature-icon reminder-icon">
-        <i class="fas fa-bell"></i>
-      </div>
-      <h2 class="feature-title">Session Reminders</h2>
-      <p class="feature-description">Send automated reminders for upcoming sessions. Upload Excel sheets with professor details and session information.</p>
-      <a href="{{ url_for('reminder.reminder_home') }}" class="btn btn-accent">
-        <i class="fas fa-calendar-check"></i> Go to Session Reminder
-      </a>
-    </div>
-    
-    <div class="feature-card">
-      <div class="feature-icon folder-icon">
-        <i class="fas fa-folder"></i>
-      </div>
-      <h2 class="feature-title">Folder Creator</h2>
-      <p class="feature-description">Create multiple folders at once from CSV or Excel data. Perfect for organizing documents by category, project, or client.</p>
-      <a href="{{ url_for('folders.folder_home') }}" class="btn btn-secondary">
-        <i class="fas fa-folder-plus"></i> Go to Folder Creator
-      </a>
-    </div>
-  </div>
+<!-- Header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Automation Tools</h1>
+    <p class="text-gray-600">Streamline your educational operations with powerful automation</p>
 </div>
 
-<style>
-  .dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .dashboard-header {
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-
-  .dashboard-title {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 0.5rem;
-  }
-
-  .dashboard-subtitle {
-    font-size: 1.1rem;
-    color: var(--dark-light);
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-  }
-
-  .feature-card {
-    background: var(--white);
-    border-radius: var(--border-radius-lg);
-    padding: 2rem;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .feature-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .doc-icon {
-    background: var(--primary-light);
-    color: var(--primary);
-  }
-
-  .reminder-icon {
-    background: var(--accent-light);
-    color: var(--accent);
-  }
-
-  .folder-icon {
-    background: var(--secondary-light);
-    color: var(--secondary);
-  }
-
-  .feature-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    color: var(--dark);
-  }
-
-  .feature-description {
-    color: var(--dark-light);
-    margin-bottom: 1.5rem;
-    flex-grow: 1;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: var(--primary);
-    color: var(--white);
-    border: none;
-    padding: 12px 20px;
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: var(--transition);
-    text-decoration: none;
-  }
-
-  .btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-  }
-
-  .btn-secondary {
-    background: var(--secondary);
-  }
-
-  .btn-secondary:hover {
-    background: #0d9265;
-  }
-
-  .btn-accent {
-    background: var(--accent);
-  }
-
-  .btn-accent:hover {
-    background: #e4850f;
-  }
-
-  @media (max-width: 768px) {
-    .features-grid {
-      grid-template-columns: 1fr;
-    }
+<!-- Tools Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     
-    .dashboard-title {
-      font-size: 1.75rem;
-    }
-  }
+    <!-- Document Generator -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div class="h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+        <div class="p-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-file-alt text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Document Generator</h3>
+            <p class="text-gray-600 text-sm mb-4">Create and customize documents from templates with mail merge capabilities</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>Last used: 2 hours ago
+                </span>
+                <a href="{{ url_for('document_home') }}" 
+                   class="text-blue-600 hover:text-blue-700 font-medium text-sm group-hover:translate-x-1 transition-transform inline-flex items-center">
+                    Open Tool <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Email Campaigns -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div class="h-2 bg-gradient-to-r from-purple-500 to-pink-600"></div>
+        <div class="p-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-envelope text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Email Campaigns</h3>
+            <p class="text-gray-600 text-sm mb-4">Send bulk emails and manage email campaigns with tracking</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>Last used: Yesterday
+                </span>
+                <a href="{{ url_for('campaigns_home') }}" 
+                   class="text-purple-600 hover:text-purple-700 font-medium text-sm group-hover:translate-x-1 transition-transform inline-flex items-center">
+                    Open Tool <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Session Reminders -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div class="h-2 bg-gradient-to-r from-green-500 to-emerald-600"></div>
+        <div class="p-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-bell text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Session Reminders</h3>
+            <p class="text-gray-600 text-sm mb-4">Automated reminders for upcoming sessions and deadlines</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>Last used: 3 days ago
+                </span>
+                <a href="{{ url_for('reminder_home') }}" 
+                   class="text-green-600 hover:text-green-700 font-medium text-sm group-hover:translate-x-1 transition-transform inline-flex items-center">
+                    Open Tool <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Folder Structure Creator -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div class="h-2 bg-gradient-to-r from-orange-500 to-yellow-600"></div>
+        <div class="p-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-folder-tree text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Folder Structure</h3>
+            <p class="text-gray-600 text-sm mb-4">Create organized folder structures for courses and projects</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>Last used: 1 week ago
+                </span>
+                <a href="{{ url_for('folder_home') }}" 
+                   class="text-orange-600 hover:text-orange-700 font-medium text-sm group-hover:translate-x-1 transition-transform inline-flex items-center">
+                    Open Tool <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Generator -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div class="h-2 bg-gradient-to-r from-red-500 to-pink-600"></div>
+        <div class="p-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-chart-bar text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Report Generator</h3>
+            <p class="text-gray-600 text-sm mb-4">Generate comprehensive reports and analytics dashboards</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>Last used: 5 days ago
+                </span>
+                <a href="#" 
+                   class="text-red-600 hover:text-red-700 font-medium text-sm group-hover:translate-x-1 transition-transform inline-flex items-center">
+                    Open Tool <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-  @media (max-width: 480px) {
-    .feature-card {
-      padding: 1.5rem;
-    }
-  }
-</style>
+<!-- Quick Stats -->
+<div class="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Automation Statistics</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl p-4 shadow-md">
+            <div class="flex items-center justify-between mb-2">
+                <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                <span class="text-2xl font-bold text-gray-800">1,234</span>
+            </div>
+            <p class="text-sm text-gray-600">Documents Generated</p>
+            <p class="text-xs text-green-600 mt-1">
+                <i class="fas fa-arrow-up mr-1"></i>12% this month
+            </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow-md">
+            <div class="flex items-center justify-between mb-2">
+                <i class="fas fa-envelope text-purple-600 text-xl"></i>
+                <span class="text-2xl font-bold text-gray-800">5,678</span>
+            </div>
+            <p class="text-sm text-gray-600">Emails Sent</p>
+            <p class="text-xs text-green-600 mt-1">
+                <i class="fas fa-arrow-up mr-1"></i>24% this month
+            </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow-md">
+            <div class="flex items-center justify-between mb-2">
+                <i class="fas fa-clock text-green-600 text-xl"></i>
+                <span class="text-2xl font-bold text-gray-800">892</span>
+            </div>
+            <p class="text-sm text-gray-600">Hours Saved</p>
+            <p class="text-xs text-green-600 mt-1">
+                <i class="fas fa-arrow-up mr-1"></i>18% this month
+            </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow-md">
+            <div class="flex items-center justify-between mb-2">
+                <i class="fas fa-robot text-indigo-600 text-xl"></i>
+                <span class="text-2xl font-bold text-gray-800">3,421</span>
+            </div>
+            <p class="text-sm text-gray-600">AI Interactions</p>
+            <p class="text-xs text-green-600 mt-1">
+                <i class="fas fa-arrow-up mr-1"></i>35% this month
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="mt-8 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Recent Automation Activity</h2>
+    <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-file-alt text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-800">Generated 25 offer letters</p>
+                    <p class="text-xs text-gray-500">Document Generator • 2 hours ago</p>
+                </div>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+        </div>
+        
+        <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-envelope text-purple-600 text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-800">Sent reminder emails to 150 learners</p>
+                    <p class="text-xs text-gray-500">Email Campaigns • 5 hours ago</p>
+                </div>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+        </div>
+        
+        <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-bell text-green-600 text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-800">Scheduled 10 session reminders</p>
+                    <p class="text-xs text-gray-500">Session Reminders • Yesterday</p>
+                </div>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}

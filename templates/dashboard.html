@@ -1,1239 +1,864 @@
 {% extends "base.html" %}
 
+{% block title %}Dashboard - EduOps360{% endblock %}
+
 {% block content %}
-<style>
-    /* Dashboard-specific styles that complement base.html */
-    .dashboard-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 1rem;
-    }
-
-    /* Page Header */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding: 1.5rem;
-        background: var(--light);
-        border-radius: var(--border-radius);
-        box-shadow: var(--card-shadow);
-        border: 1px solid var(--gray-200);
-    }
-
-    .page-header h1 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--dark);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .page-header h1 i {
-        color: var(--primary);
-        background: rgba(67, 97, 238, 0.1);
-        padding: 0.5rem;
-        border-radius: 10px;
-    }
-
-    /* Greeting Section Styles */
-    .greeting-section {
-        background: var(--light);
-        border-radius: var(--border-radius);
-        padding: 1.5rem 2rem;
-        margin-bottom: 2rem;
-        box-shadow: var(--card-shadow);
-        border: 1px solid var(--gray-200);
-        background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(58, 12, 163, 0.05) 100%);
-        border-left: 4px solid var(--primary);
-    }
-
-    .greeting-content {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .greeting-text {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--dark);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .greeting-text i {
-        color: var(--primary);
-        background: rgba(67, 97, 238, 0.1);
-        padding: 0.5rem;
-        border-radius: 50%;
-        font-size: 1.25rem;
-    }
-
-    .greeting-subtext {
-        font-size: 1rem;
-        color: var(--gray-600);
-        margin: 0;
-        font-weight: 500;
-    }
-
-    /* Dark mode support for greeting */
-    .dark-mode .greeting-section {
-        background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(58, 12, 163, 0.1) 100%);
-        border-color: var(--gray-300);
-    }
-
-    /* Responsive design for greeting */
-    @media (max-width: 768px) {
-        .greeting-section {
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .greeting-text {
-            font-size: 1.25rem;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-    }
-
-
-    .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .last-updated {
-        font-size: 0.9rem;
-        color: var(--gray-600);
-        background: var(--gray-100);
-        padding: 0.75rem 1.25rem;
-        border-radius: 50px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    /* Buttons */
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 50px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        font-size: 0.9rem;
-    }
-
-    .btn-primary {
-        background: var(--primary-gradient);
-        color: white;
-        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
-    }
-
-    /* Stats Cards - Made smaller to fit in one line */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .stat-card {
-        background: var(--light);
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        box-shadow: var(--card-shadow);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-        border: 1px solid var(--gray-200);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        min-height: 140px;
-        /* Reduced height */
-    }
-
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--card-shadow-hover);
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        /* Reduced height */
-        background: var(--primary-gradient);
-    }
-
-    .stat-card.danger::before {
-        background: var(--danger);
-    }
-
-    .stat-card.warning::before {
-        background: var(--warning);
-    }
-
-    .stat-card.success::before {
-        background: var(--success);
-    }
-
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 0.75rem;
-        /* Reduced margin */
-    }
-
-    .stat-title {
-        font-size: 0.85rem;
-        /* Smaller font */
-        font-weight: 600;
-        color: var(--gray-600);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .stat-icon {
-        width: 40px;
-        /* Smaller icon */
-        height: 40px;
-        border-radius: 10px;
-        background: rgba(67, 97, 238, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary);
-        font-size: 1.1rem;
-        /* Smaller icon size */
-    }
-
-    .stat-card.danger .stat-icon {
-        background: rgba(249, 65, 68, 0.1);
-        color: var(--danger);
-    }
-
-    .stat-card.warning .stat-icon {
-        background: rgba(249, 199, 79, 0.1);
-        color: var(--warning);
-    }
-
-    .stat-card.success .stat-icon {
-        background: rgba(76, 201, 240, 0.1);
-        color: var(--success);
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        /* Smaller font size */
-        font-weight: 700;
-        color: var(--dark);
-        margin-bottom: 0.25rem;
-        /* Reduced margin */
-        line-height: 1;
-    }
-
-    .stat-description {
-        font-size: 0.85rem;
-        /* Smaller font */
-        color: var(--gray-600);
-        margin-top: auto;
-    }
-
-    /* Data Section */
-    .data-section {
-        background: var(--light);
-        border-radius: var(--border-radius);
-        padding: 1.75rem;
-        box-shadow: var(--card-shadow);
-        margin-bottom: 2rem;
-        border: 1px solid var(--gray-200);
-    }
-
-    .section-header {
-        margin-bottom: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .section-header h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--dark);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .section-header h2 i {
-        color: var(--primary);
-    }
-
-    .table-container {
-        overflow-x: auto;
-        border-radius: 12px;
-        border: 1px solid var(--gray-200);
-        padding: 1rem;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
-    }
-
-    th {
-        background: var(--gray-100);
-        padding: 1rem 1.25rem;
-        text-align: left;
-        font-weight: 600;
-        color: var(--dark);
-        border-bottom: 1px solid var(--gray-200);
-        cursor: pointer;
-        transition: var(--transition);
-        position: relative;
-        white-space: nowrap;
-    }
-
-    th:hover {
-        background: var(--gray-200);
-    }
-
-    th i {
-        margin-left: 0.5rem;
-        opacity: 0.5;
-        transition: var(--transition);
-        font-size: 0.8rem;
-    }
-
-    th:hover i {
-        opacity: 1;
-    }
-
-    td {
-        padding: 1.25rem;
-        border-bottom: 1px solid var(--gray-200);
-        vertical-align: top;
-    }
-
-    tr:last-child td {
-        border-bottom: none;
-    }
-
-    tr:hover td {
-        background: var(--gray-100);
-    }
-
-    /* Badges */
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.35rem 0.75rem;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .badge-active {
-        background: rgba(76, 201, 240, 0.15);
-        color: var(--success);
-    }
-
-    .badge-warning {
-        background: rgba(247, 37, 133, 0.15);
-        color: var(--warning);
-    }
-
-    /* Course Blocks */
-    .course-blocks {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .course-block {
-        background: var(--gray-100);
-        border-radius: 8px;
-        padding: 0.75rem;
-        font-size: 0.8rem;
-        border: 1px solid var(--gray-200);
-        min-width: 150px;
-    }
-
-    .course-name {
-        font-weight: 600;
-        margin-bottom: 0.35rem;
-        color: var(--dark);
-    }
-
-    .course-details {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .course-grade {
-        color: var(--danger);
-        font-weight: 700;
-    }
-
-    .course-credit {
-        color: var(--gray-600);
-        font-size: 0.75rem;
-    }
-
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--gray-200);
-    }
-
-    .pagination-controls {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .pagination-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1.25rem;
-        background: var(--gray-100);
-        color: var(--gray-700);
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: var(--transition);
-        border: 1px solid var(--gray-200);
-    }
-
-    .pagination-btn:hover:not(:disabled) {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-
-    .pagination-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .pagination-pages {
-        display: flex;
-        gap: 0.35rem;
-    }
-
-    .pagination-page {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: var(--gray-700);
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: var(--transition);
-        border: 1px solid transparent;
-    }
-
-    .pagination-page:hover {
-        background: var(--gray-100);
-        border-color: var(--gray-300);
-    }
-
-    .pagination-page.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-
-    .pagination-ellipsis {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        color: var(--gray-500);
-    }
-
-    .pagination-info {
-        font-size: 0.85rem;
-        color: var(--gray-600);
-        font-weight: 500;
-    }
-
-    /* Modal */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        padding: 1rem;
-    }
-
-    .modal.show {
-        display: flex;
-        opacity: 1;
-    }
-
-    .modal-content {
-        background: var(--light);
-        border-radius: var(--border-radius);
-        width: 100%;
-        max-width: 500px;
-        padding: 2rem;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        transform: translateY(-20px);
-        transition: transform 0.3s ease;
-        border: 1px solid var(--gray-200);
-        position: relative;
-    }
-
-    .modal.show .modal-content {
-        transform: translateY(0);
-    }
-
-    .modal-content h2 {
-        margin-bottom: 1rem;
-        color: var(--dark);
-        font-size: 1.5rem;
-    }
-
-    .close {
-        position: absolute;
-        top: 1.25rem;
-        right: 1.25rem;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--gray-500);
-        transition: var(--transition);
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-    }
-
-    .close:hover {
-        color: var(--dark);
-        background: var(--gray-100);
-    }
-
-    /* File Upload */
-    .file-upload-container {
-        margin: 1.5rem 0;
-    }
-
-    .file-upload-label {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 2px dashed var(--gray-300);
-        border-radius: 12px;
-        padding: 2.5rem 2rem;
-        cursor: pointer;
-        transition: var(--transition);
-        text-align: center;
-    }
-
-    .file-upload-label:hover,
-    .file-upload-label.drag-over {
-        border-color: var(--primary);
-        background: rgba(67, 97, 238, 0.05);
-    }
-
-    .file-upload-icon {
-        font-size: 2.5rem;
-        color: var(--primary);
-        margin-bottom: 1rem;
-    }
-
-    .file-upload-text {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--dark);
-    }
-
-    .file-upload-subtext {
-        font-size: 0.9rem;
-        color: var(--gray-600);
-        line-height: 1.5;
-    }
-
-    .file-input {
-        display: none;
-    }
-
-    .file-name {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--gray-100);
-        border-radius: 8px;
-        padding: 0.9rem 1.25rem;
-        margin-top: 1rem;
-        border: 1px solid var(--gray-200);
-    }
-
-    .file-name span {
-        font-weight: 500;
-        color: var(--dark);
-    }
-
-    .remove-file {
-        cursor: pointer;
-        color: var(--gray-500);
-        transition: var(--transition);
-        padding: 0.25rem;
-        border-radius: 4px;
-    }
-
-    .remove-file:hover {
-        color: var(--danger);
-        background: rgba(249, 65, 68, 0.1);
-    }
-
-    .upload-btn {
-        width: 100%;
-        justify-content: center;
-        margin-top: 1.5rem;
-    }
-
-    .upload-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none !important;
-    }
-
-    .upload-status {
-        margin-top: 1.5rem;
-        padding: 1.25rem;
-        border-radius: 8px;
-        display: none;
-        border: 1px solid transparent;
-    }
-
-    .status-loading {
-        background: rgba(76, 201, 240, 0.1);
-        color: var(--success);
-        border-color: rgba(76, 201, 240, 0.2);
-    }
-
-    .status-success {
-        background: rgba(76, 201, 240, 0.1);
-        color: var(--success);
-        border-color: rgba(76, 201, 240, 0.2);
-    }
-
-    .status-error {
-        background: rgba(249, 65, 68, 0.1);
-        color: var(--danger);
-        border-color: rgba(249, 65, 68, 0.2);
-    }
-
-    .progress-bar {
-        height: 4px;
-        background: var(--gray-200);
-        border-radius: 2px;
-        margin-top: 0.75rem;
-        overflow: hidden;
-    }
-
-    .progress-fill {
-        height: 100%;
-        background: var(--primary);
-        width: 0%;
-        transition: width 0.3s ease;
-    }
-
-    /* Responsive Design - Adjusted for smaller cards */
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .header-actions {
-            width: 100%;
-            justify-content: space-between;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .pagination {
-            flex-direction: column;
-            gap: 1rem;
-            align-items: flex-start;
-        }
-
-        .course-blocks {
-            flex-direction: column;
-        }
-
-        .modal-content {
-            padding: 1.5rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .stat-card {
-            min-height: 120px;
-            padding: 1.25rem;
-        }
-
-        .stat-value {
-            font-size: 1.75rem;
-        }
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animated {
-        animation: fadeIn 0.5s ease forwards;
-    }
-
-    .delay-1 {
-        animation-delay: 0.1s;
-    }
-
-    .delay-2 {
-        animation-delay: 0.2s;
-    }
-
-    .delay-3 {
-        animation-delay: 0.3s;
-    }
-
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.08);
-        }
-
-        100% {
-            transform: scale(1);
-        }
-    }
-
-    .pulse {
-        animation: pulse 2s infinite;
-    }
-
-    /* Empty state for when there are no learners with credit issues */
-    .empty-state {
-        text-align: center;
-        padding: 3rem 2rem;
-        color: var(--gray-600);
-    }
-
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        color: var(--gray-400);
-    }
-
-    .empty-state h3 {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-        color: var(--gray-700);
-    }
-
-    
-</style>
-
-<div class="dashboard-container">
-    <!-- Page Header -->
-    <div class="greeting-section animated">
-        <div class="greeting-content">
-            <h2 class="greeting-text">
-                <i class="fas fa-hand-wave"></i>
-                Hello, {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}!
-            </h2>
-            <p class="greeting-subtext">Welcome to your Learner Journey Analytics Dashboard</p>
-        </div>
-    </div>
-    <div class="page-header">
-        <h1><i class="fas fa-chart-line"></i> Learner Journey Analytics</h1>
-        <div class="header-actions">
-            <div class="last-updated">
-                <i class="fas fa-clock"></i>
-                Last updated: {{ last_updated.strftime('%d %b %Y') if last_updated else 'Just now' }}
-            </div>
-            <button class="btn btn-primary" onclick="showUploadModal()">
-                <i class="fas fa-upload"></i> Update Database
-            </button>
-        </div>
-    </div>
-
-    <!-- Upload Modal -->
-    <div id="uploadModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="hideUploadModal()">&times;</span>
-            <h2>Update Database</h2>
-            <p>Upload a new Excel file to update the database:</p>
-
-            <div class="file-upload-container">
-                <label for="excelFile" class="file-upload-label" id="fileUploadLabel">
-                    <div class="file-upload-icon">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                    </div>
-                    <div class="file-upload-text">Drag & Drop your file here</div>
-                    <div class="file-upload-subtext">or click to browse</div>
-                    <div class="file-upload-subtext">Supported formats: .xlsx, .xls</div>
-                </label>
-
-                <input type="file" id="excelFile" name="excel_file" accept=".xlsx,.xls" class="file-input" required>
-
-                <div id="fileName" class="file-name" style="display: none;">
-                    <span id="selectedFileName"></span>
-                    <span class="remove-file" onclick="clearFileSelection()">
-                        <i class="fas fa-times"></i>
+<div class="min-h-screen">
+    <!-- Dashboard Header -->
+    <div class="mb-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                    Welcome to Your Dashboard,
+                    <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        {{ session.get('first_name', 'User') }} {{ session.get('last_name', '') }}
                     </span>
-                </div>
+                    {% if session.get('role') == 'admin' %}
+                    <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 ml-2">
+                        <i class="fas fa-crown mr-1"></i>Admin
+                    </span>
+                    {% endif %}
+                </h1>
+                <p class="text-gray-600">Monitor your educational operations at a glance</p>
+                {% if last_updated %}
+                <p class="text-sm text-gray-500 mt-1">
+                    <i class="fas fa-clock mr-1"></i>Database last updated: {{ last_updated.strftime('%B %d, %Y at %I:%M
+                    %p') }}
+                </p>
+                {% endif %}
             </div>
 
-            <button type="button" id="uploadButton" class="btn btn-primary upload-btn" onclick="processUpload()"
-                disabled>
-                <i class="fas fa-upload"></i> Upload and Process
-            </button>
-
-            <div id="uploadStatus" class="upload-status" style="display: none;">
-                <div id="statusMessage"></div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Cards - Now smaller and in one line -->
-    <div class="stats-grid">
-        <a href="{{ url_for('learners') }}" style="text-decoration: none; color: inherit;">
-            <div class="stat-card animated">
-                <div class="stat-header">
-                    <div class="stat-title">Total Learners</div>
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
+            <!-- Admin Upload Section -->
+            {% if session.get('role') == 'admin' %}
+            <div class="bg-white rounded-2xl shadow-lg p-4 border border-gray-100 min-w-80">
+                <div class="flex items-center gap-3 mb-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-database text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800">Database Management</h3>
+                        <p class="text-xs text-gray-500">Admin Only - Update Database</p>
                     </div>
                 </div>
-                <div class="stat-value">{{ total_learners }}</div>
-                <div class="stat-description">All registered learners</div>
+                <button onclick="openUploadModal()"
+                    class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:-translate-y-0.5">
+                    <i class="fas fa-upload"></i>
+                    Upload Database
+                </button>
             </div>
-        </a>
-
-        <div class="stat-card success animated delay-1">
-            <div class="stat-header">
-                <div class="stat-title">International / Domestic</div>
-                <div class="stat-icon">
-                    <i class="fas fa-globe"></i>
-                </div>
-            </div>
-            <div class="stat-value">{{ international_count }} / {{ domestic_count }}</div>
-            <div class="stat-description">International vs Domestic</div>
-        </div>
-
-        <div class="stat-card warning animated delay-2">
-            <div class="stat-header">
-                <div class="stat-title">Dissertation Phase</div>
-                <div class="stat-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-            </div>
-            <div class="stat-value">{{ completed_learners_count }}</div>
-            <div class="stat-description">Dissertation Phase</div>
-        </div>
-
-        <div class="stat-card danger animated delay-3 pulse">
-            <div class="stat-header">
-                <div class="stat-title">Low Credit Learners</div>
-                <div class="stat-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-            </div>
-            <div class="stat-value">{{ low_credit_count }}</div>
-            <div class="stat-description">Grades C+ or below</div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Data Section -->
-    <div class="data-section">
-        <div class="section-header">
-            <h2><i class="fas fa-exclamation-circle"></i> Learners with Credit Issues</h2>
-            <div class="results-count">{{ pagination.total_low_credit }} learners found</div>
+    <!-- Program Overview - Two Phase Design -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <!-- Coursework Phase Card -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg border border-blue-100 p-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-book-open text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Coursework Phase</h2>
+                        <p class="text-sm text-gray-600">14 Months • 7 Courses • CGPA ≥3.0</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('coursework') }}"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                    View Details
+                </a>
+            </div>
+
+            <!-- Coursework Stats Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="bg-white rounded-xl p-3 border border-blue-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-user-graduate text-blue-500"></i>
+                        <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                            Learners
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.total_learners|default(0) }}</h3>
+                    <p class="text-xs text-gray-600">Total Learners</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-3 border border-green-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-check-circle text-green-500"></i>
+                        <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
+                            Progress
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.avg_completion_rate|default(0) }}%
+                    </h3>
+                    <p class="text-xs text-gray-600">Completion Rate</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-3 border border-purple-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-users text-purple-500"></i>
+                        <span class="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                            Attendance
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.avg_attendance_rate|default(0) }}%
+                    </h3>
+                    <p class="text-xs text-gray-600">Live Sessions</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-3 border border-orange-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-star text-orange-500"></i>
+                        <span class="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                            Rating
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ coursework_stats.avg_course_rating|default(0) }}/5
+                    </h3>
+                    <p class="text-xs text-gray-600">Avg Rating</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex space-x-2">
+                <a href="{{ url_for('coursework') }}"
+                    class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200">
+                    <i class="fas fa-book mr-1"></i> Coursework
+                </a>
+                <button
+                    class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200">
+                    <i class="fas fa-chart-bar mr-1"></i> Analytics
+                </button>
+            </div>
         </div>
 
-        <div class="table-container">
-            {% if learners_with_low_grades %}
-            <table id="learnersTable">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0)">Name <i class="fas fa-sort"></i></th>
-                        <th onclick="sortTable(1)">Cohort <i class="fas fa-sort"></i></th>
-                        <th onclick="sortTable(2)">Slot <i class="fas fa-sort"></i></th>
-                        <th onclick="sortTable(3)">Status <i class="fas fa-sort"></i></th>
-                        <th onclick="sortTable(4)">Low Grade Courses <i class="fas fa-sort"></i></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for learner in learners_with_low_grades %}
-                    <tr>
-                        <td>{{ learner['Name'] }}</td>
-                        <td>{{ learner['Cohort'] }}</td>
-                        <td>{{ learner['Slot'] }}</td>
-                        <td>
-                            <span
-                                class="badge {% if learner['Status'] == 'Active' %}badge-active{% else %}badge-warning{% endif %}">
-                                {{ learner['Status'] }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="course-blocks">
-                                {% for course_info in learner['FormattedCourses'].split('; ') %}
-                                {% set parts = course_info.split(': ') %}
-                                {% if parts|length > 1 %}
-                                {% set course_name = parts[0] %}
-                                {% set details = parts[1].split(', ') %}
-                                <div class="course-block">
-                                    <div class="course-name">{{ course_name }}</div>
-                                    <div class="course-details">
-                                        <span class="course-grade">{{ details[0] }}</span>
-                                        <span class="course-credit">{{ details[1] if details|length > 1 else 'N/A'
-                                            }}</span>
-                                    </div>
+        <!-- Dissertation Phase Card -->
+        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg border border-purple-100 p-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Dissertation Phase</h2>
+                        <p class="text-sm text-gray-600">22 Months • Research & Thesis</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('dissertation') }}"
+                    class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                    View Details
+                </a>
+            </div>
+
+            <!-- Dissertation Stats Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="bg-white rounded-xl p-3 border border-purple-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-users text-purple-500"></i>
+                        <span class="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                            Students
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ dissertation_analytics.total_dissertation|default(0)
+                        }}</h3>
+                    <p class="text-xs text-gray-600">In Dissertation</p>
+                </div>
+                <div class="bg-white rounded-xl p-3 border border-green-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-thumbs-up text-green-500"></i>
+                        <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
+                            Approved
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ dissertation_analytics.total_approvals|default(0) }}
+                    </h3>
+                    <p class="text-xs text-gray-600">Total Approved</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-3 border border-orange-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-clock text-orange-500"></i>
+                        <span class="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                            Pending
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{
+                        dissertation_analytics.overall_pending_review|default(0) }}</h3>
+                    <p class="text-xs text-gray-600">Pending Review</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-red-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas fa-times-circle text-red-500"></i>
+                        <span class="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">
+                            Not Approved
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ dissertation_analytics.total_not_approved|default(0)
+                        }}</h3>
+                    <p class="text-xs text-gray-600">Total Not Approved</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex space-x-2">
+                <a href="{{ url_for('dissertation') }}"
+                    class="flex-1 bg-purple-500 hover:bg-purple-600 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200">
+                    <i class="fas fa-chart-pie mr-1"></i> Progress
+                </a>
+                <a href="{{ url_for('learners') }}"
+                    class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200">
+                    <i class="fas fa-list mr-1"></i> Learners
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Program Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+        <!-- Total Learners Card -->
+        <div
+            class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                    <i class="fas fa-arrow-up text-xs mr-1"></i>Total
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ total_learners|default(0) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">Total Learners</p>
+        </div>
+
+        <!-- Active Learners Card -->
+        <div
+            class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-user-check text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                    <i class="fas fa-check text-xs mr-1"></i>Active
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ active_learners_count|default(0) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">Active Learners</p>
+        </div>
+
+        <!-- Need Attention Learners Card -->
+        <div
+            class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                </div>
+                <span class="text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-lg">
+                    <i class="fas fa-warning text-xs mr-1"></i>Alert
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ low_credit_count|default(14) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">Need Attention</p>
+        </div>
+
+        <!-- Average CGPA Card -->
+        <div
+            class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
+                </div>
+                <span
+                    class="text-sm font-medium text-{% if avg_cgpa >= 3.5 %}green{% elif avg_cgpa >= 3.0 %}yellow{% else %}red{% endif %}-600 bg-{% if avg_cgpa >= 3.5 %}green{% elif avg_cgpa >= 3.0 %}yellow{% else %}red{% endif %}-50 px-2 py-1 rounded-lg">
+                    <i class="fas fa-star text-xs mr-1"></i>CGPA
+                </span>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">{{ "%.2f"|format(avg_cgpa|default(3.36)) }}</h3>
+            <p class="text-sm text-gray-600 mt-1">Average CGPA</p>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="grid grid-cols-1 gap-4 md:gap-6">
+        <!-- Learners Needing Attention -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <!-- Header Section -->
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">Learners Needing Attention</h2>
+                            <p class="text-sm text-gray-600">Students with low grades requiring support</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3 py-1 bg-red-100 text-red-700 text-sm font-medium rounded-full"
+                            id="headerTotalCount">
+                            {{ low_credit_count|default(14) }} Total
+                        </span>
+                        <button class="p-2 hover:bg-white rounded-lg transition-colors" title="Refresh">
+                            <i class="fas fa-sync-alt text-gray-500"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learners List -->
+            <div class="max-h-96 overflow-y-auto">
+                {% if learners_with_low_grades %}
+                {% for learner in learners_with_low_grades %}
+                <div
+                    class="px-6 py-4 border-b border-gray-100 hover:bg-gradient-to-r hover:from-red-25 hover:to-orange-25 hover:shadow-md hover:border-red-200 transition-all duration-200 cursor-pointer group"
+                    onclick="window.open('/learner/{{ learner.User_ID }}', '_blank')"
+                    title="Click to view {{ learner.Name }}'s profile in new tab">
+                    <div class="flex items-start space-x-4">
+                        <!-- Avatar -->
+                        <div
+                            class="w-12 h-12 bg-gradient-to-br from-red-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <span class="text-white font-bold text-sm">{{ learner.Name.split()[0][0] }}{{
+                                learner.Name.split()[-1][0] if learner.Name.split()|length > 1 else '' }}</span>
+                        </div>
+
+                        <!-- Main Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3
+                                    class="text-sm font-semibold text-gray-800 group-hover:text-red-700 transition-colors">
+                                    {{ learner.Name }}</h3>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{{
+                                        learner.Slot }}</span>
+                                    <button
+                                        class="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all"
+                                        onclick="event.stopPropagation(); window.open('/learner/{{ learner.User_ID }}', '_blank')"
+                                        title="View {{ learner.Name }}'s Profile in New Tab">
+                                        <i class="fas fa-eye text-red-600 text-xs"></i>
+                                    </button>
                                 </div>
-                                {% endif %}
-                                {% endfor %}
                             </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
 
-            {% if pagination.total_pages > 1 %}
-            <div class="pagination animated">
-                <div class="pagination-controls">
-                    {% if pagination.has_prev %}
-                    <a href="{{ url_for('dashboard', page=pagination.prev_num) }}" class="pagination-btn">
-                        <i class="fas fa-chevron-left"></i> Previous
-                    </a>
-                    {% else %}
-                    <button class="pagination-btn" disabled>
-                        <i class="fas fa-chevron-left"></i> Previous
-                    </button>
-                    {% endif %}
+                            <div class="flex items-center space-x-4 mb-2">
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-users mr-1"></i>Cohort {{ learner.Cohort }}
+                                </span>
+                                <span class="text-xs px-2 py-1 rounded-full
+                                           {% if learner.Status == 'Active' %}bg-green-100 text-green-700
+                                           {% elif learner.Status == 'In Progress' %}bg-yellow-100 text-yellow-700
+                                           {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                    {{ learner.Status }}
+                                </span>
+                                <span class="text-xs text-red-600 font-medium">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ learner['Number of Courses'] }}
+                                    course{{ 's' if learner['Number of Courses'] != 1 else '' }}
+                                </span>
+                            </div>
 
-                    <div class="pagination-pages">
-                        {% set max_visible_pages = 5 %}
-                        {% set half_range = (max_visible_pages // 2) %}
-                        {% set start_page = [1, pagination.page - half_range]|max %}
-                        {% set end_page = [pagination.total_pages, start_page + max_visible_pages - 1]|min %}
-
-                        {% if start_page > 1 %}
-                        <a href="{{ url_for('dashboard', page=1) }}" class="pagination-page">1</a>
-                        {% if start_page > 2 %}
-                        <span class="pagination-ellipsis">...</span>
-                        {% endif %}
-                        {% endif %}
-
-                        {% for p in range(start_page, end_page + 1) %}
-                        {% if p == pagination.page %}
-                        <span class="pagination-page active">{{ p }}</span>
-                        {% else %}
-                        <a href="{{ url_for('dashboard', page=p) }}" class="pagination-page">{{ p }}</a>
-                        {% endif %}
-                        {% endfor %}
-
-                        {% if end_page < pagination.total_pages %} {% if end_page < pagination.total_pages - 1 %} <span
-                            class="pagination-ellipsis">...</span>
-                            {% endif %}
-                            <a href="{{ url_for('dashboard', page=pagination.total_pages) }}" class="pagination-page">{{
-                                pagination.total_pages }}</a>
-                            {% endif %}
+                            <!-- Course Details -->
+                            <div
+                                class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 mt-3 border-l-4 border-red-400">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center mr-2">
+                                        <i class="fas fa-exclamation text-white text-xs"></i>
+                                    </div>
+                                    <p class="text-sm text-red-700 font-semibold">
+                                        Courses Needing Attention
+                                    </p>
+                                </div>
+                                <div class="ml-8">
+                                    {% set courses = learner['FormattedCourses'].split(';') %}
+                                    {% for course in courses %}
+                                    {% if course.strip() %}
+                                    <div
+                                        class="flex items-center justify-between bg-white rounded-lg px-3 py-2 mb-2 shadow-sm border border-red-100">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            <span class="text-sm font-medium text-gray-800">{{
+                                                course.split(':')[0].strip() if ':' in course else course.strip()
+                                                }}</span>
+                                        </div>
+                                        {% if ':' in course %}
+                                        <div class="flex items-center space-x-2">
+                                            {% set grade_credit = course.split(':')[1].strip() if ':' in course else ''
+                                            %}
+                                            {% if ',' in grade_credit %}
+                                            {% set grade = grade_credit.split(',')[0].strip() %}
+                                            {% set credit = grade_credit.split(',')[1].strip() %}
+                                            <span
+                                                class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">{{
+                                                grade }}</span>
+                                            <span class="text-xs text-gray-500">{{ credit }}</span>
+                                            {% else %}
+                                            <span
+                                                class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">{{
+                                                grade_credit }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="px-6 py-12 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Excellent Performance!</h3>
+                    <p class="text-gray-600">All learners are performing well and meeting academic standards.</p>
+                </div>
+                {% endif %}
+            </div>
 
-                    {% if pagination.has_next %}
-                    <a href="{{ url_for('dashboard', page=pagination.next_num) }}" class="pagination-btn">
-                        Next <i class="fas fa-chevron-right"></i>
-                    </a>
-                    {% else %}
-                    <button class="pagination-btn" disabled>
-                        Next <i class="fas fa-chevron-right"></i>
+            <!-- Pagination Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <div class="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Show</span>
+                        <select id="entriesPerPage"
+                            class="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                        </select>
+                        <span class="text-sm text-gray-600">entries</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <p class="text-sm text-gray-600">
+                            Showing <span class="font-medium" id="showingStart">1</span>
+                            to <span class="font-medium" id="showingEnd">10</span>
+                            of <span class="font-medium" id="totalEntries">{{ low_credit_count|default(14) }}</span>
+                            learners
+                        </p>
+                    </div>
+                    <div class="flex space-x-2" id="paginationControls">
+                        <button id="prevBtn"
+                            class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled onclick="changePage(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 bg-blue-600 text-white rounded-lg" id="currentPageBtn">1</button>
+                        <button id="nextBtn"
+                            class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            onclick="changePage(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Database Upload Modal -->
+{% if session.get('role') == 'admin' %}
+<div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+        id="modalContent">
+        <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-database text-2xl"></i>
+                    <h3 class="text-xl font-bold">Upload Database</h3>
+                </div>
+                <button onclick="closeUploadModal()" class="text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Success/Error Messages will appear here -->
+            <div id="modalMessage" class="hidden mb-4"></div>
+
+            <div class="mb-4">
+                <div class="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                    <div class="text-sm text-blue-700">
+                        <p class="font-medium mb-2">Upload Instructions:</p>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>File must be in Excel format (.xlsx)</li>
+                            <li>Ensure proper column headers</li>
+                            <li>Data will replace existing records</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Excel File</label>
+                    <input type="file" id="fileInput" name="file" accept=".xlsx,.xls"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 hover:border-orange-300">
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="progressContainer" class="hidden mb-4">
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Uploading...</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progressBar"
+                            class="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300"
+                            style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeUploadModal()"
+                        class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                        Cancel
                     </button>
-                    {% endif %}
+                    <button type="submit" id="submitBtn"
+                        class="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-3 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 flex items-center justify-center">
+                        <i class="fas fa-upload mr-2"></i>
+                        <span id="submitText">Upload</span>
+                    </button>
                 </div>
-
-                <div class="pagination-info">
-                    Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} to
-                    {{ [pagination.page * pagination.per_page, pagination.total_low_credit]|min }}
-                    of {{ pagination.total_low_credit }} learners with credit issues
-                </div>
-            </div>
-            {% endif %}
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-check-circle"></i>
-                <h3>No learners with credit issues</h3>
-                <p>All learners are currently meeting the credit requirements.</p>
-            </div>
-            {% endif %}
+            </form>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endif %}
 
-{% block scripts %}
 <script>
-    // Sort table function
-    function sortTable(columnIndex) {
-        const table = document.getElementById('learnersTable');
-        const rows = Array.from(table.querySelectorAll('tr:not(:first-child)'));
-        const headerCells = table.querySelectorAll('th');
-
-        // Remove any existing sort indicators
-        headerCells.forEach(cell => {
-            cell.querySelector('i').className = 'fas fa-sort';
-        });
-
-        // Set sort indicator
-        const sortIcon = headerCells[columnIndex].querySelector('i');
-        sortIcon.className = 'fas fa-sort-up';
-
-        // Special handling for course column
-        const isCourseColumn = columnIndex === 4;
-
-        rows.sort((a, b) => {
-            let aValue, bValue;
-
-            if (isCourseColumn) {
-                // Count the number of course blocks for sorting
-                aValue = a.cells[columnIndex].querySelectorAll('.course-block').length;
-                bValue = b.cells[columnIndex].querySelectorAll('.course-block').length;
-                return aValue - bValue;
-            } else {
-                aValue = a.cells[columnIndex].textContent;
-                bValue = b.cells[columnIndex].textContent;
-                return aValue.localeCompare(bValue);
-            }
-        });
-
-        // Remove existing rows
-        rows.forEach(row => table.tBodies[0].appendChild(row));
+    // Modal Functions
+    function openUploadModal() {
+        const modal = document.getElementById('uploadModal');
+        const modalContent = document.getElementById('modalContent');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
     }
 
-    // Enhanced file upload functionality
-    document.addEventListener('DOMContentLoaded', function () {
-        const fileInput = document.getElementById('excelFile');
-        const fileUploadLabel = document.getElementById('fileUploadLabel');
-        const fileName = document.getElementById('fileName');
-        const selectedFileName = document.getElementById('selectedFileName');
-        const uploadButton = document.getElementById('uploadButton');
+    function closeUploadModal() {
+        const modal = document.getElementById('uploadModal');
+        const modalContent = document.getElementById('modalContent');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            // Reset form
+            document.getElementById('uploadForm').reset();
+            document.getElementById('progressContainer').classList.add('hidden');
+            document.getElementById('modalMessage').classList.add('hidden');
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitText').textContent = 'Upload';
+        }, 300);
+    }
 
-        // Drag and drop functionality
-        fileUploadLabel.addEventListener('dragover', function (e) {
-            e.preventDefault();
-            fileUploadLabel.classList.add('drag-over');
-        });
-
-        fileUploadLabel.addEventListener('dragleave', function () {
-            fileUploadLabel.classList.remove('drag-over');
-        });
-
-        fileUploadLabel.addEventListener('drop', function (e) {
-            e.preventDefault();
-            fileUploadLabel.classList.remove('drag-over');
-
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                handleFileSelection();
-            }
-        });
-
-        // File input change
-        fileInput.addEventListener('change', handleFileSelection);
-
-        function handleFileSelection() {
-            if (fileInput.files.length) {
-                const file = fileInput.files[0];
-                const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-
-                // Check if file is an Excel file
-                if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/i)) {
-                    showStatus('Please select a valid Excel file.', 'error');
-                    clearFileSelection();
-                    return;
-                }
-
-                selectedFileName.textContent = file.name;
-                fileName.style.display = 'flex';
-                uploadButton.disabled = false;
-            }
+    // Close modal when clicking outside
+    document.getElementById('uploadModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeUploadModal();
         }
     });
 
-    function clearFileSelection() {
-        document.getElementById('excelFile').value = '';
-        document.getElementById('fileName').style.display = 'none';
-        document.getElementById('uploadButton').disabled = true;
+    // Close modal with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeUploadModal();
+        }
+    });
+
+    // Test server connectivity
+    async function testServerConnection() {
+        try {
+            const response = await fetch('/admin/test-upload');
+            const result = await response.json();
+            console.log('Server test result:', result);
+            if (result.success) {
+                console.log('✅ Server is responding correctly');
+                return true;
+            }
+        } catch (error) {
+            console.error('❌ Server connection test failed:', error);
+            return false;
+        }
     }
 
-    function processUpload() {
-        const fileInput = document.getElementById('excelFile');
+    // Form submission
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
 
-        if (!fileInput.files.length) {
-            showStatus('Please select a file first.', 'error');
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            showModalMessage('error', 'Error', 'Please select a file to upload.');
+            return;
+        }
+
+        // Test server connection first
+        console.log('Testing server connection...');
+        const serverOk = await testServerConnection();
+        if (!serverOk) {
+            showModalMessage('error', 'Connection Error', 'Cannot connect to server. Please check if the server is running and try again.');
             return;
         }
 
         const formData = new FormData();
-        formData.append('excel_file', fileInput.files[0]);
+        formData.append('database_file', file);
 
-        // Show loading state
-        showStatus('Processing file...', 'loading');
-        simulateProgress();
+        // Show progress
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
 
-        // Use the correct endpoint URL
-        fetch("{{ url_for('upload_database') }}", {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus('Database updated successfully! Refreshing page...', 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
-                } else {
-                    showStatus(`Error: ${data.message}`, 'error');
-                }
-            })
-            .catch(error => {
-                showStatus(`Error: ${error.message}`, 'error');
-            });
-    }
+        progressContainer.classList.remove('hidden');
+        submitBtn.disabled = true;
+        submitText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
 
-    function showStatus(message, type) {
-        const statusElement = document.getElementById('uploadStatus');
-        const statusMessage = document.getElementById('statusMessage');
-
-        statusElement.style.display = 'block';
-        statusElement.className = `upload-status status-${type}`;
-        statusMessage.textContent = message;
-    }
-
-    function simulateProgress() {
-        const progressFill = document.getElementById('progressFill');
-        let width = 0;
-
-        const interval = setInterval(() => {
-            if (width >= 90) {
-                clearInterval(interval);
-            } else {
-                width += Math.random() * 10;
-                progressFill.style.width = `${width}%`;
-            }
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressBar.style.width = progress + '%';
+            progressText.textContent = Math.round(progress) + '%';
         }, 200);
-    }
 
-    // Modal functions
-    function showUploadModal() {
-        document.getElementById('uploadModal').classList.add('show');
-    }
+        try {
+            // Create AbortController for timeout handling
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
-    function hideUploadModal() {
-        document.getElementById('uploadModal').classList.remove('show');
-        clearFileSelection();
-        document.getElementById('uploadStatus').style.display = 'none';
-    }
+            const response = await fetch('/admin/upload-database', {
+                method: 'POST',
+                body: formData,
+                signal: controller.signal
+            });
 
-    // Close modal when clicking outside
-    window.onclick = function (event) {
-        const modal = document.getElementById('uploadModal');
-        if (event.target === modal) {
-            hideUploadModal();
+            clearTimeout(timeoutId);
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.log('Error response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Upload result:', result);
+
+            if (result.success) {
+                showModalMessage('success', 'Success!', result.message);
+                // Reset form
+                fileInput.value = '';
+                // Note: fileName element doesn't exist in the modal, so we skip that reset
+                setTimeout(() => {
+                    closeUploadModal();
+                }, 3000);
+            } else {
+                showModalMessage('error', 'Error', result.message);
+            }
+        } catch (error) {
+            clearInterval(progressInterval);
+            console.error('Upload error:', error);
+
+            let errorMessage = 'Network error occurred. Please try again.';
+
+            if (error.name === 'AbortError') {
+                errorMessage = 'Upload timed out. The file may be too large or the server is busy. Please try again.';
+            } else if (error.message.includes('ERR_UPLOAD_FILE_CHANGED')) {
+                errorMessage = 'File was modified during upload. Please ensure the file is not open in another application and try again.';
+            } else if (error.message.includes('HTTP error')) {
+                errorMessage = 'Server error occurred. Please check the file format and try again.';
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Connection lost during upload. The database may have been updated successfully. Please refresh the page to check.';
+            }
+
+            showModalMessage('error', 'Error', errorMessage);
+        } finally {
+            submitBtn.disabled = false;
+            submitText.textContent = 'Upload';
+            setTimeout(() => {
+                progressContainer.classList.add('hidden');
+            }, 1000);
+        }
+    });
+
+    function showModalMessage(type, title, message) {
+        const messageDiv = document.getElementById('modalMessage');
+        const bgColor = type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+        const textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
+        const iconColor = type === 'success' ? 'text-green-500' : 'text-red-500';
+        const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-times-circle';
+
+        messageDiv.innerHTML = `
+        <div class="flex items-start space-x-3 p-4 ${bgColor} rounded-lg border">
+            <i class="${icon} ${iconColor} mt-0.5"></i>
+            <div class="${textColor}">
+                <p class="font-medium">${title}</p>
+                <p class="text-sm mt-1">${message}</p>
+            </div>
+        </div>
+    `;
+        messageDiv.classList.remove('hidden');
+
+        if (type === 'success') {
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 3000);
         }
     }
 
-    // Update last updated time
-    function updateLastUpdated() {
-        const now = new Date();
-        const options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-        const formattedDate = now.toLocaleDateString('en-US', options);
-        document.getElementById('lastUpdated').textContent = `Last updated: ${formattedDate}`;
+    // Pagination functionality for Learners Needing Attention
+    let currentPageNum = 1;
+    let entriesPerPage = 10;
+    let allLearners = [];
+
+    // Initialize pagination when page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get all learner entries - more specific selector to avoid conflicts
+        const learnerEntries = document.querySelectorAll('.max-h-96 .px-6.py-4.border-b.border-gray-100');
+        allLearners = Array.from(learnerEntries);
+
+        console.log(`Found ${allLearners.length} learner entries for pagination`);
+
+        // Set up entries per page selector
+        const entriesSelect = document.getElementById('entriesPerPage');
+        if (entriesSelect) {
+            entriesSelect.addEventListener('change', function () {
+                entriesPerPage = parseInt(this.value);
+                currentPageNum = 1;
+                updatePagination();
+            });
+        }
+
+        updatePagination();
+    });
+
+    function updatePagination() {
+        const totalEntries = allLearners.length;
+        const totalPages = Math.ceil(totalEntries / entriesPerPage);
+
+        // Calculate showing range
+        const startIndex = (currentPageNum - 1) * entriesPerPage;
+        const endIndex = Math.min(startIndex + entriesPerPage, totalEntries);
+
+        // Update display elements
+        const totalEntriesSpan = document.getElementById('totalEntries');
+        const showingStartSpan = document.getElementById('showingStart');
+        const showingEndSpan = document.getElementById('showingEnd');
+        const currentPageBtn = document.getElementById('currentPageBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (totalEntriesSpan) totalEntriesSpan.textContent = totalEntries;
+        if (showingStartSpan) showingStartSpan.textContent = totalEntries > 0 ? startIndex + 1 : 0;
+        if (showingEndSpan) showingEndSpan.textContent = endIndex;
+        if (currentPageBtn) currentPageBtn.textContent = currentPageNum;
+
+        // Update button states
+        if (prevBtn) {
+            prevBtn.disabled = currentPageNum === 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = currentPageNum === totalPages || totalPages === 0;
+        }
+
+        // Show/hide learner entries
+        allLearners.forEach((learner, index) => {
+            if (index >= startIndex && index < endIndex) {
+                learner.style.display = 'block';
+            } else {
+                learner.style.display = 'none';
+            }
+        });
+
+        // Update total count in header
+        const headerTotalCount = document.getElementById('headerTotalCount');
+        if (headerTotalCount) {
+            headerTotalCount.textContent = `${totalEntries} Total`;
+        }
+
+        // Generate page numbers (similar to learners page)
+        generatePageNumbers(totalPages);
     }
 
-    // Auto-update last updated time every minute
-    setInterval(updateLastUpdated, 60000);
+    function generatePageNumbers(totalPages) {
+        const paginationControls = document.getElementById('paginationControls');
+        if (!paginationControls) return;
+
+        // Clear existing page numbers (keep prev/next buttons)
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        paginationControls.innerHTML = '';
+
+        // Add prev button
+        paginationControls.appendChild(prevBtn);
+
+        // Add page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === currentPageNum) {
+                const currentBtn = document.createElement('button');
+                currentBtn.className = 'px-3 py-1 bg-blue-600 text-white rounded-lg';
+                currentBtn.textContent = i;
+                currentBtn.id = 'currentPageBtn';
+                paginationControls.appendChild(currentBtn);
+            } else if (i <= 3 || i > totalPages - 3 || (i >= currentPageNum - 1 && i <= currentPageNum + 1)) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors';
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => navigateToPage(i);
+                paginationControls.appendChild(pageBtn);
+            } else if (i === 4 || i === totalPages - 3) {
+                const dots = document.createElement('span');
+                dots.className = 'px-3 py-1';
+                dots.textContent = '...';
+                paginationControls.appendChild(dots);
+            }
+        }
+
+        // Add next button
+        paginationControls.appendChild(nextBtn);
+    }
+
+    function navigateToPage(pageNum) {
+        currentPageNum = pageNum;
+        updatePagination();
+    }
+
+    function changePage(direction) {
+        const totalPages = Math.ceil(allLearners.length / entriesPerPage);
+
+        if (direction === 1 && currentPageNum < totalPages) {
+            currentPageNum++;
+        } else if (direction === -1 && currentPageNum > 1) {
+            currentPageNum--;
+        }
+
+        updatePagination();
+    }
 </script>
+
 {% endblock %}

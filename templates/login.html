@@ -1,264 +1,269 @@
-<!-- templates/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EduOps360</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-light: #4895ef;
-            --primary-gradient: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
-            --secondary: #7209b7;
-            --accent: #f72585;
-            --success: #4cc9f0;
-            --warning: #f9c74f;
-            --danger: #f94144;
-            --dark: #2b2d42;
-            --light: #f8f9fa;
-            --gray-100: #f1f3f9;
-            --gray-200: #e9ecef;
-            --gray-300: #dee2e6;
-            --gray-400: #ced4da;
-            --gray-500: #adb5bd;
-            --gray-600: #6c757d;
-            --gray-700: #495057;
-            --gray-800: #343a40;
-            --gray-900: #212529;
-            --border-radius: 16px;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 6px 10px rgba(0, 0, 0, 0.05);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
         body {
-            background: var(--light);
-            color: var(--gray-800);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
         }
-
-        .login-container {
-            width: 100%;
-            max-width: 440px;
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-
-        .login-card {
-            background: var(--light);
-            border-radius: var(--border-radius);
-            padding: 3rem;
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--gray-200);
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-
-        .logo-section {
-            text-align: center;
-            margin-bottom: 2.5rem;
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
-
-        .logo {
-            width: 60px;
-            height: 60px;
-            background: var(--primary-gradient);
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
+        
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
         }
-
-        .app-name {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-        }
-
-        .app-tagline {
-            color: var(--gray-600);
-            font-size: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--gray-700);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 1rem 1.25rem;
-            border: 2px solid var(--gray-200);
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: var(--transition);
-            background: var(--light);
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            font-size: 1rem;
-            width: 100%;
-        }
-
-        .btn-primary {
-            background: var(--primary-gradient);
-            color: white;
-            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
-        }
-
-        .alert {
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            border: 1px solid transparent;
-        }
-
-        .alert-error {
-            background: rgba(249, 65, 68, 0.1);
-            color: var(--danger);
-            border-color: rgba(249, 65, 68, 0.2);
-        }
-
-        .alert-success {
-            background: rgba(76, 201, 240, 0.1);
-            color: var(--success);
-            border-color: rgba(76, 201, 240, 0.2);
-        }
-
-        .login-footer {
-            text-align: center;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--gray-200);
-            color: var(--gray-600);
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 1rem;
+        
+        @keyframes slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-
-            .login-card {
-                padding: 2rem;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
+        }
+        
+        .slide-up {
+            animation: slide-up 0.5s ease-out;
+        }
+        
+        .pattern-bg {
+            background-color: #f0f9ff;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
         }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="logo-section">
-                <div class="logo">360</div>
-                <h1 class="app-name">EduOps360</h1>
-                <p class="app-tagline">Learner Journey Analytics</p>
-            </div>
 
+<body class="min-h-screen pattern-bg flex items-center justify-center p-4">
+    <!-- Background decoration -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full opacity-10 blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-400 rounded-full opacity-10 blur-3xl"></div>
+    </div>
+    
+    <!-- Login Container -->
+    <div class="w-full max-w-md">
+        <!-- Logo Section -->
+        <div class="text-center mb-8 slide-up">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-2xl mb-4 float-animation">
+                <i class="fas fa-graduation-cap text-white text-3xl"></i>
+            </div>
+            <h1 class="text-4xl font-bold gradient-text mb-2">EduOps360</h1>
+            <p class="text-gray-600">Educational Operations Management</p>
+        </div>
+        
+        <!-- Login Card -->
+        <div class="glass rounded-2xl shadow-2xl p-8 slide-up" style="animation-delay: 0.1s;">
+            <!-- Step Indicator -->
+            <div class="flex items-center justify-center mb-8" id="stepIndicator">
+                <div class="flex items-center">
+                    <div class="step-item flex items-center" id="step1">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white flex items-center justify-center font-semibold">
+                            1
+                        </div>
+                        <span class="ml-2 font-medium text-gray-700">Enter Email</span>
+                    </div>
+                    <div class="w-12 h-0.5 bg-gray-300 mx-3"></div>
+                    <div class="step-item flex items-center opacity-50" id="step2">
+                        <div class="w-10 h-10 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-semibold">
+                            2
+                        </div>
+                        <span class="ml-2 font-medium text-gray-500">Verify OTP</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
-                            {{ message }}
+                        <div class="mb-4 p-4 rounded-lg {% if category == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+                            <div class="flex items-center">
+                                <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i>
+                                {{ message }}
+                            </div>
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-
-            <form method="POST" action="{{ url_for('login') }}">
-                <div class="form-group">
-                    <label for="email" class="form-label">
-                        <i class="fas fa-envelope"></i> Email Address
+            
+            <!-- Email Form (Step 1) -->
+            <form id="emailForm" action="{{ url_for('login') }}" method="POST" class="space-y-6">
+                <input type="hidden" name="action" value="send_otp">
+                
+                <!-- Hidden email account field - uses default account -->
+                <input type="hidden" name="email_account" value="primary">
+                
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-envelope mr-2 text-blue-500"></i>Your Email Address
                     </label>
-                    <input type="email" id="email" name="email" class="form-input" 
-                           placeholder="Enter your email" required autofocus>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           required 
+                           placeholder="Enter your email address"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200">
                 </div>
-
-                <div class="form-group">
-                    <label for="password" class="form-label">
-                        <i class="fas fa-lock"></i> Password
-                    </label>
-                    <input type="password" id="password" name="password" class="form-input" 
-                           placeholder="Enter your password" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
+                
+                <button type="submit" 
+                        class="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+                    <i class="fas fa-arrow-right mr-2"></i>Continue with Email
                 </button>
             </form>
-
-            <div class="login-footer">
-                <p>&copy; 2023 GGU DBA ET Learner Journey Analytics</p>
-                <p>Secure access required</p>
+            
+            <!-- OTP Form (Step 2) - Hidden by default -->
+            <form id="otpForm" action="{{ url_for('login') }}" method="POST" class="space-y-6 hidden">
+                <input type="hidden" name="action" value="verify_otp">
+                <input type="hidden" name="email" id="otpEmail">
+                
+                <div>
+                    <label for="otp_code" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-key mr-2 text-blue-500"></i>One-Time Password
+                    </label>
+                    <div class="text-sm text-gray-600 mb-3">
+                        We've sent a 6-digit code to your email. Please enter it below.
+                    </div>
+                    <input type="text" 
+                           id="otp_code" 
+                           name="otp_code" 
+                           required 
+                           maxlength="6"
+                           pattern="[0-9]{6}"
+                           placeholder="Enter 6-digit OTP"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200 text-center text-2xl font-mono tracking-widest">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+                    <i class="fas fa-shield-alt mr-2"></i>Verify & Login
+                </button>
+                
+                <div class="text-center">
+                    <button type="button" onclick="backToEmail()" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-1"></i>Back to Email
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Additional Info -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="flex items-center justify-center space-x-4 text-sm text-gray-600">
+                    <span><i class="fas fa-lock mr-1 text-green-500"></i>Secure Login</span>
+                    <span class="text-gray-300">|</span>
+                    <span><i class="fas fa-mobile-alt mr-1 text-blue-500"></i>OTP Authentication</span>
+                </div>
             </div>
         </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-8 text-sm text-gray-600 slide-up" style="animation-delay: 0.2s;">
+            <p>© 2025 EduOps360. All rights reserved.</p>
+        </div>
     </div>
-
+    
     <script>
-        // Add some interactive effects
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('.form-input');
+        // Check if we should show OTP form (from server response)
+        {% if show_otp_form and email %}
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Server says show OTP form for email: {{ email }}');
+                showOtpForm('{{ email }}');
+            });
+        {% endif %}
+        
+        // Also check URL parameters for fallback
+        const urlParams = new URLSearchParams(window.location.search);
+        const showOtp = urlParams.get('otp');
+        const email = urlParams.get('email');
+        
+        if (showOtp === 'true' && email) {
+            document.addEventListener('DOMContentLoaded', function() {
+                showOtpForm(email);
+            });
+        }
+        
+        function showOtpForm(email) {
+            console.log('showOtpForm called with email:', email);
+            // Hide email form, show OTP form
+            document.getElementById('emailForm').classList.add('hidden');
+            document.getElementById('otpForm').classList.remove('hidden');
+            document.getElementById('otpEmail').value = email;
             
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentElement.classList.add('focused');
-                });
-                
-                input.addEventListener('blur', function() {
-                    if (!this.value) {
-                        this.parentElement.classList.remove('focused');
-                    }
-                });
-            });
-
-            // Add enter key support
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    document.querySelector('form').submit();
-                }
-            });
+            // Update step indicator
+            document.getElementById('step1').classList.add('opacity-50');
+            document.getElementById('step1').querySelector('div').classList.remove('bg-gradient-to-r', 'from-blue-500', 'to-indigo-600', 'text-white');
+            document.getElementById('step1').querySelector('div').classList.add('bg-gray-300', 'text-gray-500');
+            document.getElementById('step1').querySelector('span').classList.remove('text-gray-700');
+            document.getElementById('step1').querySelector('span').classList.add('text-gray-500');
+            
+            document.getElementById('step2').classList.remove('opacity-50');
+            document.getElementById('step2').querySelector('div').classList.remove('bg-gray-300', 'text-gray-500');
+            document.getElementById('step2').querySelector('div').classList.add('bg-gradient-to-r', 'from-blue-500', 'to-indigo-600', 'text-white');
+            document.getElementById('step2').querySelector('span').classList.remove('text-gray-500');
+            document.getElementById('step2').querySelector('span').classList.add('text-gray-700');
+            
+            // Focus on OTP input
+            document.getElementById('otp_code').focus();
+        }
+        
+        function backToEmail() {
+            // Show email form, hide OTP form
+            document.getElementById('emailForm').classList.remove('hidden');
+            document.getElementById('otpForm').classList.add('hidden');
+            
+            // Reset step indicator
+            document.getElementById('step1').classList.remove('opacity-50');
+            document.getElementById('step1').querySelector('div').classList.add('bg-gradient-to-r', 'from-blue-500', 'to-indigo-600', 'text-white');
+            document.getElementById('step1').querySelector('div').classList.remove('bg-gray-300', 'text-gray-500');
+            document.getElementById('step1').querySelector('span').classList.add('text-gray-700');
+            document.getElementById('step1').querySelector('span').classList.remove('text-gray-500');
+            
+            document.getElementById('step2').classList.add('opacity-50');
+            document.getElementById('step2').querySelector('div').classList.add('bg-gray-300', 'text-gray-500');
+            document.getElementById('step2').querySelector('div').classList.remove('bg-gradient-to-r', 'from-blue-500', 'to-indigo-600', 'text-white');
+            document.getElementById('step2').querySelector('span').classList.add('text-gray-500');
+            document.getElementById('step2').querySelector('span').classList.remove('text-gray-700');
+        }
+        
+        // Auto-format OTP input
+        document.getElementById('otp_code')?.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
         });
     </script>
 </body>

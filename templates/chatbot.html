@@ -1,149 +1,178 @@
 <!-- templates/chatbot_enhanced.html -->
 {% extends 'base.html' %}
 
+{% block title %}EduOps AI Assistant - Educational Data Intelligence{% endblock %}
+
 {% block content %}
-<div class="dashboard-container">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
     <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-robot"></i> EduOps AI - Assistant</h1>
-        <div class="header-actions">
-            <div class="last-updated">
-                <i class="fas fa-database"></i>
-                Database: Connected
-                <span class="status-indicator online"></span>
+    <div class="max-w-6xl mx-auto mb-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-robot text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                            EduOps AI Assistant
+                        </h1>
+                        <p class="text-gray-600 mt-1">Intelligent Educational Data Assistant</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-lg">
+                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-green-700 font-medium">Database Connected</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="ai-assistant-container">
+    <!-- Main Container -->
+    <div class="max-w-6xl mx-auto">
         <!-- Quick Stats Cards -->
-        <div class="quick-stats-row">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 id="total-learners">Loading...</h3>
-                    <span>Total Learners</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-user-check"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 id="active-learners">Loading...</h3>
-                    <span>Active Learners</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-users text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 id="total-learners" class="text-2xl font-bold text-gray-800">Loading...</h3>
+                        <span class="text-gray-600">Total Learners</span>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-graduation-cap"></i>
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-user-check text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 id="active-learners" class="text-2xl font-bold text-gray-800">Loading...</h3>
+                        <span class="text-gray-600">Active Learners</span>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <h3 id="avg-cgpa">Loading...</h3>
-                    <span>Average CGPA</span>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 id="avg-cgpa" class="text-2xl font-bold text-gray-800">Loading...</h3>
+                        <span class="text-gray-600">Average CGPA</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Enhanced Chat Interface -->
-        <div class="ai-chat-interface">
-            <div class="chat-header">
-                <div class="ai-identity">
-                    <div class="ai-avatar">
-                        <i class="fas fa-cogs"></i>
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-robot text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">EduOps AI</h3>
+                            <span class="text-blue-100 text-sm">Learner Information Assistant • Real-time Data Connected</span>
+                        </div>
                     </div>
-                    <div class="ai-info">
-                        <h3>EduOps AI</h3>
-                        <span class="ai-status">Learner Information Assistant - Real-time Data Connected</span>
-                    </div>
-                </div>
-                <div class="chat-controls">
-                    <button id="clear-chat" class="btn btn-outline">
-                        <i class="fas fa-trash"></i> Clear Chat
+                    <button id="clear-chat" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <i class="fas fa-trash"></i>
+                        <span>Clear Chat</span>
                     </button>
                 </div>
             </div>
 
-            <div id="enhanced-chat-messages" class="chat-messages">
-                <div class="message bot-message">
-                    <div class="message-avatar">
-                        <i class="fas fa-robot"></i>
+            <div id="enhanced-chat-messages" class="h-96 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-gray-100">
+                <div class="flex items-start space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                        <i class="fas fa-robot text-white text-sm"></i>
                     </div>
-                    <div class="message-content">
-                        <div class="message-text">
-                            Hello! I'm <strong>EduOps AI</strong>, your dedicated learner information assistant. I can help you find specific learner details using:
-
-                            <br><br>
-                            <strong>🔍 Search by:</strong>
-                            <ul>
-                                <li><strong>First Name</strong> (e.g., "John")</li>
-                                <li><strong>Last Name</strong> (e.g., "Doe")</li>
-                                <li><strong>Full Name</strong> (e.g., "John Doe")</li>
-                                <li><strong>Email Address</strong> (e.g., "john.doe@email.com")</li>
-                            </ul>
-
-                            <br>
-                            <strong>📋 What I Provide:</strong>
-                            <ul>
-                                <li>Personal information (name, email, cohort, status)</li>
-                                <li>Academic details (CGPA, courses completed)</li>
-                                <li>Course grades and credits</li>
-                                <li>Dissertation information (if available)</li>
-                            </ul>
-
-                            <br>
-                            <strong>⚠️ Important:</strong>
-                            <ul>
-                                <li>I <strong>cannot</strong> perform statistical analysis</li>
-                                <li>I <strong>cannot</strong> provide cohort-wide statistics</li>
-                                <li>I <strong>cannot</strong> generate reports or analytics</li>
-                                <li>I <strong>only</strong> provide individual learner details</li>
-                            </ul>
-
-                            <br>
-                            <strong>💡 Example queries:</strong>
-                            <ul>
-                                <li>"Find John Doe"</li>
-                                <li>"Search for madhu.tamraparni@gmail.com"</li>
-                                <li>"Show details for Srinivasan Munugoor"</li>
-                                <li>"Find learner with first name John"</li>
-                            </ul>
-
-                            Which learner would you like information about?
+                    <div class="bg-white rounded-2xl rounded-bl-md p-4 shadow-md max-w-2xl border border-gray-200">
+                        <div class="flex items-center mb-3">
+                            <span class="text-2xl mr-2">🎓</span>
+                            <h4 class="text-lg font-bold text-gray-800">Welcome to EduOps AI!</h4>
                         </div>
-                        <div class="message-time">Just now</div>
+                        <div class="text-sm text-gray-700 space-y-3">
+                            <p>Hello {% if session.get('first_name') %}{{ session.get('first_name', '') }} {{ session.get('last_name', '') }}{% else %}there{% endif %}! 👋 I'm <strong>EduOps AI</strong>, your intelligent educational data assistant.</p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div class="bg-blue-50 p-3 rounded-lg">
+                                    <h5 class="font-semibold text-blue-800 mb-2 flex items-center">
+                                        <i class="fas fa-search text-blue-600 mr-2"></i>
+                                        I can search by:
+                                    </h5>
+                                    <ul class="text-xs space-y-1 text-blue-700">
+                                        <li>• First Name (e.g., "John")</li>
+                                        <li>• Last Name (e.g., "Doe")</li>
+                                        <li>• Full Name (e.g., "John Doe")</li>
+                                        <li>• Email Address</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-green-50 p-3 rounded-lg">
+                                    <h5 class="font-semibold text-green-800 mb-2 flex items-center">
+                                        <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                                        I can provide:
+                                    </h5>
+                                    <ul class="text-xs space-y-1 text-green-700">
+                                        <li>• Personal information</li>
+                                        <li>• Academic details & CGPA</li>
+                                        <li>• Course grades & credits</li>
+                                        <li>• Dissertation information</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
+                                <p class="text-xs text-orange-800">
+                                    <strong>💡 Try asking:</strong> "Find John Doe", "Search for student@email.com", or "Show cohort statistics"
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-3">Just now</div>
                     </div>
                 </div>
             </div>
 
-            <div class="chat-input-section">
+            <!-- Chat Input Section -->
+            <div class="p-6 border-t border-gray-200 bg-white">
                 <!-- Quick Action Buttons -->
-                <div class="quick-actions">
-                    <span class="action-label">Quick Searches:</span>
-                    <div class="action-buttons">
-                        <button class="action-btn" data-query="Find John">
-                            <i class="fas fa-user"></i> Find by First Name
+                <div class="mb-4">
+                    <span class="text-sm font-medium text-gray-600 mb-3 block">Quick Actions:</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="action-btn px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full text-xs font-medium transition-all duration-200 hover:shadow-md flex items-center space-x-2" data-query="Show cohort statistics">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Cohort Stats</span>
                         </button>
-                        <button class="action-btn" data-query="Find madhu.tamraparni@gmail.com">
-                            <i class="fas fa-envelope"></i> Find by Email
+                        <button class="action-btn px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-full text-xs font-medium transition-all duration-200 hover:shadow-md flex items-center space-x-2" data-query="How many active students">
+                            <i class="fas fa-users"></i>
+                            <span>Active Students</span>
                         </button>
-                        <button class="action-btn" data-query="Find Srinivasan Munugoor">
-                            <i class="fas fa-user-tag"></i> Find by Full Name
+                        <button class="action-btn px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full text-xs font-medium transition-all duration-200 hover:shadow-md flex items-center space-x-2" data-query="Find John Doe">
+                            <i class="fas fa-user"></i>
+                            <span>Find Student</span>
                         </button>
-                        <button class="action-btn" data-query="help">
-                            <i class="fas fa-question-circle"></i> Help
+                        <button class="action-btn px-3 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full text-xs font-medium transition-all duration-200 hover:shadow-md flex items-center space-x-2" data-query="Students needing attention">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Need Attention</span>
+                        </button>
+                        <button class="action-btn px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-xs font-medium transition-all duration-200 hover:shadow-md flex items-center space-x-2" data-query="help">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Help</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Input Area -->
-                <div class="input-container">
+                <div class="flex space-x-3">
                     <input type="text" id="enhanced-user-input"
-                        placeholder="Enter first name, last name, full name, or email address..."
-                        class="form-control">
-                    <button id="enhanced-send-button" class="btn btn-primary">
+                        placeholder="Ask me anything about students, cohorts, or academic data..."
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                    <button id="enhanced-send-button" class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center justify-center">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -154,272 +183,6 @@
 {% endblock %}
 
 {% block scripts %}
-<style>
-    .ai-assistant-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .quick-stats-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        box-shadow: var(--card-shadow);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        border-left: 4px solid var(--primary);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: var(--primary-gradient);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.25rem;
-    }
-
-    .stat-content h3 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--dark);
-    }
-
-    .stat-content span {
-        color: var(--gray-600);
-        font-size: 0.9rem;
-    }
-
-    .ai-chat-interface {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-    }
-
-    .chat-header {
-        padding: 1.5rem;
-        background: var(--primary-gradient);
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .ai-identity {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .ai-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
-
-    .ai-info h3 {
-        margin: 0;
-        font-size: 1.25rem;
-    }
-
-    .ai-status {
-        opacity: 0.9;
-        font-size: 0.9rem;
-    }
-
-    .chat-messages {
-        height: 400px;
-        overflow-y: auto;
-        padding: 1.5rem;
-        background: var(--gray-100);
-    }
-
-    .message {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .user-message {
-        flex-direction: row-reverse;
-    }
-
-    .message-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--primary);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .user-message .message-avatar {
-        background: var(--accent);
-    }
-
-    .message-content {
-        max-width: 70%;
-    }
-
-    .message-text {
-        padding: 1rem;
-        border-radius: 1rem;
-        background: white;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .user-message .message-text {
-        background: var(--primary);
-        color: white;
-    }
-
-    .message-time {
-        font-size: 0.8rem;
-        color: var(--gray-500);
-        margin-top: 0.5rem;
-    }
-
-    .chat-input-section {
-        padding: 1.5rem;
-        border-top: 1px solid var(--gray-200);
-    }
-
-    .quick-actions {
-        margin-bottom: 1rem;
-    }
-
-    .action-label {
-        font-size: 0.9rem;
-        color: var(--gray-600);
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .action-btn {
-        padding: 0.5rem 1rem;
-        background: var(--gray-100);
-        border: 1px solid var(--gray-300);
-        border-radius: 20px;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .action-btn:hover {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-
-    .input-container {
-        display: flex;
-        gap: 1rem;
-    }
-
-    #enhanced-user-input {
-        flex: 1;
-        padding: 1rem;
-        border: 1px solid var(--gray-300);
-        border-radius: 25px;
-        font-size: 0.9rem;
-    }
-
-    #enhanced-send-button {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .status-indicator {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 5px;
-    }
-
-    .status-indicator.online {
-        background: #4ade80;
-    }
-
-    .typing-indicator {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--gray-600);
-        font-style: italic;
-    }
-
-    .message-text strong {
-        font-weight: 600;
-        color: inherit;
-    }
-
-    .message-text em {
-        font-style: italic;
-        color: inherit;
-    }
-
-    .message-text code {
-        background: rgba(0, 0, 0, 0.1);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-family: 'Courier New', monospace;
-        font-size: 0.9em;
-    }
-
-    .message-text ul,
-    .message-text ol {
-        margin: 8px 0;
-        padding-left: 20px;
-    }
-
-    .message-text li {
-        margin: 4px 0;
-        line-height: 1.4;
-    }
-
-    .message-text p {
-        margin: 8px 0;
-        line-height: 1.5;
-    }
-
-    .user-message .message-text strong,
-    .user-message .message-text em,
-    .user-message .message-text code {
-        color: rgba(255, 255, 255, 0.9);
-    }
-</style>
 
 <script>
     let conversationSessionId = 'session_' + Date.now();
@@ -434,7 +197,7 @@
 
     async function loadRealTimeStats() {
         try {
-            const response = await fetch('/api/learner-stats');
+            const response = await fetch('/chatbot/api/learner-stats');
             const data = await response.json();
 
             if (data.success) {
@@ -452,7 +215,7 @@
 
     async function loadAverageCGPA() {
         try {
-            const response = await fetch('/api/query-data', {
+            const response = await fetch('/chatbot/api/query-data', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -478,37 +241,43 @@
     const sendButton = document.getElementById('enhanced-send-button');
     const clearChatButton = document.getElementById('clear-chat');
 
-    // Update the addMessage function in chatbot.html
+    // Enhanced addMessage function with Tailwind styling
     function addMessage(message, isUser) {
+        const messagesDiv = document.getElementById('enhanced-chat-messages');
         const messageDiv = document.createElement('div');
-        messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
-
-        const messageAvatar = document.createElement('div');
-        messageAvatar.className = 'message-avatar';
-        messageAvatar.innerHTML = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
-
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-
-        const messageText = document.createElement('div');
-        messageText.className = 'message-text';
-
-        // Format the message with enhanced formatting
-        const formattedMessage = formatMessage(message);
-        messageText.innerHTML = formattedMessage;
-
-        const messageTime = document.createElement('div');
-        messageTime.className = 'message-time';
-        messageTime.textContent = new Date().toLocaleTimeString();
-
-        messageContent.appendChild(messageText);
-        messageContent.appendChild(messageTime);
-        messageDiv.appendChild(messageAvatar);
-        messageDiv.appendChild(messageContent);
-        chatMessages.appendChild(messageDiv);
-
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        messageDiv.className = 'mb-6';
+        
+        if (isUser) {
+            messageDiv.innerHTML = `
+                <div class="flex justify-end">
+                    <div class="flex items-end space-x-3 max-w-2xl">
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl rounded-br-md p-4 shadow-md">
+                            <div class="text-sm">${formatMessage(message)}</div>
+                            <div class="text-xs opacity-75 mt-2">${new Date().toLocaleTimeString()}</div>
+                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const formattedMessage = formatMessage(message);
+            messageDiv.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-bl-md p-4 shadow-md max-w-2xl border border-gray-200">
+                        <div class="text-sm text-gray-700">${formattedMessage}</div>
+                        <div class="text-xs text-gray-500 mt-3">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
     // Enhanced formatting function for chatbot.html
@@ -559,27 +328,25 @@
     }
 
     function showTypingIndicator() {
+        const messagesDiv = document.getElementById('enhanced-chat-messages');
         const typingDiv = document.createElement('div');
-        typingDiv.className = 'message bot-message';
         typingDiv.id = 'typing-indicator';
-
-        const messageAvatar = document.createElement('div');
-        messageAvatar.className = 'message-avatar';
-        messageAvatar.innerHTML = '<i class="fas fa-robot"></i>';
-
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'typing-indicator';
-        typingIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> EduOps AI is searching for learner information...';
-
-        messageContent.appendChild(typingIndicator);
-        typingDiv.appendChild(messageAvatar);
-        typingDiv.appendChild(messageContent);
-        chatMessages.appendChild(typingDiv);
-
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        typingDiv.className = 'mb-6';
+        typingDiv.innerHTML = `
+            <div class="flex items-start space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                    <i class="fas fa-robot text-white text-sm"></i>
+                </div>
+                <div class="bg-white rounded-2xl rounded-bl-md p-4 shadow-md border border-gray-200">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+                        <span class="text-sm text-gray-600">EduOps AI is thinking...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        messagesDiv.appendChild(typingDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
     function hideTypingIndicator() {
@@ -605,7 +372,7 @@
             try {
 
                 // Send to enhanced chat endpoint - FIXED
-                const response = await fetch('/ask', {
+                const response = await fetch('/chatbot/ask', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -642,11 +409,30 @@
     });
 
     clearChatButton.addEventListener('click', function () {
-        chatMessages.innerHTML = '';
+        const messagesDiv = document.getElementById('enhanced-chat-messages');
+        messagesDiv.innerHTML = `
+            <div class="flex items-start space-x-3 mb-6">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                    <i class="fas fa-robot text-white text-sm"></i>
+                </div>
+                <div class="bg-white rounded-2xl rounded-bl-md p-4 shadow-md max-w-2xl border border-gray-200">
+                    <div class="flex items-center mb-3">
+                        <span class="text-2xl mr-2">🎓</span>
+                        <h4 class="text-lg font-bold text-gray-800">Welcome back!</h4>
+                    </div>
+                    <div class="text-sm text-gray-700">
+                        <p>Chat cleared! I'm ready to help you with educational data and insights.</p>
+                        <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                            <p class="text-xs text-blue-800">
+                                <strong>💡 Try asking:</strong> "Show cohort statistics", "Find John Doe", or "How many active students"
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-3">Just now</div>
+                </div>
+            </div>
+        `;
         conversationSessionId = 'session_' + Date.now();
-
-        // Add welcome message back
-        addMessage(`Hello! I'm EduOps AI, your learner information assistant. I can help you find specific learner details using first name, last name, full name, or email address. Which learner would you like information about?`, false);
     });
 
     // Quick action buttons
