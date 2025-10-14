@@ -21,10 +21,13 @@ def get_db_connection():
             project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             db_path = os.path.join(project_root, db_path)
         
-        # Ensure database file exists
+        # Ensure database file exists - create if missing in production
         if not os.path.exists(db_path):
-            logger.error(f"Database file not found at {db_path}")
-            raise FileNotFoundError(f"Database file not found: {db_path}")
+            logger.warning(f"Database file not found at {db_path}, creating new database")
+            # Create empty database file
+            conn = sqlite3.connect(db_path)
+            conn.close()
+            logger.info(f"Created new database at {db_path}")
         
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row  # Enable dict-like access to rows

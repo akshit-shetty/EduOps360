@@ -13,7 +13,7 @@ class Config:
     """Base configuration"""
     
     # Flask Configuration
-    SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = os.getenv('FLASK_SECRET_KEY', os.getenv('SECRET_KEY', 'eduops360-secret-key-production-ready-12345678901234567890'))
     SESSION_TYPE = 'filesystem'
     SESSION_TIMEOUT_HOURS = int(os.getenv('SESSION_TIMEOUT_HOURS', 24))
     
