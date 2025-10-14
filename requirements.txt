@@ -1,5 +1,6 @@
 Flask==2.3.3
-pandas==2.0.3
+pandas==2.1.4
+numpy==1.24.4
 Werkzeug==2.3.7
 openpyxl==3.1.2
 python-dotenv==1.0.0
@@ -7,3 +8,4 @@ openai==1.50.0
 Flask-CORS==4.0.0
 requests==2.31.0
 gunicorn==21.2.0
+psycopg2-binary==2.9.7

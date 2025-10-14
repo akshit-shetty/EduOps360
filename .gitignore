@@ -40,10 +40,16 @@ Thumbs.db
 *.log
 logs/
 
-# Database
+# Database Files (Security - Never commit databases)
+*.db
+*.sqlite
+*.sqlite3
 *.db-journal
 *.sqlite-wal
 *.sqlite-shm
+eduops360.db
+database.db
+*.sql
 
 # Environment variables
 .env
