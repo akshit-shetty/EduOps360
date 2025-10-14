@@ -134,8 +134,8 @@ class SMTPEmailSender:
                     else:
                         logger.warning(f"Attachment file not found: {file_path}")
             
-            # Send email with timeout
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=15)
+            # Send email with optimized timeout for cloud
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10)
             server.starttls()  # Enable encryption
             server.login(self.smtp_username, self.smtp_password)
             server.send_message(msg)
