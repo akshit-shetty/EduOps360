@@ -21,6 +21,19 @@ def get_db_connection():
             project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             db_path = os.path.join(project_root, db_path)
         
+        # If main database doesn't exist, try to use sample database or create new one
+        if not os.path.exists(db_path):
+            sample_db_path = os.path.join(os.path.dirname(db_path), 'sample_eduops360.db')
+            if os.path.exists(sample_db_path):
+                logger.info(f"Main database not found, copying from sample database")
+                import shutil
+                shutil.copy2(sample_db_path, db_path)
+            else:
+                logger.info(f"Creating new database at {db_path}")
+                # Create empty database - it will be initialized by the app
+                conn = sqlite3.connect(db_path)
+                conn.close()
+        
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row  # Enable dict-like access to rows
         return conn

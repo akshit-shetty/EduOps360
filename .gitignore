@@ -40,16 +40,15 @@ Thumbs.db
 *.log
 logs/
 
-# Database Files (Security - Never commit databases)
-*.db
-*.sqlite
-*.sqlite3
+# Database Files (Security - Never commit databases with real data)
 *.db-journal
 *.sqlite-wal
 *.sqlite-shm
+# Keep local database safe but allow sample database for deployment
 eduops360.db
 database.db
-*.sql
+# Allow sample database for deployment
+!sample_eduops360.db
 
 # Environment variables
 .env
