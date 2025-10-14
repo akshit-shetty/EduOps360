@@ -134,12 +134,30 @@ class SMTPEmailSender:
                     else:
                         logger.warning(f"Attachment file not found: {file_path}")
             
-            # Send email with optimized timeout for cloud
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10)
+            # Send email with ultra-fast timeout and connection test
+            import socket
+            
+            # Test connection first (2 second timeout)
+            print(f"🔍 Testing connection to {self.smtp_server}:{self.smtp_port}")
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            try:
+                result = sock.connect_ex((self.smtp_server, self.smtp_port))
+                sock.close()
+                if result != 0:
+                    raise Exception(f"Cannot connect to {self.smtp_server}:{self.smtp_port}")
+                print(f"✅ Connection test passed")
+            except Exception as e:
+                sock.close()
+                raise Exception(f"SMTP server unreachable: {e}")
+            
+            # Send email with very short timeout
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=5)
             server.starttls()  # Enable encryption
             server.login(self.smtp_username, self.smtp_password)
             server.send_message(msg)
             server.quit()
+            print(f"✅ Email sent successfully!")
             
             logger.info(f"Email sent successfully to {to_email}")
             return {'success': True, 'message': 'Email sent successfully via SMTP'}

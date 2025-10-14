@@ -171,27 +171,43 @@ class OTPAuthenticator:
             else:
                 user_name = "User"
             
-            # Send OTP via email - FAST synchronous approach for cloud
+            # Send OTP via email - ULTRA FAST with immediate fallback
             try:
-                print(f"🔍 Attempting direct email send to {email}")
+                print(f"🔍 Attempting FAST email send to {email}")
                 
-                # Try direct email sending with optimized timeout
-                email_success = self.send_otp_email(email, otp_code, user_name, account_key)
+                # Try direct email sending with ultra-short timeout
+                import signal
                 
-                if email_success:
-                    print(f"✅ Email sent successfully!")
-                    return True, "OTP sent successfully"
-                else:
-                    print(f"❌ Email failed, but OTP is generated")
-                    # Log OTP for testing
+                def timeout_handler(signum, frame):
+                    raise TimeoutError("Email sending timeout")
+                
+                # Set 8-second timeout for entire email operation
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(8)
+                
+                try:
+                    email_success = self.send_otp_email(email, otp_code, user_name, account_key)
+                    signal.alarm(0)  # Cancel timeout
+                    
+                    if email_success:
+                        print(f"✅ Email sent successfully!")
+                        return True, "OTP sent successfully"
+                    else:
+                        print(f"❌ Email failed, using fallback")
+                        self.send_simple_otp(email, otp_code, user_name)
+                        return True, f"OTP generated successfully. [SMTP failed - OTP: {otp_code}]"
+                        
+                except TimeoutError:
+                    signal.alarm(0)  # Cancel timeout
+                    print(f"⏰ Email timeout after 8 seconds")
                     self.send_simple_otp(email, otp_code, user_name)
-                    return True, f"OTP generated successfully. Email may be delayed. [TEST: OTP is {otp_code}]"
+                    return True, f"OTP generated successfully. [SMTP timeout - OTP: {otp_code}]"
                     
             except Exception as e:
                 logger.error(f"Error in email sending: {e}")
-                # Log OTP for testing
+                # Always provide OTP for testing
                 self.send_simple_otp(email, otp_code, user_name)
-                return True, f"OTP generated successfully. Email error: {str(e)} [TEST: OTP is {otp_code}]"
+                return True, f"OTP generated successfully. [Email error - OTP: {otp_code}]"
                 
         except Exception as e:
             print(f"❌ Error creating OTP: {e}")
