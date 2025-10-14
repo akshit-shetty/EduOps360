@@ -164,10 +164,13 @@ class OTPAuthenticator:
                 
                 def send_email_async():
                     try:
+                        print(f"🔍 DEBUG: Starting email send to {email} with account {account_key}")
                         result = self.send_otp_email(email, otp_code, user_name, account_key)
                         email_result['success'] = result
                         email_result['message'] = 'Email sent' if result else 'Email failed'
+                        print(f"🔍 DEBUG: Email send result: {result}")
                     except Exception as e:
+                        print(f"❌ DEBUG: Email send exception: {e}")
                         email_result['success'] = False
                         email_result['message'] = f'Email error: {e}'
                 
