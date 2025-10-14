@@ -18,17 +18,24 @@ class SMTPEmailSender:
     def __init__(self, account_key: str = None, account: EmailAccount = None):
         load_dotenv()
         
+        print(f"🔍 SMTPEmailSender init with account_key: {account_key}")
+        
         # Use provided account or get default
         if account:
             self.account = account
+            print(f"🔍 Using provided account: {account.name}")
         elif account_key:
             self.account = get_account_by_key(account_key)
             if not self.account:
+                print(f"❌ Email account '{account_key}' not found")
                 raise ValueError(f"Email account '{account_key}' not found")
+            print(f"🔍 Found account by key: {self.account.name} ({self.account.email})")
         else:
             self.account = get_default_account()
             if not self.account:
+                print(f"❌ No email accounts configured")
                 raise ValueError("No email accounts configured")
+            print(f"🔍 Using default account: {self.account.name}")
         
         # Set SMTP configuration from account
         self.smtp_server = self.account.smtp_server
@@ -38,12 +45,17 @@ class SMTPEmailSender:
         self.use_tls = self.account.use_tls
         self.sender_name = self.account.name
         
+        print(f"🔍 SMTP Config - Server: {self.smtp_server}:{self.smtp_port}, User: {self.smtp_username}")
+        
         # Auto-detect email provider settings if needed (but account config takes priority)
         if self.smtp_username and not hasattr(self, 'account'):
             self._auto_configure_provider()
         
         if not self.smtp_password:
+            print(f"❌ SMTP credentials not configured for account: {self.account.name}")
             logger.warning(f"SMTP credentials not configured for account: {self.account.name}")
+        else:
+            print(f"🔍 SMTP password configured: {'*' * len(self.smtp_password)}")
     
     def _auto_configure_provider(self):
         """Auto-configure SMTP settings based on email provider"""
@@ -134,7 +146,10 @@ class SMTPEmailSender:
             
         except Exception as e:
             error_msg = f"Failed to send email to {to_email}: {str(e)}"
+            print(f"❌ SMTP Error: {error_msg}")
             logger.error(error_msg)
+            import traceback
+            traceback.print_exc()
             return {'success': False, 'message': error_msg}
     
     def send_bulk_emails(self, email_list, subject_template, body_template, preview_only=False):

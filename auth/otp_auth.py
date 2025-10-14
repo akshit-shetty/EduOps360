@@ -66,8 +66,10 @@ class OTPAuthenticator:
         return True
 
     def send_otp_email(self, email, otp_code, user_name="User", account_key="primary"):
-        """Send OTP via email - simplified for reliable delivery"""
+        """Send OTP via email - with comprehensive debugging"""
         try:
+            print(f"🔍 Starting OTP email send to {email}")
+            
             subject = "EduOps360 Login Code"
             
             # Simple, clean HTML that's less likely to be flagged as spam
@@ -101,13 +103,26 @@ class OTPAuthenticator:
             </html>
             """
             
-            # Send email using SMTP directly - no custom headers to avoid spam filters
-            success = send_smtp_email(
+            print(f"🔍 Calling send_smtp_email with account_key: {account_key}")
+            
+            # Send email using SMTP directly
+            result = send_smtp_email(
                 to_email=email,
                 subject=subject,
                 html_body=html_body,
                 account_key=account_key
             )
+            
+            print(f"🔍 send_smtp_email returned: {result}")
+            
+            # Check if result is a dict (new format) or boolean (old format)
+            if isinstance(result, dict):
+                success = result.get('success', False)
+                message = result.get('message', 'Unknown error')
+                print(f"🔍 Email result - Success: {success}, Message: {message}")
+            else:
+                success = bool(result)
+                print(f"🔍 Email result (boolean): {success}")
             
             if success:
                 print(f"✅ OTP sent successfully to {email}")
@@ -122,6 +137,8 @@ class OTPAuthenticator:
                 
         except Exception as e:
             print(f"❌ Error sending OTP email: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def create_otp(self, email, account_key="primary"):
