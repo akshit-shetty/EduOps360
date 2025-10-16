@@ -77,18 +77,44 @@ def load_sessions_from_excel(file_path):
             print("⚠️ DataFrame is empty after loading")
             return []
             
-        # Convert Date column to datetime
+        # Convert Date column to datetime with multiple format attempts
+        print("📅 Attempting date conversion...")
+        df['Date_Original'] = df['Date']  # Keep original for debugging
+        
+        # Try multiple date formats
+        date_formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d', '%m-%d-%Y', '%d-%m-%Y']
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        print(f"📅 Date conversion - NaN count: {df['Date'].isna().sum()}")
+        
+        # If still many NaN, try parsing with different formats
+        if df['Date'].isna().sum() > len(df) * 0.5:  # If more than 50% failed
+            print("⚠️  Many date conversion failures, trying alternative formats...")
+            for fmt in date_formats:
+                try:
+                    df['Date'] = pd.to_datetime(df['Date_Original'], format=fmt, errors='coerce')
+                    if df['Date'].notna().sum() > 0:
+                        print(f"✅ Successfully parsed dates with format: {fmt}")
+                        break
+                except:
+                    continue
+        
+        print(f"📅 Date conversion results:")
+        print(f"   - Successfully converted: {df['Date'].notna().sum()}")
+        print(f"   - Failed conversions (NaN): {df['Date'].isna().sum()}")
+        
+        # Show date range if we have valid dates
+        valid_dates = df[df['Date'].notna()]
+        if not valid_dates.empty:
+            print(f"   - Date range: {valid_dates['Date'].min().date()} to {valid_dates['Date'].max().date()}")
 
         # Strip whitespace from emails (avoid duplicates)
         df["Email"] = df["Email"].astype(str).str.strip()
 
         # ==============================
-        # Calculate THIS or NEXT weekend (Fri–Sun)
+        # Smart date filtering - use upcoming sessions or weekend
         # ==============================
         today = datetime.today().date()
-
+        
+        # First, try to get sessions for the upcoming weekend
         if today.weekday() >= 4:  # Friday (4), Saturday (5), Sunday (6)
             next_friday = today - timedelta(days=today.weekday() - 4)  # This Friday
         else:
@@ -96,14 +122,33 @@ def load_sessions_from_excel(file_path):
             next_friday = today + timedelta(days=days_ahead)
 
         end_of_weekend = next_friday + timedelta(days=2)
-
-        # ==============================
-        # Filter for sessions in weekend
-        # ==============================
-        df = df[(df['Date'].dt.date >= next_friday) & (df['Date'].dt.date <= end_of_weekend)]
-
-        if df.empty:
-            return []
+        
+        print(f"🎯 Looking for sessions in upcoming weekend: {next_friday} to {end_of_weekend}")
+        
+        # Filter for weekend sessions
+        weekend_df = df[(df['Date'].dt.date >= next_friday) & (df['Date'].dt.date <= end_of_weekend)]
+        
+        if not weekend_df.empty:
+            print(f"✅ Found {len(weekend_df)} sessions in upcoming weekend")
+            df = weekend_df
+        else:
+            print("⚠️  No sessions found in upcoming weekend, using next 7 days...")
+            # Fallback: use next 7 days from today
+            next_week = today + timedelta(days=7)
+            future_df = df[(df['Date'].dt.date >= today) & (df['Date'].dt.date <= next_week)]
+            
+            if not future_df.empty:
+                print(f"✅ Found {len(future_df)} sessions in next 7 days")
+                df = future_df
+            else:
+                print("⚠️  No upcoming sessions found, using all sessions with valid dates...")
+                df = df[df['Date'].notna()]
+                
+                if df.empty:
+                    print("❌ No sessions with valid dates found!")
+                    return []
+                else:
+                    print(f"✅ Using all {len(df)} sessions with valid dates")
 
         # ==============================
         # Group by professor email and format data
