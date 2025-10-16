@@ -978,9 +978,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Get all table rows
-        const tableRows = document.querySelectorAll('tbody tr');
-        const totalStudents = tableRows.length;
+        // Smart Cascading Filter System
         const filterResults = document.getElementById('filterResults');
         const activeFilters = document.getElementById('activeFilters');
         const activeFiltersList = document.getElementById('activeFiltersList');
@@ -991,9 +989,16 @@
         const urlParams = new URLSearchParams(window.location.search);
         let selectedFilters = {
             search: urlParams.get('search') || '',
-            cohort: urlParams.getAll('cohort') || [],
-            milestone: urlParams.getAll('milestone') || [],
-            status: urlParams.getAll('status') || []
+            cohorts: urlParams.getAll('cohort') || [],
+            milestones: urlParams.getAll('milestone') || [],
+            statuses: urlParams.getAll('status') || []
+        };
+
+        // Available filter options (updated dynamically)
+        let availableOptions = {
+            cohorts: [],
+            milestones: [],
+            statuses: []
         };
 
         // Set initial values from URL
@@ -1002,16 +1007,111 @@
             clearSearch.classList.remove('hidden');
         }
 
-        // Set checkboxes based on URL parameters
-        ['cohort', 'milestone', 'status'].forEach(type => {
-            selectedFilters[type].forEach(value => {
-                const checkbox = document.querySelector(`#${type}-dropdown input[value="${value}"]`);
-                if (checkbox) {
-                    checkbox.checked = true;
+        // Initialize smart filters
+        initializeSmartFilters();
+
+        async function initializeSmartFilters() {
+            try {
+                // Load initial filter options
+                await updateFilterOptions();
+                
+                // Set checkboxes based on URL parameters
+                ['cohort', 'milestone', 'status'].forEach(type => {
+                    const filterKey = type === 'cohort' ? 'cohorts' : 
+                                    type === 'milestone' ? 'milestones' : 'statuses';
+                    selectedFilters[filterKey].forEach(value => {
+                        const checkbox = document.querySelector(`#${type}-dropdown input[value="${value}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                    updateDropdownSelection(type);
+                });
+                
+                updateActiveFilters();
+            } catch (error) {
+                console.error('Error initializing smart filters:', error);
+            }
+        }
+
+        // Function to update available filter options based on current selections
+        async function updateFilterOptions() {
+            try {
+                const response = await fetch('/api/dissertation/filter-options', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cohorts: selectedFilters.cohorts,
+                        milestones: selectedFilters.milestones,
+                        statuses: selectedFilters.statuses,
+                        search: selectedFilters.search
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableOptions = data.options;
+                    updateDropdownOptions();
+                    
+                    // Update results count
+                    if (filterResults) {
+                        filterResults.textContent = `Showing ${data.total_results} students`;
+                    }
+                } else {
+                    console.error('Filter options error:', data.error);
+                }
+            } catch (error) {
+                console.error('Error fetching filter options:', error);
+            }
+        }
+
+        // Function to update dropdown options with counts
+        function updateDropdownOptions() {
+            // Update cohort options
+            updateDropdownContent('cohort', availableOptions.cohorts, (option) => `Cohort ${option.value} (${option.count})`);
+            
+            // Update milestone options
+            updateDropdownContent('milestone', availableOptions.milestones, (option) => `${option.value} (${option.count})`);
+            
+            // Update status options
+            updateDropdownContent('status', availableOptions.statuses, (option) => `${option.value} (${option.count})`);
+        }
+
+        // Function to update dropdown content
+        function updateDropdownContent(type, options, labelFormatter) {
+            const dropdown = document.getElementById(`${type}-dropdown`);
+            if (!dropdown) return;
+
+            const currentSelections = Array.from(dropdown.querySelectorAll('input:checked')).map(cb => cb.value);
+            
+            dropdown.innerHTML = '';
+            
+            options.forEach(option => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer';
+                
+                const isSelected = currentSelections.includes(option.value);
+                const isDisabled = option.count === 0 && !isSelected;
+                
+                label.innerHTML = `
+                    <input type="checkbox" value="${option.value}" 
+                           onchange="updateDropdownSelection('${type}')"
+                           ${isSelected ? 'checked' : ''}
+                           ${isDisabled ? 'disabled' : ''}
+                           class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${isDisabled ? 'opacity-50' : ''}">
+                    <span class="text-sm ${isDisabled ? 'text-gray-400' : ''}">${labelFormatter(option)}</span>
+                `;
+                
+                dropdown.appendChild(label);
             });
-            updateDropdownSelection(type);
-        });
+        }
 
         // Function to toggle dropdown visibility
         window.toggleDropdown = function (type) {
@@ -1029,15 +1129,17 @@
             dropdown.classList.toggle('hidden');
         };
 
-        // Function to update dropdown selection
-        window.updateDropdownSelection = function (type) {
+        // Function to update dropdown selection with smart filtering
+        window.updateDropdownSelection = async function (type) {
             const checkboxes = document.querySelectorAll(`#${type}-dropdown input[type="checkbox"]`);
             const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
             const textElement = document.getElementById(type + 'Text');
             const countElement = document.getElementById(type + 'Count');
 
             // Update selected filters
-            selectedFilters[type] = selected;
+            const filterKey = type === 'cohort' ? 'cohorts' : 
+                            type === 'milestone' ? 'milestones' : 'statuses';
+            selectedFilters[filterKey] = selected;
 
             // Update display text
             if (selected.length === 0) {
@@ -1049,22 +1151,23 @@
                     textElement.textContent = 'Select status...';
                 }
             } else {
-                let label = '';
-                if (type === 'cohort') {
-                    label = 'cohort';
-                } else if (type === 'milestone') {
-                    label = 'milestone';
-                } else if (type === 'status') {
-                    label = 'status';
-                }
+                let label = type === 'cohort' ? 'cohort' : 
+                           type === 'milestone' ? 'milestone' : 'status';
                 textElement.textContent = `${selected.length} ${label}${selected.length > 1 ? 's' : ''} selected`;
             }
 
             // Update count
             countElement.textContent = `(${selected.length} selected)`;
 
-            // Apply filters
-            applyFilters();
+            // Update available options for other filters (cascading effect)
+            await updateFilterOptions();
+            updateActiveFilters();
+            
+            // Apply filters with debouncing
+            clearTimeout(window.filterTimeout);
+            window.filterTimeout = setTimeout(() => {
+                applyFilters();
+            }, 300);
         };
 
         // Function to extract status text from badge
@@ -1086,15 +1189,15 @@
             }
 
             // Add filter parameters
-            selectedFilters.cohort.forEach(cohort => {
+            selectedFilters.cohorts.forEach(cohort => {
                 urlParams.append('cohort', cohort);
             });
 
-            selectedFilters.milestone.forEach(milestone => {
+            selectedFilters.milestones.forEach(milestone => {
                 urlParams.append('milestone', milestone);
             });
 
-            selectedFilters.status.forEach(status => {
+            selectedFilters.statuses.forEach(status => {
                 urlParams.append('status', status);
             });
 
@@ -1111,9 +1214,9 @@
         // Function to update active filters display
         function updateActiveFilters() {
             const hasActiveFilters = selectedFilters.search ||
-                selectedFilters.cohort.length > 0 ||
-                selectedFilters.milestone.length > 0 ||
-                selectedFilters.status.length > 0;
+                selectedFilters.cohorts.length > 0 ||
+                selectedFilters.milestones.length > 0 ||
+                selectedFilters.statuses.length > 0;
 
             if (hasActiveFilters) {
                 activeFilters.classList.remove('hidden');
@@ -1126,19 +1229,19 @@
                 }
 
                 // Cohort filter badges
-                selectedFilters.cohort.forEach(cohort => {
+                selectedFilters.cohorts.forEach(cohort => {
                     const badge = createFilterBadge('cohort', `Cohort ${cohort}`, 'green', cohort);
                     activeFiltersList.appendChild(badge);
                 });
 
                 // Milestone filter badges
-                selectedFilters.milestone.forEach(milestone => {
+                selectedFilters.milestones.forEach(milestone => {
                     const badge = createFilterBadge('milestone', `Milestone: ${milestone}`, 'blue', milestone);
                     activeFiltersList.appendChild(badge);
                 });
 
                 // Status filter badges
-                selectedFilters.status.forEach(status => {
+                selectedFilters.statuses.forEach(status => {
                     const badge = createFilterBadge('status', `Status: ${status}`, 'purple', status);
                     activeFiltersList.appendChild(badge);
                 });
@@ -1173,18 +1276,21 @@
         }
 
         // Function to remove specific filter
-        window.removeFilter = function (type, value) {
+        window.removeFilter = async function (type, value) {
             if (type === 'search') {
                 selectedFilters.search = '';
                 emailFilter.value = '';
                 clearSearch.classList.add('hidden');
             } else {
-                const index = selectedFilters[type].indexOf(value);
+                const filterKey = type === 'cohort' ? 'cohorts' : 
+                                type === 'milestone' ? 'milestones' : 'statuses';
+                const index = selectedFilters[filterKey].indexOf(value);
                 if (index > -1) {
-                    selectedFilters[type].splice(index, 1);
+                    selectedFilters[filterKey].splice(index, 1);
                     // Uncheck the corresponding checkbox
                     const checkbox = document.querySelector(`#${type}-dropdown input[value="${value}"]`);
                     if (checkbox) checkbox.checked = false;
+                    await updateFilterOptions();
                     updateDropdownSelection(type);
                 }
             }
@@ -1203,15 +1309,24 @@
             window.location.search = urlParams.toString();
         };
 
-        // Search input event listeners
-        emailFilter.addEventListener('input', function () {
+        // Search input event listeners with smart filtering
+        emailFilter.addEventListener('input', async function () {
             selectedFilters.search = this.value.toLowerCase();
             if (this.value) {
                 clearSearch.classList.remove('hidden');
             } else {
                 clearSearch.classList.add('hidden');
             }
-            applyFilters();
+            
+            // Update filter options based on search
+            await updateFilterOptions();
+            updateActiveFilters();
+            
+            // Apply filters with debouncing
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 500);
         });
 
         // Clear search button

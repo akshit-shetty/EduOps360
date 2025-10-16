@@ -2786,6 +2786,84 @@ def get_dissertation_students_api():
             'error': str(e)
         }), 500
 
+@app.route('/api/dissertation/filter-options', methods=['POST'])
+@login_required
+def get_dissertation_filter_options():
+    """
+    API endpoint for smart cascading filter options
+    """
+    try:
+        from utils.dissertation_analytics import get_smart_filter_options
+        
+        data = request.get_json() or {}
+        selected_cohorts = data.get('cohorts', [])
+        selected_milestones = data.get('milestones', [])
+        selected_statuses = data.get('statuses', [])
+        search_query = data.get('search', '')
+        
+        # Get filter options
+        options = get_smart_filter_options(
+            selected_cohorts=selected_cohorts if selected_cohorts else None,
+            selected_milestones=selected_milestones if selected_milestones else None,
+            selected_statuses=selected_statuses if selected_statuses else None,
+            search_query=search_query if search_query else None
+        )
+        
+        return jsonify({
+            'success': True,
+            'options': {
+                'cohorts': options['cohorts'],
+                'milestones': options['milestones'],
+                'statuses': options['statuses']
+            },
+            'total_results': options['total_results']
+        })
+        
+    except Exception as e:
+        print(f"❌ Filter options error: {e}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/dissertation/validate-filters', methods=['POST'])
+@login_required
+def validate_dissertation_filters():
+    """
+    API endpoint to validate filter combinations
+    """
+    try:
+        from utils.dissertation_analytics import validate_filter_combination
+        
+        data = request.get_json() or {}
+        selected_cohorts = data.get('cohorts', [])
+        selected_milestones = data.get('milestones', [])
+        selected_statuses = data.get('statuses', [])
+        search_query = data.get('search', '')
+        
+        # Validate filters
+        validation = validate_filter_combination(
+            selected_cohorts=selected_cohorts if selected_cohorts else None,
+            selected_milestones=selected_milestones if selected_milestones else None,
+            selected_statuses=selected_statuses if selected_statuses else None,
+            search_query=search_query if search_query else None
+        )
+        
+        return jsonify({
+            'success': True,
+            'valid': validation['valid'],
+            'count': validation['count']
+        })
+        
+    except Exception as e:
+        print(f"❌ Filter validation error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # Health check endpoint for hosting platforms
 @app.route('/health')
 def health_check():

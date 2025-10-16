@@ -527,3 +527,269 @@ def get_dissertation_students_list(cohort_filter=None, milestone_filter=None, st
         }
     finally:
         conn.close()
+
+def get_smart_filter_options(selected_cohorts=None, selected_milestones=None, selected_statuses=None, search_query=None):
+    """
+    Get available filter options based on current selections for smart cascading filters
+    
+    Args:
+        selected_cohorts: List of selected cohort values
+        selected_milestones: List of selected milestone values  
+        selected_statuses: List of selected status values
+        search_query: Search query string
+    
+    Returns:
+        Dictionary with available options and counts
+    """
+    conn = get_db_connection()
+    if not conn:
+        return {'cohorts': [], 'milestones': [], 'statuses': []}
+    
+    try:
+        conn.row_factory = sqlite3.Row
+        
+        # Base query for dissertation students
+        base_query = """
+        SELECT DISTINCT 
+            sl."Cohort",
+            sl."Topic Proposal Status",
+            sl."IRB Status", 
+            sl."Research Proposal Status",
+            sl."Final Defense Status",
+            sl."Name",
+            sl."Email",
+            sl."User ID"
+        FROM "Student List" sl 
+        WHERE sl."Dissertation Mode" IS NOT NULL 
+        AND sl."Dissertation Mode" != '' 
+        AND sl."Dissertation Mode" != '0'
+        """
+        
+        params = []
+        conditions = []
+        
+        # Apply current filters to get available options
+        if selected_cohorts:
+            cohort_placeholders = ','.join(['?' for _ in selected_cohorts])
+            conditions.append(f'sl."Cohort" IN ({cohort_placeholders})')
+            params.extend(selected_cohorts)
+        
+        if selected_milestones:
+            milestone_conditions = []
+            for milestone in selected_milestones:
+                if milestone == 'Topic Proposal':
+                    milestone_conditions.append('sl."Topic Proposal Status" IS NOT NULL AND sl."Topic Proposal Status" != ""')
+                elif milestone == 'IRB':
+                    milestone_conditions.append('sl."IRB Status" IS NOT NULL AND sl."IRB Status" != ""')
+                elif milestone == 'Research Proposal':
+                    milestone_conditions.append('sl."Research Proposal Status" IS NOT NULL AND sl."Research Proposal Status" != ""')
+                elif milestone == 'Final Defense':
+                    milestone_conditions.append('sl."Final Defense Status" IS NOT NULL AND sl."Final Defense Status" != ""')
+            
+            if milestone_conditions:
+                conditions.append(f'({" OR ".join(milestone_conditions)})')
+        
+        if selected_statuses:
+            status_conditions = []
+            for status in selected_statuses:
+                status_conditions.extend([
+                    f'sl."Topic Proposal Status" = ?',
+                    f'sl."IRB Status" = ?',
+                    f'sl."Research Proposal Status" = ?',
+                    f'sl."Final Defense Status" = ?'
+                ])
+                params.extend([status, status, status, status])
+            
+            if status_conditions:
+                conditions.append(f'({" OR ".join(status_conditions)})')
+        
+        if search_query and search_query.strip():
+            conditions.append('(sl."Name" LIKE ? OR sl."Email" LIKE ?)')
+            search_param = f'%{search_query.strip()}%'
+            params.extend([search_param, search_param])
+        
+        # Build final query
+        if conditions:
+            query = base_query + ' AND ' + ' AND '.join(conditions)
+        else:
+            query = base_query
+        
+        # Execute query
+        cursor = conn.execute(query, params)
+        results = cursor.fetchall()
+        
+        # Extract available options
+        available_cohorts = set()
+        available_milestones = set()
+        available_statuses = set()
+        
+        for row in results:
+            # Cohorts
+            if row['Cohort']:
+                available_cohorts.add(str(row['Cohort']))
+            
+            # Milestones (check which milestones have data)
+            if row['Topic Proposal Status'] and row['Topic Proposal Status'].strip():
+                available_milestones.add('Topic Proposal')
+            if row['IRB Status'] and row['IRB Status'].strip():
+                available_milestones.add('IRB')
+            if row['Research Proposal Status'] and row['Research Proposal Status'].strip():
+                available_milestones.add('Research Proposal')
+            if row['Final Defense Status'] and row['Final Defense Status'].strip():
+                available_milestones.add('Final Defense')
+            
+            # Statuses
+            for status_field in ['Topic Proposal Status', 'IRB Status', 'Research Proposal Status', 'Final Defense Status']:
+                if row[status_field] and row[status_field].strip():
+                    available_statuses.add(row[status_field])
+        
+        # Get counts for each option
+        cohort_counts = {}
+        milestone_counts = {}
+        status_counts = {}
+        
+        # Count cohorts
+        for cohort in available_cohorts:
+            count_query = query.replace('SELECT DISTINCT', 'SELECT COUNT(DISTINCT sl."User ID")') + ' AND sl."Cohort" = ?'
+            count_params = params + [cohort]
+            count_result = conn.execute(count_query, count_params).fetchone()
+            cohort_counts[cohort] = count_result[0] if count_result else 0
+        
+        # Count milestones
+        for milestone in available_milestones:
+            milestone_condition = ''
+            if milestone == 'Topic Proposal':
+                milestone_condition = 'sl."Topic Proposal Status" IS NOT NULL AND sl."Topic Proposal Status" != ""'
+            elif milestone == 'IRB':
+                milestone_condition = 'sl."IRB Status" IS NOT NULL AND sl."IRB Status" != ""'
+            elif milestone == 'Research Proposal':
+                milestone_condition = 'sl."Research Proposal Status" IS NOT NULL AND sl."Research Proposal Status" != ""'
+            elif milestone == 'Final Defense':
+                milestone_condition = 'sl."Final Defense Status" IS NOT NULL AND sl."Final Defense Status" != ""'
+            
+            count_query = query.replace('SELECT DISTINCT', 'SELECT COUNT(DISTINCT sl."User ID")') + f' AND ({milestone_condition})'
+            count_result = conn.execute(count_query, params).fetchone()
+            milestone_counts[milestone] = count_result[0] if count_result else 0
+        
+        # Count statuses
+        for status in available_statuses:
+            status_condition = f'(sl."Topic Proposal Status" = ? OR sl."IRB Status" = ? OR sl."Research Proposal Status" = ? OR sl."Final Defense Status" = ?)'
+            count_query = query.replace('SELECT DISTINCT', 'SELECT COUNT(DISTINCT sl."User ID")') + f' AND {status_condition}'
+            count_params = params + [status, status, status, status]
+            count_result = conn.execute(count_query, count_params).fetchone()
+            status_counts[status] = count_result[0] if count_result else 0
+        
+        # Sort options
+        sorted_cohorts = sorted(available_cohorts, key=lambda x: int(x) if x.isdigit() else float('inf'))
+        sorted_milestones = ['Topic Proposal', 'IRB', 'Research Proposal', 'Final Defense']
+        sorted_milestones = [m for m in sorted_milestones if m in available_milestones]
+        sorted_statuses = sorted(available_statuses)
+        
+        return {
+            'cohorts': [{'value': c, 'count': cohort_counts.get(c, 0)} for c in sorted_cohorts],
+            'milestones': [{'value': m, 'count': milestone_counts.get(m, 0)} for m in sorted_milestones],
+            'statuses': [{'value': s, 'count': status_counts.get(s, 0)} for s in sorted_statuses],
+            'total_results': len(results)
+        }
+        
+    except Exception as e:
+        print(f"❌ Smart filter options error: {e}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
+        return {
+            'cohorts': [],
+            'milestones': [],
+            'statuses': [],
+            'total_results': 0
+        }
+    finally:
+        conn.close()
+
+def validate_filter_combination(selected_cohorts=None, selected_milestones=None, selected_statuses=None, search_query=None):
+    """
+    Validate if current filter combination returns results
+    
+    Args:
+        selected_cohorts: List of selected cohort values
+        selected_milestones: List of selected milestone values
+        selected_statuses: List of selected status values
+        search_query: Search query string
+    
+    Returns:
+        Dictionary with validation results
+    """
+    conn = get_db_connection()
+    if not conn:
+        return {'valid': False, 'count': 0}
+    
+    try:
+        # Build validation query
+        query = """
+        SELECT COUNT(DISTINCT sl."User ID") as count
+        FROM "Student List" sl 
+        WHERE sl."Dissertation Mode" IS NOT NULL 
+        AND sl."Dissertation Mode" != '' 
+        AND sl."Dissertation Mode" != '0'
+        """
+        
+        params = []
+        conditions = []
+        
+        if selected_cohorts:
+            cohort_placeholders = ','.join(['?' for _ in selected_cohorts])
+            conditions.append(f'sl."Cohort" IN ({cohort_placeholders})')
+            params.extend(selected_cohorts)
+        
+        if selected_milestones:
+            milestone_conditions = []
+            for milestone in selected_milestones:
+                if milestone == 'Topic Proposal':
+                    milestone_conditions.append('sl."Topic Proposal Status" IS NOT NULL AND sl."Topic Proposal Status" != ""')
+                elif milestone == 'IRB':
+                    milestone_conditions.append('sl."IRB Status" IS NOT NULL AND sl."IRB Status" != ""')
+                elif milestone == 'Research Proposal':
+                    milestone_conditions.append('sl."Research Proposal Status" IS NOT NULL AND sl."Research Proposal Status" != ""')
+                elif milestone == 'Final Defense':
+                    milestone_conditions.append('sl."Final Defense Status" IS NOT NULL AND sl."Final Defense Status" != ""')
+            
+            if milestone_conditions:
+                conditions.append(f'({" OR ".join(milestone_conditions)})')
+        
+        if selected_statuses:
+            status_conditions = []
+            for status in selected_statuses:
+                status_conditions.extend([
+                    f'sl."Topic Proposal Status" = ?',
+                    f'sl."IRB Status" = ?',
+                    f'sl."Research Proposal Status" = ?',
+                    f'sl."Final Defense Status" = ?'
+                ])
+                params.extend([status, status, status, status])
+            
+            if status_conditions:
+                conditions.append(f'({" OR ".join(status_conditions)})')
+        
+        if search_query and search_query.strip():
+            conditions.append('(sl."Name" LIKE ? OR sl."Email" LIKE ?)')
+            search_param = f'%{search_query.strip()}%'
+            params.extend([search_param, search_param])
+        
+        if conditions:
+            query += ' AND ' + ' AND '.join(conditions)
+        
+        result = conn.execute(query, params).fetchone()
+        count = result[0] if result else 0
+        
+        return {
+            'valid': count > 0,
+            'count': count
+        }
+        
+    except Exception as e:
+        print(f"❌ Filter validation error: {e}")
+        return {
+            'valid': False,
+            'count': 0
+        }
+    finally:
+        conn.close()
