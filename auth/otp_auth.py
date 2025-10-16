@@ -66,10 +66,11 @@ class OTPAuthenticator:
         return True
 
     def send_otp_email(self, email, otp_code, user_name="User", account_key="primary"):
-        """Send OTP via email - with comprehensive debugging"""
+        """Send OTP via email using SMTP"""
         try:
             print(f"🔍 Starting OTP email send to {email}")
             
+            # Send via SMTP
             subject = "EduOps360 Login Code"
             
             # Simple, clean HTML that's less likely to be flagged as spam
@@ -171,37 +172,42 @@ class OTPAuthenticator:
             else:
                 user_name = "User"
             
-            # Send OTP via email - ULTRA FAST with immediate fallback
+            # Send OTP via email with timeout handling
             try:
-                print(f"🔍 Attempting FAST email send to {email}")
+                print(f"🔍 Attempting email send to {email}")
                 
-                # Try direct email sending with ultra-short timeout
-                import signal
+                # Try direct email sending with timeout (Windows compatible)
+                import threading
+                import time
                 
-                def timeout_handler(signum, frame):
-                    raise TimeoutError("Email sending timeout")
+                email_result = [None]  # Use list to store result from thread
                 
-                # Set 8-second timeout for entire email operation
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.alarm(8)
+                def send_email_thread():
+                    try:
+                        email_result[0] = self.send_otp_email(email, otp_code, user_name, account_key)
+                    except Exception as e:
+                        print(f"❌ Email thread error: {e}")
+                        email_result[0] = False
                 
-                try:
-                    email_success = self.send_otp_email(email, otp_code, user_name, account_key)
-                    signal.alarm(0)  # Cancel timeout
-                    
-                    if email_success:
-                        print(f"✅ Email sent successfully!")
-                        return True, "OTP sent successfully"
-                    else:
-                        print(f"❌ Email failed, using fallback")
-                        self.send_simple_otp(email, otp_code, user_name)
-                        return True, f"OTP generated successfully. [SMTP failed - OTP: {otp_code}]"
-                        
-                except TimeoutError:
-                    signal.alarm(0)  # Cancel timeout
-                    print(f"⏰ Email timeout after 8 seconds")
+                # Start email sending in separate thread
+                email_thread = threading.Thread(target=send_email_thread)
+                email_thread.daemon = True
+                email_thread.start()
+                
+                # Wait for up to 10 seconds
+                email_thread.join(timeout=10)
+                
+                if email_thread.is_alive():
+                    print(f"⏰ Email timeout after 10 seconds")
                     self.send_simple_otp(email, otp_code, user_name)
                     return True, f"OTP generated successfully. [SMTP timeout - OTP: {otp_code}]"
+                elif email_result[0]:
+                    print(f"✅ Email sent successfully!")
+                    return True, "OTP sent successfully"
+                else:
+                    print(f"❌ Email failed, using fallback")
+                    self.send_simple_otp(email, otp_code, user_name)
+                    return True, f"OTP generated successfully. [SMTP failed - OTP: {otp_code}]"
                     
             except Exception as e:
                 logger.error(f"Error in email sending: {e}")
