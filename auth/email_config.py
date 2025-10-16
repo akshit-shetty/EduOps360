@@ -27,6 +27,27 @@ class EmailAccountManager:
         self.accounts: Dict[str, EmailAccount] = {}
         self._load_accounts()
     
+    def _get_smtp_config(self, email_address):
+        """Auto-detect SMTP configuration based on email domain"""
+        if not email_address:
+            return 'smtp.gmail.com', 587, True
+            
+        domain = email_address.split('@')[-1].lower()
+        
+        # SMTP configurations for different providers (cloud-friendly)
+        smtp_configs = {
+            'gmail.com': ('smtp.gmail.com', 587, True),
+            'googlemail.com': ('smtp.gmail.com', 587, True),
+            'outlook.com': ('smtp.gmail.com', 587, True),  # Use Gmail for better cloud compatibility
+            'hotmail.com': ('smtp.gmail.com', 587, True),  # Use Gmail for better cloud compatibility
+            'live.com': ('smtp.gmail.com', 587, True),     # Use Gmail for better cloud compatibility
+            'upgrad.com': ('smtp.gmail.com', 587, True),   # Use Gmail for UpGrad emails
+            'yahoo.com': ('smtp.mail.yahoo.com', 587, True),
+            'yahoo.co.in': ('smtp.mail.yahoo.com', 587, True),
+        }
+        
+        return smtp_configs.get(domain, ('smtp.gmail.com', 587, True))  # Default to Gmail
+
     def _load_accounts(self):
         """Load email accounts from environment variables"""
         # Primary Account: GGU DBA ET Operations (Default for OTP)
@@ -35,13 +56,16 @@ class EmailAccountManager:
         email_display_name = os.getenv('EMAIL_DISPLAY_NAME', 'GGU DBA ET Operations')
         
         if email_address and email_password:
+            # Auto-detect SMTP settings or use environment override
+            smtp_server, smtp_port, use_tls = self._get_smtp_config(email_address)
+            
             self.accounts['primary'] = EmailAccount(
                 name=email_display_name,
                 email=email_address,
                 password=email_password,
-                smtp_server=os.getenv('EMAIL_SMTP_SERVER', 'smtp-mail.outlook.com'),
-                smtp_port=int(os.getenv('EMAIL_SMTP_PORT', '587')),
-                use_tls=os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+                smtp_server=os.getenv('EMAIL_SMTP_SERVER', smtp_server),
+                smtp_port=int(os.getenv('EMAIL_SMTP_PORT', str(smtp_port))),
+                use_tls=os.getenv('EMAIL_USE_TLS', str(use_tls)).lower() == 'true'
             )
         else:
             print("⚠️  WARNING: EMAIL_ADDRESS and EMAIL_PASSWORD not found in environment variables")
@@ -53,13 +77,16 @@ class EmailAccountManager:
         email_display_name_secondary = os.getenv('EMAIL_DISPLAY_NAME_SECONDARY', 'GGU Gen AI Queries')
         
         if email_address_secondary and email_password_secondary:
+            # Auto-detect SMTP settings for secondary account
+            smtp_server_sec, smtp_port_sec, use_tls_sec = self._get_smtp_config(email_address_secondary)
+            
             self.accounts['secondary'] = EmailAccount(
                 name=email_display_name_secondary,
                 email=email_address_secondary,
                 password=email_password_secondary,
-                smtp_server=os.getenv('EMAIL_SMTP_SERVER', 'smtp-mail.outlook.com'),
-                smtp_port=int(os.getenv('EMAIL_SMTP_PORT', '587')),
-                use_tls=os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+                smtp_server=os.getenv('EMAIL_SMTP_SERVER_SECONDARY', smtp_server_sec),
+                smtp_port=int(os.getenv('EMAIL_SMTP_PORT_SECONDARY', str(smtp_port_sec))),
+                use_tls=os.getenv('EMAIL_USE_TLS_SECONDARY', str(use_tls_sec)).lower() == 'true'
             )
         else:
             print("⚠️  WARNING: EMAIL_ADDRESS_SECONDARY and EMAIL_PASSWORD_SECONDARY not found in environment variables")

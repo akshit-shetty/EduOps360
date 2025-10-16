@@ -137,27 +137,59 @@ class SMTPEmailSender:
             # Send email with ultra-fast timeout and connection test
             import socket
             
-            # Test connection first (2 second timeout)
-            print(f"🔍 Testing connection to {self.smtp_server}:{self.smtp_port}")
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(2)
-            try:
-                result = sock.connect_ex((self.smtp_server, self.smtp_port))
-                sock.close()
-                if result != 0:
-                    raise Exception(f"Cannot connect to {self.smtp_server}:{self.smtp_port}")
-                print(f"✅ Connection test passed")
-            except Exception as e:
-                sock.close()
-                raise Exception(f"SMTP server unreachable: {e}")
+            # Try multiple SMTP servers for cloud compatibility
+            smtp_servers_to_try = [
+                (self.smtp_server, self.smtp_port),  # Primary server
+                ('smtp.gmail.com', 587),             # Gmail fallback
+                ('smtp.gmail.com', 465),             # Gmail SSL fallback
+            ]
             
-            # Send email with very short timeout
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=5)
-            server.starttls()  # Enable encryption
+            last_error = None
+            for smtp_server, smtp_port in smtp_servers_to_try:
+                try:
+                    print(f"🔍 Testing connection to {smtp_server}:{smtp_port}")
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(3)
+                    result = sock.connect_ex((smtp_server, smtp_port))
+                    sock.close()
+                    
+                    if result == 0:
+                        print(f"✅ Connection test passed for {smtp_server}:{smtp_port}")
+                        # Update server settings for successful connection
+                        self.smtp_server = smtp_server
+                        self.smtp_port = smtp_port
+                        break
+                    else:
+                        print(f"❌ Cannot connect to {smtp_server}:{smtp_port}")
+                        last_error = f"Cannot connect to {smtp_server}:{smtp_port}"
+                        
+                except Exception as e:
+                    print(f"❌ Connection test failed for {smtp_server}:{smtp_port}: {e}")
+                    last_error = str(e)
+                    try:
+                        sock.close()
+                    except:
+                        pass
+                    continue
+            else:
+                # No server worked
+                raise Exception(f"All SMTP servers unreachable. Last error: {last_error}")
+            
+            # Send email with appropriate connection type
+            if self.smtp_port == 465:
+                # Use SSL connection for port 465
+                print(f"🔍 Using SSL connection for port 465")
+                server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=8)
+            else:
+                # Use TLS connection for port 587
+                print(f"🔍 Using TLS connection for port {self.smtp_port}")
+                server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=8)
+                server.starttls()  # Enable encryption
+                
             server.login(self.smtp_username, self.smtp_password)
             server.send_message(msg)
             server.quit()
-            print(f"✅ Email sent successfully!")
+            print(f"✅ Email sent successfully via {self.smtp_server}:{self.smtp_port}!")
             
             logger.info(f"Email sent successfully to {to_email}")
             return {'success': True, 'message': 'Email sent successfully via SMTP'}
