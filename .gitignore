@@ -41,6 +41,8 @@ Thumbs.db
 logs/
 
 # Database Files (Security)
+*.db
+*.sqlite
 *.db-journal
 *.sqlite-wal
 *.sqlite-shm
@@ -49,6 +51,9 @@ logs/
 .env
 .env.local
 .env.production
+
+# OTP Files (Security)
+otp_codes.txt
 
 # Temporary files
 *.tmp
