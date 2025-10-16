@@ -43,9 +43,15 @@ logs/
 # Database Files (Security)
 *.db
 *.sqlite
+*.sqlite3
 *.db-journal
 *.sqlite-wal
 *.sqlite-shm
+eduops360.db
+database.db
+*.mdb
+*.accdb
+*.dbf
 
 # Environment variables
 .env
@@ -55,6 +61,19 @@ logs/
 # OTP Files (Security)
 otp_codes.txt
 email_fallback.log
+
+# Sensitive Data Files (Security)
+*.csv
+*.xlsx
+*.xls
+student_data/
+backup/
+backups/
+data/
+exports/
+*.json.bak
+config.json
+secrets.json
 
 # Temporary files
 *.tmp
