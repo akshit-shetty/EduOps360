@@ -40,18 +40,18 @@ Thumbs.db
 *.log
 logs/
 
-# Database Files (Security)
-*.db
-*.sqlite
-*.sqlite3
-*.db-journal
-*.sqlite-wal
-*.sqlite-shm
-eduops360.db
-database.db
-*.mdb
-*.accdb
-*.dbf
+# Database Files (Security) - REMOVED TO MAKE DATABASE VISIBLE
+# *.db
+# *.sqlite
+# *.sqlite3
+# *.db-journal
+# *.sqlite-wal
+# *.sqlite-shm
+# eduops360.db
+# database.db
+# *.mdb
+# *.accdb
+# *.dbf
 
 # Environment variables
 .env
