@@ -130,20 +130,26 @@ class FallbackEmailService:
 def get_email_service():
     """Get the best available email service for the current environment"""
     
-    # Check if we're in a cloud environment that blocks SMTP
-    is_cloud_env = any([
-        os.getenv('RENDER'),  # Render
+    # Check if we're in a cloud environment that blocks SMTP (mainly Render)
+    is_smtp_blocked_env = any([
+        os.getenv('RENDER'),  # Render blocks SMTP
         os.getenv('RENDER_SERVICE_ID'),  # Render service
-        os.getenv('HEROKU_APP_NAME'),  # Heroku
-        os.getenv('VERCEL'),  # Vercel
-        os.getenv('NETLIFY'),  # Netlify
-        os.getenv('AWS_LAMBDA_FUNCTION_NAME'),  # AWS Lambda
         '/opt/render' in os.getcwd() if os.getcwd() else False,  # Render path detection
     ])
     
-    if is_cloud_env:
-        print("🔍 Cloud environment detected, using fallback email service")
+    # Railway, Heroku, and other platforms support SMTP
+    railway_env = os.getenv('RAILWAY_ENVIRONMENT')
+    heroku_env = os.getenv('HEROKU_APP_NAME')
+    
+    if is_smtp_blocked_env:
+        print("🔍 SMTP-blocked environment (Render) detected, using fallback email service")
         return FallbackEmailService()
+    elif railway_env:
+        print("🔍 Railway environment detected, SMTP supported")
+        return WebEmailService()
+    elif heroku_env:
+        print("🔍 Heroku environment detected, SMTP supported")
+        return WebEmailService()
     else:
-        print("🔍 Local environment detected, using web email service")
+        print("🔍 Local/standard environment detected, using web email service")
         return WebEmailService()

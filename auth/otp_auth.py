@@ -214,18 +214,18 @@ class OTPAuthenticator:
                         
                         if web_result.get('success'):
                             if web_result.get('fallback'):
-                                # Fallback service provides OTP in message
+                                # Fallback service provides OTP in message (Render only)
                                 return True, web_result.get('message', f"OTP: {otp_code}")
                             else:
                                 return True, "OTP sent via web service"
                         else:
                             print(f"❌ Web email service also failed")
                             self.send_simple_otp(email, otp_code, user_name)
-                            return True, f"Email services unavailable. Your login code is: {otp_code}"
+                            return True, f"OTP generated successfully. [Email failed - OTP: {otp_code}]"
                     except Exception as e:
                         print(f"❌ Web email service error: {e}")
                         self.send_simple_otp(email, otp_code, user_name)
-                        return True, f"Email services unavailable. Your login code is: {otp_code}"
+                        return True, f"OTP generated successfully. [Email error - OTP: {otp_code}]"
                     
             except Exception as e:
                 logger.error(f"Error in email sending: {e}")
