@@ -34,19 +34,21 @@ class EmailAccountManager:
             
         domain = email_address.split('@')[-1].lower()
         
-        # SMTP configurations for different providers (cloud-friendly)
+        # SMTP configurations for different providers (Microsoft-first for better compatibility)
         smtp_configs = {
             'gmail.com': ('smtp.gmail.com', 587, True),
             'googlemail.com': ('smtp.gmail.com', 587, True),
             'outlook.com': ('smtp-mail.outlook.com', 587, True),
             'hotmail.com': ('smtp-mail.outlook.com', 587, True),
             'live.com': ('smtp-mail.outlook.com', 587, True),
-            'upgrad.com': ('smtp-mail.outlook.com', 587, True),  # UpGrad likely uses Microsoft
+            'msn.com': ('smtp-mail.outlook.com', 587, True),
+            'upgrad.com': ('smtp-mail.outlook.com', 587, True),  # UpGrad uses Microsoft
             'yahoo.com': ('smtp.mail.yahoo.com', 587, True),
             'yahoo.co.in': ('smtp.mail.yahoo.com', 587, True),
         }
         
-        return smtp_configs.get(domain, ('smtp.gmail.com', 587, True))  # Default to Gmail
+        # Default to Microsoft SMTP for better enterprise compatibility
+        return smtp_configs.get(domain, ('smtp-mail.outlook.com', 587, True))
 
     def _load_accounts(self):
         """Load email accounts from environment variables"""

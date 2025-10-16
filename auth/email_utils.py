@@ -137,11 +137,13 @@ class SMTPEmailSender:
             # Send email with ultra-fast timeout and connection test
             import socket
             
-            # Try multiple SMTP servers for cloud compatibility
+            # Try multiple SMTP servers for cloud compatibility (Microsoft-first)
             smtp_servers_to_try = [
-                (self.smtp_server, self.smtp_port),  # Primary server
-                ('smtp.gmail.com', 587),             # Gmail fallback
-                ('smtp.gmail.com', 465),             # Gmail SSL fallback
+                (self.smtp_server, self.smtp_port),     # Primary server from account config
+                ('smtp-mail.outlook.com', 587),         # Microsoft TLS fallback
+                ('smtp-mail.outlook.com', 465),         # Microsoft SSL fallback  
+                ('smtp.gmail.com', 587),                # Gmail TLS fallback
+                ('smtp.gmail.com', 465),                # Gmail SSL fallback
             ]
             
             last_error = None
