@@ -38,10 +38,10 @@ class EmailAccountManager:
         smtp_configs = {
             'gmail.com': ('smtp.gmail.com', 587, True),
             'googlemail.com': ('smtp.gmail.com', 587, True),
-            'outlook.com': ('smtp.gmail.com', 587, True),  # Use Gmail for better cloud compatibility
-            'hotmail.com': ('smtp.gmail.com', 587, True),  # Use Gmail for better cloud compatibility
-            'live.com': ('smtp.gmail.com', 587, True),     # Use Gmail for better cloud compatibility
-            'upgrad.com': ('smtp.gmail.com', 587, True),   # Use Gmail for UpGrad emails
+            'outlook.com': ('smtp-mail.outlook.com', 587, True),
+            'hotmail.com': ('smtp-mail.outlook.com', 587, True),
+            'live.com': ('smtp-mail.outlook.com', 587, True),
+            'upgrad.com': ('smtp-mail.outlook.com', 587, True),  # UpGrad likely uses Microsoft
             'yahoo.com': ('smtp.mail.yahoo.com', 587, True),
             'yahoo.co.in': ('smtp.mail.yahoo.com', 587, True),
         }

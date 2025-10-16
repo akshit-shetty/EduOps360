@@ -54,6 +54,7 @@ logs/
 
 # OTP Files (Security)
 otp_codes.txt
+email_fallback.log
 
 # Temporary files
 *.tmp
