@@ -1928,6 +1928,45 @@ def admin_users():
     finally:
         conn.close()
 
+@app.route('/api/admin/get-user/<int:user_id>', methods=['GET'])
+@login_required
+def get_user_data(user_id):
+    """API endpoint to get user data for editing"""
+    # Check if user is admin
+    if session.get('role') != 'admin':
+        return jsonify({'success': False, 'error': 'Admin access required'}), 403
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT id, first_name, last_name, email, role, is_active 
+            FROM users WHERE id = ?
+        """, (user_id,))
+        
+        user_data = cursor.fetchone()
+        conn.close()
+        
+        if user_data:
+            return jsonify({
+                'success': True,
+                'user': {
+                    'id': user_data[0],
+                    'first_name': user_data[1],
+                    'last_name': user_data[2],
+                    'email': user_data[3],
+                    'role': user_data[4],
+                    'is_active': user_data[5]
+                }
+            })
+        else:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+            
+    except Exception as e:
+        print(f"Error getting user data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/coursework')
 @login_required
 def coursework():
