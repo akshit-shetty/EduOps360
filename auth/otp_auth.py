@@ -66,11 +66,11 @@ class OTPAuthenticator:
         return True
 
     def send_otp_email(self, email, otp_code, user_name="User", account_key="primary"):
-        """Send OTP via email using SMTP"""
+        """Send OTP via Office365 SMTP"""
         try:
-            print(f"🔍 Starting OTP email send to {email}")
+            print(f"🔍 Starting OTP email send to {email} via Office365")
             
-            # Send via SMTP
+            # Send via Office365 SMTP
             subject = "EduOps360 Login Code"
             
             # Simple, clean HTML that's less likely to be flagged as spam
@@ -202,30 +202,12 @@ class OTPAuthenticator:
                     self.send_simple_otp(email, otp_code, user_name)
                     return True, f"OTP generated successfully. [SMTP timeout - OTP: {otp_code}]"
                 elif email_result[0]:
-                    print(f"✅ Email sent successfully!")
-                    return True, "OTP sent successfully"
+                    print(f"✅ Email sent successfully via Office365!")
+                    return True, "OTP sent successfully via Office365"
                 else:
-                    print(f"❌ SMTP failed, trying web email service...")
-                    # Try web-based email service as fallback
-                    try:
-                        from auth.web_email_service import get_email_service
-                        web_service = get_email_service()
-                        web_result = web_service.send_otp_email(email, otp_code, user_name)
-                        
-                        if web_result.get('success'):
-                            if web_result.get('fallback'):
-                                # Fallback service provides OTP in message (Render only)
-                                return True, web_result.get('message', f"OTP: {otp_code}")
-                            else:
-                                return True, "OTP sent via web service"
-                        else:
-                            print(f"❌ Web email service also failed")
-                            self.send_simple_otp(email, otp_code, user_name)
-                            return True, f"OTP generated successfully. [Email failed - OTP: {otp_code}]"
-                    except Exception as e:
-                        print(f"❌ Web email service error: {e}")
-                        self.send_simple_otp(email, otp_code, user_name)
-                        return True, f"OTP generated successfully. [Email error - OTP: {otp_code}]"
+                    print(f"❌ Office365 SMTP failed")
+                    self.send_simple_otp(email, otp_code, user_name)
+                    return True, f"OTP generated successfully. [Office365 email failed - OTP: {otp_code}]"
                     
             except Exception as e:
                 logger.error(f"Error in email sending: {e}")

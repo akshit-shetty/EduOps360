@@ -58,31 +58,12 @@ class SMTPEmailSender:
             print(f"🔍 SMTP password configured: {'*' * len(self.smtp_password)}")
     
     def _auto_configure_provider(self):
-        """Auto-configure SMTP settings based on email provider"""
-        email_lower = self.smtp_username.lower()
-        
-        # Auto-configure for different email providers
-        if 'outlook.com' in email_lower or 'hotmail.com' in email_lower or 'live.com' in email_lower:
-            self.smtp_server = 'smtp-mail.outlook.com'
-            self.smtp_port = 587
-            logger.info("Auto-configured for Outlook/Hotmail")
-        elif 'upgrad.com' in email_lower:
-            # UpGrad uses Office 365
-            self.smtp_server = 'smtp-mail.outlook.com'
-            self.smtp_port = 587
-            logger.info("Auto-configured for UpGrad (Office 365)")
-        elif 'yahoo.com' in email_lower:
-            self.smtp_server = 'smtp.mail.yahoo.com'
-            self.smtp_port = 587
-            logger.info("Auto-configured for Yahoo")
-        elif 'gmail.com' in email_lower:
-            # Keep Gmail settings
-            self.smtp_server = 'smtp.gmail.com'
-            self.smtp_port = 587
-            logger.info("Using Gmail SMTP configuration")
-        else:
-            # Default to current server settings
-            logger.info(f"Using configured SMTP server: {self.smtp_server}")
+        """Auto-configure Office365 SMTP settings for all providers"""
+        # All emails use Office365 SMTP configuration
+        self.smtp_server = 'smtp-mail.outlook.com'
+        self.smtp_port = 587
+        self.use_tls = True
+        logger.info("Using Office365 SMTP configuration for all email providers")
         
     def send_email(self, to_email, subject, body, attachments=None, is_html=True):
         """
@@ -134,48 +115,24 @@ class SMTPEmailSender:
                     else:
                         logger.warning(f"Attachment file not found: {file_path}")
             
-            # Send email with ultra-fast timeout and connection test
+            # Test Office365 SMTP connection
             import socket
             
-            # Try multiple SMTP servers for cloud compatibility (Microsoft-first)
-            smtp_servers_to_try = [
-                (self.smtp_server, self.smtp_port),     # Primary server from account config
-                ('smtp-mail.outlook.com', 587),         # Microsoft TLS fallback
-                ('smtp-mail.outlook.com', 465),         # Microsoft SSL fallback  
-                ('smtp.gmail.com', 587),                # Gmail TLS fallback
-                ('smtp.gmail.com', 465),                # Gmail SSL fallback
-            ]
-            
-            last_error = None
-            for smtp_server, smtp_port in smtp_servers_to_try:
-                try:
-                    print(f"🔍 Testing connection to {smtp_server}:{smtp_port}")
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.settimeout(3)
-                    result = sock.connect_ex((smtp_server, smtp_port))
-                    sock.close()
+            print(f"🔍 Testing connection to Office365 SMTP: {self.smtp_server}:{self.smtp_port}")
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(10)
+                result = sock.connect_ex((self.smtp_server, self.smtp_port))
+                sock.close()
+                
+                if result != 0:
+                    raise Exception(f"Cannot connect to Office365 SMTP server {self.smtp_server}:{self.smtp_port}")
                     
-                    if result == 0:
-                        print(f"✅ Connection test passed for {smtp_server}:{smtp_port}")
-                        # Update server settings for successful connection
-                        self.smtp_server = smtp_server
-                        self.smtp_port = smtp_port
-                        break
-                    else:
-                        print(f"❌ Cannot connect to {smtp_server}:{smtp_port}")
-                        last_error = f"Cannot connect to {smtp_server}:{smtp_port}"
-                        
-                except Exception as e:
-                    print(f"❌ Connection test failed for {smtp_server}:{smtp_port}: {e}")
-                    last_error = str(e)
-                    try:
-                        sock.close()
-                    except:
-                        pass
-                    continue
-            else:
-                # No server worked
-                raise Exception(f"All SMTP servers unreachable. Last error: {last_error}")
+                print(f"✅ Office365 SMTP connection test passed")
+                
+            except Exception as e:
+                print(f"❌ Office365 SMTP connection failed: {e}")
+                raise Exception(f"Office365 SMTP server unreachable: {e}")
             
             # Send email with appropriate connection type
             if self.smtp_port == 465:
@@ -191,10 +148,10 @@ class SMTPEmailSender:
             server.login(self.smtp_username, self.smtp_password)
             server.send_message(msg)
             server.quit()
-            print(f"✅ Email sent successfully via {self.smtp_server}:{self.smtp_port}!")
+            print(f"✅ Email sent successfully via Office365 SMTP!")
             
-            logger.info(f"Email sent successfully to {to_email}")
-            return {'success': True, 'message': 'Email sent successfully via SMTP'}
+            logger.info(f"Email sent successfully to {to_email} via Office365")
+            return {'success': True, 'message': 'Email sent successfully via Office365 SMTP'}
             
         except Exception as e:
             error_msg = f"Failed to send email to {to_email}: {str(e)}"

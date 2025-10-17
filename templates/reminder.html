@@ -25,6 +25,35 @@
         <!-- Flash Messages -->
         <div id="flash-messages" class="mb-6"></div>
 
+        <!-- File Information Card -->
+        <div id="file-info-card" class="glass rounded-2xl p-6 mb-6 hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-file-excel text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-800">Currently Loaded File</h3>
+                        <p class="text-sm text-slate-600" id="file-name">No file loaded</p>
+                        <p class="text-xs text-slate-500" id="file-upload-date"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-center">
+                        <p class="text-sm text-slate-600">Professors</p>
+                        <p class="text-lg font-bold text-blue-600" id="file-professors-count">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm text-slate-600">Sessions</p>
+                        <p class="text-lg font-bold text-orange-600" id="file-sessions-count">0</p>
+                    </div>
+                    <button onclick="clearAllData()" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium">
+                        <i class="fas fa-trash mr-2"></i>Clear Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="glass rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
@@ -101,10 +130,10 @@
                 </div>
                 
                 <div class="flex gap-4">
-                    <button class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" id="load-btn" disabled>
-                        <i class="fas fa-database mr-2"></i>Load Sessions
+                    <button class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl" id="sample-excel-btn">
+                        <i class="fas fa-download mr-2"></i>Sample Excel
                     </button>
-                    <button class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl" id="reset-btn">
+                    <button class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl" id="reset-btn">
                         <i class="fas fa-trash mr-2"></i>Reset
                     </button>
                 </div>
@@ -141,20 +170,20 @@
                                 </div>
                                 <div>
                                     <p class="font-semibold text-slate-800">Professors</p>
-                                    <p class="text-sm text-slate-600">Send directly to professors</p>
+                                    <p class="text-sm text-slate-600">Send reminders directly to professors</p>
                                 </div>
                             </div>
                         </label>
                         
                         <label class="flex items-center p-4 border border-slate-300 rounded-xl cursor-pointer hover:bg-green-50 transition-colors duration-300">
-                            <input type="radio" name="recipient-type" value="students" class="mr-3 text-green-600">
+                            <input type="radio" name="recipient-type" value="learners" class="mr-3 text-green-600">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-graduation-cap text-green-600"></i>
+                                    <i class="fas fa-user-graduate text-green-600"></i>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-slate-800">Students (via Admin)</p>
-                                    <p class="text-sm text-slate-600">Send separate emails per cohort to akshit1.shetty@upgrad.com</p>
+                                    <p class="font-semibold text-slate-800">Learners</p>
+                                    <p class="text-sm text-slate-600">Send cohort-specific emails to akshit1.shetty@upgrad.com for forwarding to students</p>
                                 </div>
                             </div>
                         </label>
@@ -162,11 +191,8 @@
                 </div>
                 
                 <div class="flex gap-4 mb-6">
-                    <button class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" id="send-btn" disabled>
+                    <button class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" id="send-btn" disabled>
                         <i class="fas fa-paper-plane mr-2"></i>Send Emails
-                    </button>
-                    <button class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" id="preview-btn" disabled>
-                        <i class="fas fa-eye mr-2"></i>Preview
                     </button>
                 </div>
                 
@@ -222,6 +248,33 @@
                 <i class="fas fa-times text-red-600"></i>
             </button>
         </div>
+        
+        <!-- Preview Type Selector -->
+        <div class="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <label class="block text-sm font-semibold text-slate-700 mb-3">Preview Email Format</label>
+            <div class="flex gap-4">
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="preview-type" value="professors" class="mr-2 text-blue-600" checked>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chalkboard-teacher text-blue-600 text-xs"></i>
+                        </div>
+                        <span class="text-sm font-medium text-slate-700">Professor Email</span>
+                    </div>
+                </label>
+                
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="preview-type" value="learners" class="mr-2 text-green-600">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-graduate text-green-600 text-xs"></i>
+                        </div>
+                        <span class="text-sm font-medium text-slate-700">Learner Email</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+        
         <div id="email-preview-content" class="prose max-w-none"></div>
     </div>
 </div>
@@ -240,10 +293,10 @@ const fileInput = document.getElementById("file-input");
 const browseBtn = document.getElementById("browse-btn");
 const dropZone = document.getElementById("drop-zone");
 const fileName = document.getElementById("file-name");
-const loadBtn = document.getElementById("load-btn");
+// Load button removed - auto-loading implemented
 const resetBtn = document.getElementById("reset-btn");
+const sampleExcelBtn = document.getElementById("sample-excel-btn");
 const sendBtn = document.getElementById("send-btn");
-const previewBtn = document.getElementById("preview-btn");
 const emailAccountSelect = document.getElementById("email-account-select");
 
 const professorTableBody = document.getElementById("professor-table-body");
@@ -264,11 +317,22 @@ let selectedFile = null;
 // Event Listeners
 browseBtn.addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", handleFileSelect);
-loadBtn.addEventListener("click", loadSessions);
 resetBtn.addEventListener("click", resetData);
+sampleExcelBtn.addEventListener("click", downloadSampleExcel);
 sendBtn.addEventListener("click", () => sendEmails(false));
-previewBtn.addEventListener("click", () => sendEmails(true));
-closePreview.addEventListener("click", () => previewModal.classList.add("hidden"));
+closePreview.addEventListener("click", () => {
+    previewModal.classList.add("hidden");
+    previewModal.classList.remove("flex");
+    
+    // Reset preview type to professors (default)
+    const professorsRadio = document.querySelector('input[name="preview-type"][value="professors"]');
+    if (professorsRadio) {
+        professorsRadio.checked = true;
+    }
+    
+    // Clear stored email
+    delete previewModal.dataset.currentEmail;
+});
 
 // Drag and drop handlers
 dropZone.addEventListener("dragover", (e) => {
@@ -298,15 +362,19 @@ function handleFileSelect(e) {
         if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
             selectedFile = file;
             fileName.textContent = file.name;
-            loadBtn.disabled = false;
-            showFlashMessage("File selected successfully. Click 'Load Sessions' to process.", "success");
+            showFlashMessage("File selected successfully. Loading sessions automatically...", "info");
+            
+            // Automatically load sessions after file selection
+            setTimeout(() => {
+                loadSessions();
+            }, 500); // Small delay to show the success message
         } else {
             showFlashMessage("Please select an Excel file (.xlsx or .xls).", "error");
         }
     }
 }
 
-// Load sessions from Excel
+// Load sessions from file
 function loadSessions() {
     if (!selectedFile) {
         showFlashMessage("Please select an Excel file first.", "error");
@@ -316,7 +384,7 @@ function loadSessions() {
     const formData = new FormData();
     formData.append("file", selectedFile);
     
-    showFlashMessage("Loading sessions from Excel file...", "info");
+    showFlashMessage("Processing Excel file and loading sessions...", "info");
     
     fetch("/reminder/api/upload-excel", {
         method: "POST",
@@ -334,9 +402,9 @@ function loadSessions() {
         if (data.success) {
             showFlashMessage(data.message, "success");
             sendBtn.disabled = false;
-            previewBtn.disabled = false;
             updateStats();
             updateProfessorTable();
+            loadFileInfo(); // Refresh file info after successful upload
         } else {
             showFlashMessage("Error: " + data.error, "error");
         }
@@ -377,11 +445,15 @@ function sendEmails(previewOnly) {
         if (data.success) {
             const message = previewOnly
                 ? "Generating email previews..."
-                : data.message || "Sending emails started. This may take a few minutes.";
-            showFlashMessage(message, "info");
+                : "Email sending process started! Check the progress below.";
+            showFlashMessage(message, "success");
             
-            // Start polling for status updates
-            pollEmailStatus();
+            // Start real-time polling for updates if not preview
+            if (!previewOnly) {
+                startRealTimePolling();
+            }
+            
+            updateProfessorTable();
         } else {
             showFlashMessage("Error: " + data.error, "error");
         }
@@ -429,9 +501,7 @@ function resetData() {
             selectedFile = null;
             fileInput.value = "";
             fileName.textContent = "No file selected";
-            loadBtn.disabled = true;
             sendBtn.disabled = true;
-            previewBtn.disabled = true;
             professorTableBody.innerHTML = `
                 <tr>
                     <td colspan="5" class="text-center py-12 text-slate-500">
@@ -452,16 +522,44 @@ function resetData() {
     });
 }
 
-// Update professor table
+// Update professor table with real-time status
 function updateProfessorTable() {
     fetch("/reminder/api/email-status")
         .then((response) => response.json())
-        .then((status) => {
-            updateEmailStatusTable(status);
+        .then((data) => {
+            if (data.success) {
+                updateEmailStatusTable(data.email_status);
+                updateProgressBar(data.progress);
+            }
         })
         .catch((error) => {
             console.error("Error fetching email status:", error);
         });
+}
+
+// Update progress bar with real-time data
+function updateProgressBar(progress) {
+    if (progress) {
+        const progressFill = document.getElementById("progress-fill");
+        const progressText = document.querySelector(".progress-text");
+        
+        if (progressFill) {
+            progressFill.style.width = `${progress.percentage}%`;
+        }
+        
+        if (progressText) {
+            progressText.textContent = `${progress.sent + progress.error}/${progress.total} emails processed (${progress.percentage}%)`;
+        }
+        
+        // Update stats cards
+        const professorCountEl = document.getElementById("professor-count");
+        const emailSentEl = document.getElementById("emails-sent");
+        const errorCountEl = document.getElementById("error-count");
+        
+        if (professorCountEl) professorCountEl.textContent = progress.total;
+        if (emailSentEl) emailSentEl.textContent = progress.sent;
+        if (errorCountEl) errorCountEl.textContent = progress.error;
+    }
 }
 
 function updateEmailStatusTable(status) {
@@ -493,6 +591,9 @@ function updateEmailStatusTable(status) {
     .then((response) => response.json())
     .then((data) => {
         if (data.success && data.sessions && data.sessions.length > 0) {
+            // Enable send button when data is available
+            sendBtn.disabled = false;
+            
             let tableHTML = "";
             
             data.sessions.forEach((professor) => {
@@ -531,6 +632,19 @@ function updateEmailStatusTable(status) {
             });
             
             professorTableBody.innerHTML = tableHTML;
+        } else {
+            // No data available - keep button disabled and show empty state
+            sendBtn.disabled = true;
+            professorTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-12 text-slate-500">
+                        <div class="flex flex-col items-center gap-3">
+                            <i class="fas fa-inbox text-4xl text-slate-300"></i>
+                            <p>No data available. Please upload an Excel file.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
         }
     })
     .catch((error) => {
@@ -540,21 +654,59 @@ function updateEmailStatusTable(status) {
 
 // Preview email
 function previewEmail(email) {
-    fetch(`/reminder/api/preview-email/${encodeURIComponent(email)}`)
+    // Get the selected preview type (default to professors)
+    const previewType = document.querySelector('input[name="preview-type"]:checked')?.value || 'professors';
+    
+    fetch(`/reminder/api/preview-email/${encodeURIComponent(email)}?type=${previewType}`)
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
                 emailPreviewContent.innerHTML = data.preview;
                 previewModal.classList.remove("hidden");
                 previewModal.classList.add("flex");
+                
+                // Store current email for preview type switching
+                previewModal.dataset.currentEmail = email;
+                
+                // Add event listeners for preview type radio buttons
+                setupPreviewTypeListeners();
             } else {
                 showFlashMessage("Error: " + data.error, "error");
             }
         })
         .catch((error) => {
             console.error("Error fetching preview:", error);
-            showFlashMessage("Failed to load email preview: " + error.message, "error");
+            showFlashMessage("Failed to generate preview: " + error.message, "error");
         });
+}
+
+// Setup preview type radio button listeners
+function setupPreviewTypeListeners() {
+    const previewTypeRadios = document.querySelectorAll('input[name="preview-type"]');
+    
+    previewTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const currentEmail = previewModal.dataset.currentEmail;
+            if (currentEmail) {
+                // Fetch new preview with selected type
+                const selectedType = this.value;
+                
+                fetch(`/reminder/api/preview-email/${encodeURIComponent(currentEmail)}?type=${selectedType}`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            emailPreviewContent.innerHTML = data.preview;
+                        } else {
+                            showFlashMessage("Error: " + data.error, "error");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching preview:", error);
+                        showFlashMessage("Failed to update preview: " + error.message, "error");
+                    });
+            }
+        });
+    });
 }
 
 // Update stats
@@ -617,9 +769,154 @@ function showFlashMessage(message, type) {
     }
 }
 
+// Load file information on page load
+function loadFileInfo() {
+    fetch("/reminder/api/file-info")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.file_info) {
+                const fileInfo = data.file_info;
+                document.getElementById("file-name").textContent = fileInfo.original_filename;
+                document.getElementById("file-upload-date").textContent = `Uploaded: ${new Date(fileInfo.upload_date).toLocaleString()}`;
+                document.getElementById("file-professors-count").textContent = fileInfo.professors_count;
+                document.getElementById("file-sessions-count").textContent = fileInfo.sessions_count;
+                document.getElementById("file-info-card").classList.remove("hidden");
+                
+                // Enable button if data is loaded
+                if (fileInfo.professors_count > 0) {
+                    sendBtn.disabled = false;
+                    updateProfessorTable();
+                }
+            } else {
+                document.getElementById("file-info-card").classList.add("hidden");
+            }
+        })
+        .catch(error => {
+            console.error("Error loading file info:", error);
+        });
+}
+
+// Download sample Excel file
+function downloadSampleExcel() {
+    try {
+        showFlashMessage("Downloading sample Excel file...", "info");
+        
+        // Create a temporary link element to trigger download
+        const link = document.createElement('a');
+        link.href = '/reminder/api/download-sample-excel';
+        link.download = 'sample_sessions.xlsx';
+        link.style.display = 'none';
+        
+        // Add to document, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message after a short delay
+        setTimeout(() => {
+            showFlashMessage("Sample Excel file downloaded successfully! Use this template for your session data.", "success");
+        }, 1000);
+        
+    } catch (error) {
+        console.error("Error downloading sample Excel:", error);
+        showFlashMessage("Failed to download sample Excel: " + error.message, "error");
+    }
+}
+
+// Clear all persistent data
+function clearAllData() {
+    if (confirm("Are you sure you want to clear all reminder data? This will permanently delete the uploaded file and all session information.")) {
+        fetch("/reminder/api/reset", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showFlashMessage(data.message, "success");
+                
+                // Reset UI
+                document.getElementById("file-info-card").classList.add("hidden");
+                sendBtn.disabled = true;
+                selectedFile = null;
+                fileName.textContent = "No file selected";
+                
+                // Clear table
+                professorTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-12 text-slate-500">
+                            <div class="flex flex-col items-center gap-3">
+                                <i class="fas fa-inbox text-4xl text-slate-300"></i>
+                                <p>No data available. Please upload an Excel file.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                
+                // Reset stats
+                updateStats();
+            } else {
+                showFlashMessage("Error: " + data.error, "error");
+            }
+        })
+        .catch(error => {
+            console.error("Error clearing data:", error);
+            showFlashMessage("Failed to clear data: " + error.message, "error");
+        });
+    }
+}
+
+// Real-time polling for email status updates
+let pollingInterval = null;
+
+function startRealTimePolling() {
+    console.log("🔄 Starting real-time polling for email status updates");
+    
+    // Clear any existing polling
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+    }
+    
+    // Poll every 2 seconds during email sending
+    pollingInterval = setInterval(() => {
+        updateProfessorTable();
+        
+        // Check if all emails are processed (sent or error)
+        fetch("/reminder/api/email-status")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.progress) {
+                    const { total, sent, error } = data.progress;
+                    
+                    // Stop polling when all emails are processed
+                    if (sent + error >= total && total > 0) {
+                        console.log("✅ All emails processed, stopping polling");
+                        stopRealTimePolling();
+                        showFlashMessage(`Email sending completed! Sent: ${sent}, Errors: ${error}`, sent > error ? "success" : "warning");
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("Polling error:", error);
+            });
+    }, 2000); // Poll every 2 seconds
+}
+
+function stopRealTimePolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+        console.log("⏹️ Stopped real-time polling");
+    }
+}
+
 // Initialize
 setCurrentDate();
 updateStats();
+loadFileInfo(); // Load persistent data on page load
+updateProfessorTable(); // Load professor data on page load
 </script>
 
 {% endblock %}
