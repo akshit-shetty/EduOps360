@@ -115,43 +115,112 @@ class SMTPEmailSender:
                     else:
                         logger.warning(f"Attachment file not found: {file_path}")
             
-            # Test Office365 SMTP connection
-            import socket
+            # Try multiple SMTP configurations with fallbacks
+            smtp_configs = [
+                # Primary Office365 configuration
+                {
+                    'server': self.smtp_server,
+                    'port': self.smtp_port,
+                    'use_ssl': self.smtp_port == 465,
+                    'name': 'Office365 Primary'
+                },
+                # Alternative Office365 ports
+                {
+                    'server': 'smtp-mail.outlook.com',
+                    'port': 25,
+                    'use_ssl': False,
+                    'name': 'Office365 Port 25'
+                },
+                {
+                    'server': 'smtp.office365.com',
+                    'port': 587,
+                    'use_ssl': False,
+                    'name': 'Office365 Alternative'
+                },
+                # Gmail as fallback (if configured)
+                {
+                    'server': 'smtp.gmail.com',
+                    'port': 587,
+                    'use_ssl': False,
+                    'name': 'Gmail Fallback'
+                }
+            ]
             
-            print(f"🔍 Testing connection to Office365 SMTP: {self.smtp_server}:{self.smtp_port}")
-            try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(10)
-                result = sock.connect_ex((self.smtp_server, self.smtp_port))
-                sock.close()
-                
-                if result != 0:
-                    raise Exception(f"Cannot connect to Office365 SMTP server {self.smtp_server}:{self.smtp_port}")
+            last_error = None
+            
+            for config in smtp_configs:
+                try:
+                    print(f"🔍 Trying {config['name']}: {config['server']}:{config['port']}")
                     
-                print(f"✅ Office365 SMTP connection test passed")
-                
-            except Exception as e:
-                print(f"❌ Office365 SMTP connection failed: {e}")
-                raise Exception(f"Office365 SMTP server unreachable: {e}")
+                    # Test connection first
+                    import socket
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(5)  # Shorter timeout for faster fallback
+                    result = sock.connect_ex((config['server'], config['port']))
+                    sock.close()
+                    
+                    if result != 0:
+                        print(f"❌ Connection test failed for {config['name']}")
+                        continue
+                    
+                    print(f"✅ Connection test passed for {config['name']}")
+                    
+                    # Attempt SMTP connection
+                    if config['use_ssl']:
+                        server = smtplib.SMTP_SSL(config['server'], config['port'], timeout=10)
+                    else:
+                        server = smtplib.SMTP(config['server'], config['port'], timeout=10)
+                        if config['port'] in [587, 25]:  # Enable TLS for these ports
+                            server.starttls()
+                    
+                    # Login and send
+                    server.login(self.smtp_username, self.smtp_password)
+                    server.send_message(msg)
+                    server.quit()
+                    
+                    print(f"✅ Email sent successfully via {config['name']}")
+                    return {
+                        'success': True,
+                        'message': f'Email sent successfully via {config["name"]}',
+                        'provider': config['name']
+                    }
+                    
+                except Exception as e:
+                    print(f"❌ Failed with {config['name']}: {e}")
+                    last_error = e
+                    try:
+                        if 'server' in locals():
+                            server.quit()
+                    except:
+                        pass
+                    continue
             
-            # Send email with appropriate connection type
-            if self.smtp_port == 465:
-                # Use SSL connection for port 465
-                print(f"🔍 Using SSL connection for port 465")
-                server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=8)
-            else:
-                # Use TLS connection for port 587
-                print(f"🔍 Using TLS connection for port {self.smtp_port}")
-                server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=8)
-                server.starttls()  # Enable encryption
-                
-            server.login(self.smtp_username, self.smtp_password)
-            server.send_message(msg)
-            server.quit()
-            print(f"✅ Email sent successfully via Office365 SMTP!")
+            # If all SMTP methods failed, return fallback message
+            print(f"❌ All SMTP methods failed. Last error: {last_error}")
             
-            logger.info(f"Email sent successfully to {to_email} via Office365")
-            return {'success': True, 'message': 'Email sent successfully via Office365 SMTP'}
+            # Check if we're in a cloud environment that blocks SMTP
+            cloud_indicators = [
+                os.getenv('RENDER_SERVICE_ID'),
+                os.getenv('HEROKU_APP_NAME'),
+                os.getenv('VERCEL_ENV'),
+                os.getenv('NETLIFY_BUILD_BASE'),
+                os.getenv('RAILWAY_ENVIRONMENT'),  # Railway detection
+                os.getenv('RAILWAY_PROJECT_ID'),   # Railway detection
+                os.path.exists('/opt/render'),
+                os.path.exists('/app')  # Common in containerized environments
+            ]
+            
+            if any(cloud_indicators):
+                print("🌐 Cloud environment detected - SMTP may be blocked")
+                return {
+                    'success': False,
+                    'message': f'SMTP blocked in cloud environment. Email content: {body[:100]}...',
+                    'fallback_content': body,
+                    'cloud_environment': True
+                }
+            
+            # Return the last error
+            raise Exception(f"All SMTP servers failed. Last error: {last_error}")
             
         except Exception as e:
             error_msg = f"Failed to send email to {to_email}: {str(e)}"

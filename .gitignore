@@ -61,6 +61,7 @@ logs/
 # OTP Files (Security)
 otp_codes.txt
 email_fallback.log
+railway_email_fallback.log
 
 # Sensitive Data Files (Security)
 *.csv

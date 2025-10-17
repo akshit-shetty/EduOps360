@@ -1085,7 +1085,19 @@ def login():
                                          show_otp_form=True)
                 else:
                     print(f"❌ DEBUG: OTP failed: {message}")
-                    flash(f'Error: {message}', 'error')
+                    
+                    # Check if message contains Railway fallback OTP
+                    if "Your login code is:" in message or "login code is displayed below" in message.lower():
+                        print(f"🌐 DEBUG: Railway fallback detected, showing OTP form with message")
+                        flash(message, 'warning')  # Use warning category for Railway messages
+                        return render_template('login.html', 
+                                             step='verify', 
+                                             email=email,
+                                             email_accounts=get_email_accounts(),
+                                             show_otp_form=True,
+                                             railway_fallback=True)
+                    else:
+                        flash(f'Error: {message}', 'error')
             elif not email:
                 print(f"❌ DEBUG: No email provided")
                 flash('Please enter your email address', 'error')

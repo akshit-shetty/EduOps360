@@ -132,9 +132,40 @@ class OTPAuthenticator:
                 return True
             else:
                 print(f"❌ Failed to send OTP to {email}")
-                # Still log to file even if email fails
-                self.send_simple_otp(email, otp_code, user_name)
-                return False
+                # Check if this is a cloud environment or SMTP is blocked
+                if isinstance(result, dict) and result.get('cloud_environment'):
+                    print("🌐 Cloud environment detected - using Railway fallback service")
+                    
+                    # Use Railway email service for fallback
+                    try:
+                        from auth.railway_email_service import send_railway_otp
+                        railway_result = send_railway_otp(email, otp_code, user_name)
+                        
+                        if railway_result.get('success'):
+                            print("✅ Railway fallback service provided OTP successfully")
+                            return {
+                                'success': False,
+                                'cloud_fallback': True,
+                                'otp_code': otp_code,
+                                'message': railway_result.get('message', 'Your login code is provided below.'),
+                                'display_otp': True
+                            }
+                    except Exception as e:
+                        print(f"❌ Railway fallback service error: {e}")
+                    
+                    # Fallback to simple logging
+                    self.send_simple_otp(email, otp_code, user_name)
+                    return {
+                        'success': False,
+                        'cloud_fallback': True,
+                        'otp_code': otp_code,
+                        'message': 'Email services unavailable on Railway. Your login code is displayed below.',
+                        'display_otp': True
+                    }
+                else:
+                    # Still log to file even if email fails
+                    self.send_simple_otp(email, otp_code, user_name)
+                    return False
                 
         except Exception as e:
             print(f"❌ Error sending OTP email: {e}")
@@ -202,8 +233,13 @@ class OTPAuthenticator:
                     self.send_simple_otp(email, otp_code, user_name)
                     return True, f"OTP generated successfully. [SMTP timeout - OTP: {otp_code}]"
                 elif email_result[0]:
-                    print(f"✅ Email sent successfully via Office365!")
-                    return True, "OTP sent successfully via Office365"
+                    # Check if it's a cloud fallback response
+                    if isinstance(email_result[0], dict) and email_result[0].get('cloud_fallback'):
+                        print(f"🌐 Cloud environment detected - providing OTP directly")
+                        return True, f"Email services unavailable. Your login code is: {otp_code}"
+                    else:
+                        print(f"✅ Email sent successfully via Office365!")
+                        return True, "OTP sent successfully via Office365"
                 else:
                     print(f"❌ Office365 SMTP failed")
                     self.send_simple_otp(email, otp_code, user_name)
