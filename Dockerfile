@@ -32,12 +32,12 @@ RUN mkdir -p /app/static
 # Set permissions for database file
 RUN chmod 664 eduops360.db || true
 
-# Expose port
-EXPOSE 5000
+# Expose port (Appwrite uses 3000 by default)
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:3000/health || exit 1
 
-# Run the application
-CMD ["python", "app.py"]
+# Run the application with production server
+CMD ["python", "server.py"]
