@@ -1,0 +1,14 @@
+{
+    "projectId": "your-project-id",
+    "functions": [
+        {
+            "$id": "eduops360-app",
+            "name": "EduOps360 Flask App",
+            "runtime": "python-3.9",
+            "entrypoint": "app.py",
+            "commands": "pip install -r requirements.txt",
+            "timeout": 30,
+            "enabled": true
+        }
+    ]
+}
