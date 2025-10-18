@@ -6,7 +6,7 @@
       "$id": "eduops360-app",
       "name": "EduOps360 Main Application",
       "runtime": "python-3.12",
-      "entrypoint": "main.py",
+      "entrypoint": "server.py",
       "source": "./",
       "ignore": [
         "node_modules",
