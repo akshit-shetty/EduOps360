@@ -182,17 +182,37 @@ class RenderOffice365Sender:
                 print(f"❌ {config['name']} failed: {str(e)}")
                 continue
         
-        # All Office 365 SMTP servers failed
+        # All Office 365 SMTP servers failed - show OTP in logs for Render
         error_msg = 'All Office 365 SMTP servers failed. Please check your credentials and network connectivity.'
         logger.error(error_msg)
         print(f"❌ {error_msg}")
+        
+        # For Render deployment - show OTP in logs when email fails
+        print("=" * 60)
+        print("🚨 EMAIL DELIVERY FAILED - SHOWING OTP IN LOGS")
+        print("=" * 60)
+        print(f"📧 Email: {to_email}")
+        print(f"🔑 OTP CODE: {otp_code if 'otp_code' in locals() else 'Not available'}")
+        print(f"⏰ Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        print("=" * 60)
+        
         return {
             'success': False,
-            'message': error_msg
+            'message': error_msg,
+            'show_otp_in_logs': True
         }
     
     def send_otp_email(self, to_email, otp_code):
         """Send OTP email with enhanced Office 365 reliability"""
+        
+        # Always show OTP in logs for Render debugging
+        print("=" * 60)
+        print("🔑 RENDER OTP DEBUG - EMAIL ATTEMPT")
+        print("=" * 60)
+        print(f"📧 Email: {to_email}")
+        print(f"🔑 OTP CODE: {otp_code}")
+        print(f"⏰ Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        print("=" * 60)
         
         subject = "Your EduOps360 Login OTP"
         
@@ -244,7 +264,16 @@ EduOps360 Team
         </html>
         """
         
-        return self.send_email_with_office365_fallback(to_email, subject, html_body, text_body)
+        result = self.send_email_with_office365_fallback(to_email, subject, html_body, text_body)
+        
+        # Show result in logs
+        if result.get('success'):
+            print(f"✅ EMAIL SENT SUCCESSFULLY via {result.get('smtp_server', 'Unknown')}")
+        else:
+            print("❌ EMAIL FAILED - OTP SHOWN ABOVE IN LOGS")
+            print(f"❌ Error: {result.get('message', 'Unknown error')}")
+        
+        return result
 
 # Global instance for easy import
 render_office365_sender = RenderOffice365Sender()

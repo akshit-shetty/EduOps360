@@ -83,6 +83,11 @@ class OTPAuthenticator:
                 return True
             else:
                 print(f"⚠️ Enhanced Office365 sender failed, trying standard SMTP...")
+                # Show OTP in logs for Render debugging when enhanced sender fails
+                print("🔑 RENDER DEBUG - Enhanced sender failed, OTP below:")
+                print(f"📧 Email: {email}")
+                print(f"🔑 OTP: {otp_code}")
+                print(f"⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 
                 # Fallback to standard SMTP
                 subject = "EduOps360 Login Code"
@@ -146,6 +151,18 @@ class OTPAuthenticator:
                     return True
                 else:
                     print(f"❌ Both enhanced and standard SMTP failed for {email}")
+                    # Show OTP prominently in logs for Render when all email methods fail
+                    print("=" * 60)
+                    print("🚨 ALL EMAIL METHODS FAILED - SHOWING OTP IN LOGS")
+                    print("=" * 60)
+                    print(f"📧 Email: {email}")
+                    print(f"🔑 OTP CODE: {otp_code}")
+                    print(f"⏰ Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    print(f"👤 User: {user_name}")
+                    print("=" * 60)
+                    print("📋 INSTRUCTIONS: Use the OTP code above to login")
+                    print("=" * 60)
+                    
                     # Still log to file even if email fails
                     self.send_simple_otp(email, otp_code, user_name)
                     return False
