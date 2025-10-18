@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  eduops360:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_SECRET_KEY=dev-secret-key-change-in-production
+      - EMAIL_ADDRESS=${EMAIL_ADDRESS}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_DISPLAY_NAME=${EMAIL_DISPLAY_NAME}
+      - PORT=5000
+    volumes:
+      - ./eduops360.db:/app/eduops360.db
+      - ./reminder_storage:/app/reminder_storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
