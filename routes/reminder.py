@@ -577,57 +577,37 @@ def send_professor_reminder_email(professor, preview_only, email_account):
     
     try:
         # Subject
-        subject = f"📚 Weekend Session Reminder - {prof_name} | upGrad DBA Program"
+        subject = f"Weekend Session Reminder - {prof_name} | upGrad DBA Program"
         
-        # HTML Email body with professional styling
+        # Simple HTML Email body with clean formatting
         body = f"""
-        <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Session Reminder</title>
         </head>
-        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
             
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 12px 12px 0 0; margin-bottom: 0;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 600;">upGrad DBA Program</h1>
-                <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Weekend Session Reminder</p>
-            </div>
+            <h2 style="color: #2c5aa0; border-bottom: 2px solid #2c5aa0; padding-bottom: 10px;">upGrad DBA Program - Weekend Session Reminder</h2>
             
-            <!-- Main Content -->
-            <div style="background: white; padding: 30px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                
-                <div style="margin-bottom: 25px;">
-                    <p style="font-size: 18px; margin: 0 0 15px 0; color: #2d3748;">Dear <strong style="color: #4a5568;">{prof_name}</strong>,</p>
-                    
-                    <p style="margin: 0 0 20px 0; color: #4a5568; font-size: 16px;">I hope this message finds you in good health and high spirits. This is a gentle reminder regarding your upcoming live sessions scheduled for this weekend.</p>
-                    
-                    <p style="margin: 0 0 10px 0; color: #2d3748; font-size: 16px; font-weight: 600;">📋 Your Session Schedule:</p>
-                </div>
+            <p>Dear <strong>{prof_name}</strong>,</p>
+            
+            <p>I hope this message finds you well. This is a gentle reminder regarding your upcoming live sessions scheduled for this weekend.</p>
+            
+            <h3 style="color: #2c5aa0;">Your Session Schedule:</h3>
         """
         
         for i, session in enumerate(professor["sessions"], 1):
             session_date = datetime.strptime(session["date"], "%Y-%m-%d").strftime("%B %d, %Y, %A")
             body += f"""
-            <div style="margin-bottom: 25px; padding: 20px; border-left: 4px solid #667eea; background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <div style="background: #667eea; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px;">{i}</div>
-                    <h3 style="margin: 0; color: #2d3748; font-size: 18px; font-weight: 600;">Session {i}</h3>
-                </div>
-                
-                <div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                    <div style="display: grid; gap: 8px;">
-                        <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">📅 Date:</span> {session_date}</p>
-                        <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">🕐 Time:</span> {session['time']}</p>
-                        <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">📚 Topic:</span> {session['topic']}</p>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <a href="{session['link']}" style="display: inline-block; background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3); transition: all 0.2s;">🎥 Join Zoom Meeting</a>
-                </div>
+            <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                <h4 style="color: #2c5aa0; margin-top: 0;">Session {i}</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li><strong>Date:</strong> {session_date}</li>
+                    <li><strong>Time:</strong> {session['time']}</li>
+                    <li><strong>Topic:</strong> {session['topic']}</li>
+                    <li><strong>Zoom Meeting:</strong> <a href="{session['link']}" style="color: #2c5aa0; text-decoration: underline;">Join Meeting</a></li>
+                </ul>
             """
             
             drive_link = session["drive"]
@@ -636,45 +616,25 @@ def send_professor_reminder_email(professor, preview_only, email_account):
             if drive_link and isinstance(drive_link, str) and drive_link.strip() and not drive_link.isspace():
                 print(f"DEBUG: Adding drive link: {drive_link}")
                 body += f'''
-                <div style="text-align: center; margin-top: 10px;">
-                    <a href="{drive_link}" style="display: inline-block; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; box-shadow: 0 2px 4px rgba(72, 187, 120, 0.3);">📁 Upload Session Materials</a>
-                </div>
+                    <li><strong>Drive Link:</strong> <a href="{drive_link}" style="color: #2c5aa0; text-decoration: underline;">Upload Session Materials</a></li>
                 '''
             else:
                 print(f"DEBUG: No valid drive link found, showing default message")
                 body += '''
-                <div style="background: #fed7d7; border: 1px solid #fc8181; padding: 12px; border-radius: 6px; margin-top: 10px;">
-                    <p style="margin: 0; color: #c53030; font-size: 14px; font-weight: 500;">📎 <strong>Important:</strong> Please share your session materials (PPTs, handouts, etc.) by replying to this email.</p>
-                </div>
+                    <li style="color: #d63384;"><strong>Important:</strong> Please share your session materials (PPTs, handouts, etc.) by replying to this email.</li>
                 '''
             
-            body += "</div>"
+            body += "</ul></div>"
         
         body += """
-                
-                <!-- Footer Message -->
-                <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%); border-radius: 8px; border-left: 4px solid #4299e1;">
-                    <p style="margin: 0 0 15px 0; color: #2d3748; font-size: 16px;">Please let us know if you require any assistance or have updates regarding your session. We look forward to a successful weekend of learning! 🎯</p>
-                    
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #cbd5e0;">
-                        <p style="margin: 0; color: #4a5568; font-size: 14px;">For any technical support or queries, please contact:</p>
-                        <p style="margin: 5px 0 0 0; color: #2d3748; font-weight: 600;">📧 Operations Team | upGrad DBA Program</p>
-                    </div>
-                </div>
-                
-                <!-- Signature -->
-                <div style="margin-top: 25px; text-align: center; padding: 15px; background: #f7fafc; border-radius: 6px;">
-                    <p style="margin: 0; color: #2d3748; font-size: 16px; font-weight: 600;">Best regards,</p>
-                    <p style="margin: 5px 0 0 0; color: #667eea; font-size: 18px; font-weight: 700;">upGrad Operations Team</p>
-                    <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">DBA Program | Executive Education</p>
-                </div>
-                
-            </div>
             
-            <!-- Footer -->
-            <div style="text-align: center; margin-top: 20px; padding: 15px; color: #718096; font-size: 12px;">
-                <p style="margin: 0;">This is an automated reminder from upGrad DBA Program Operations.</p>
-            </div>
+            <p>Please let us know if you require any assistance or have updates regarding your session. We look forward to a successful weekend of learning!</p>
+            
+            <p>For any technical support or queries, please contact the Operations Team.</p>
+            
+            <p><strong>Best regards,</strong><br>
+            <strong>upGrad Operations Team</strong><br>
+            DBA Program | Executive Education</p>
             
         </body>
         </html>
@@ -772,36 +732,25 @@ def send_cohort_reminder_email(admin_email, cohort_name, sessions, preview_only,
     
     try:
         # Subject for specific cohort
-        subject = f"🎓 Weekend Live Sessions Reminder - {cohort_name} | upGrad DBA Program"
+        subject = f"Reminder: {cohort_name} - Upcoming Live Sessions This Weekend"
         
-        # HTML Email body for learners with professional styling
+        # Simple HTML Email body for learners
         body = f"""
-        <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Weekend Sessions Reminder</title>
         </head>
-        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 650px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
             
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 12px 12px 0 0; margin-bottom: 0;">
-                <h1 style="margin: 0; font-size: 26px; font-weight: 700;">upGrad DBA Program</h1>
-                <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.9;">Weekend Live Sessions</p>
-                <div style="margin-top: 15px; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 20px; display: inline-block;">
-                    <span style="font-size: 16px; font-weight: 600;">{cohort_name}</span>
-                </div>
-            </div>
+            <h2 style="color: #2c5aa0; border-bottom: 2px solid #2c5aa0; padding-bottom: 10px;">upGrad DBA Program - Weekend Live Sessions</h2>
+            <h3 style="color: #2c5aa0;">{cohort_name}</h3>
             
-            <!-- Main Content -->
-            <div style="background: white; padding: 30px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                
-                <div style="margin-bottom: 30px; text-align: center;">
-                    <h2 style="color: #2d3748; font-size: 22px; margin: 0 0 15px 0;">Dear {cohort_name} Learners,</h2>
-                    <p style="color: #4a5568; font-size: 18px; margin: 0 0 10px 0; font-weight: 600;">Greetings from upGrad! 🌟</p>
-                    <p style="color: #4a5568; font-size: 16px; margin: 0; line-height: 1.7;">We hope this message finds you in good health and high spirits. This is your friendly reminder about the exciting live sessions scheduled for this weekend.</p>
-                </div>
+            <p>Dear Learner,</p>
+            
+            <p><strong>Greetings from upGrad!</strong></p>
+            
+            <p>We hope this message finds you in good health and high spirits. This is your friendly reminder about the live sessions scheduled for this weekend.</p>
         """
         
         # Group sessions by day
@@ -822,13 +771,7 @@ def send_cohort_reminder_email(admin_email, cohort_name, sessions, preview_only,
                 other_sessions.append(session_data)
         
         # Add Saturday sessions
-        body += """
-                <div style="margin-bottom: 25px;">
-                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                        <div style="background: #3b82f6; color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; margin-right: 10px;">📅</div>
-                        <h3 style="margin: 0; color: #2d3748; font-size: 20px; font-weight: 600;">Saturday Sessions</h3>
-                    </div>
-        """
+        body += "<h4 style='color: #2c5aa0;'>Sessions on Saturday:</h4>"
         if saturday_sessions:
             for i, session_data in enumerate(saturday_sessions, 1):
                 session = session_data["session"]
@@ -836,46 +779,22 @@ def send_cohort_reminder_email(admin_email, cohort_name, sessions, preview_only,
                 session_date = datetime.strptime(session["date"], "%Y-%m-%d").strftime("%b %d, %Y, %A")
                 
                 body += f"""
-                <div style="margin-bottom: 20px; padding: 20px; border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                        <div style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 14px;">{i}</div>
-                        <h4 style="margin: 0; color: #2d3748; font-size: 16px; font-weight: 600;">Session {i}</h4>
-                    </div>
-                    
-                    <div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <div style="display: grid; gap: 8px;">
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">📅 Date:</span> {session_date}</p>
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">🕐 Time:</span> {session['time']}</p>
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">📚 Topic:</span> {session['topic']}</p>
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">👨‍🏫 Instructor:</span> {professor}</p>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center;">
-                        <a href="{session['link']}" style="display: inline-block; background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);">🎥 Join Live Session</a>
-                    </div>
+                <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                    <h5 style="color: #2c5aa0; margin-top: 0;">Session {i}</h5>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Date:</strong> {session_date}</li>
+                        <li><strong>Time:</strong> {session['time']}</li>
+                        <li><strong>Topic:</strong> {session['topic']}</li>
+                        <li><strong>Conducted by:</strong> {professor}</li>
+                        <li><strong>Join Zoom Meeting:</strong> <a href="{session['link']}" style="color: #2c5aa0; text-decoration: underline;">{session['link']}</a></li>
+                    </ul>
                 </div>
                 """
         else:
-            body += """
-                    <div style="margin-bottom: 20px; padding: 20px; border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-radius: 8px;">
-                        <div style="display: flex; align-items: center;">
-                            <div style="background: #f59e0b; color: white; padding: 8px; border-radius: 50%; margin-right: 12px;">ℹ️</div>
-                            <p style="margin: 0; color: #92400e; font-weight: 600; font-size: 16px;">No live sessions scheduled for Saturday</p>
-                        </div>
-                    </div>
-            """
-        
-        body += "</div>"
+            body += "<p style='color: #d63384;'><strong>No live sessions scheduled for Saturday</strong></p>"
         
         # Add Sunday sessions
-        body += """
-                <div style="margin-bottom: 25px;">
-                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                        <div style="background: #10b981; color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; margin-right: 10px;">📅</div>
-                        <h3 style="margin: 0; color: #2d3748; font-size: 20px; font-weight: 600;">Sunday Sessions</h3>
-                    </div>
-        """
+        body += "<h4 style='color: #2c5aa0;'>Sessions on Sunday:</h4>"
         if sunday_sessions:
             for i, session_data in enumerate(sunday_sessions, 1):
                 session = session_data["session"]
@@ -883,37 +802,19 @@ def send_cohort_reminder_email(admin_email, cohort_name, sessions, preview_only,
                 session_date = datetime.strptime(session["date"], "%Y-%m-%d").strftime("%b %d, %Y, %A")
                 
                 body += f"""
-                <div style="margin-bottom: 20px; padding: 20px; border-left: 4px solid #10b981; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                        <div style="background: #10b981; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; font-size: 14px;">{i}</div>
-                        <h4 style="margin: 0; color: #2d3748; font-size: 16px; font-weight: 600;">Session {i}</h4>
-                    </div>
-                    
-                    <div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <div style="display: grid; gap: 8px;">
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">📅 Date:</span> {session_date}</p>
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">🕐 Time:</span> {session['time']}</p>
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">📚 Topic:</span> {session['topic']}</p>
-                            <p style="margin: 0; color: #4a5568;"><span style="font-weight: 600; color: #2d3748;">👨‍🏫 Instructor:</span> {professor}</p>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center;">
-                        <a href="{session['link']}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);">🎥 Join Live Session</a>
-                    </div>
+                <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                    <h5 style="color: #2c5aa0; margin-top: 0;">Session {i}</h5>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Date:</strong> {session_date}</li>
+                        <li><strong>Time:</strong> {session['time']}</li>
+                        <li><strong>Topic:</strong> {session['topic']}</li>
+                        <li><strong>Conducted by:</strong> {professor}</li>
+                        <li><strong>Join Zoom Meeting:</strong> <a href="{session['link']}" style="color: #2c5aa0; text-decoration: underline;">{session['link']}</a></li>
+                    </ul>
                 </div>
                 """
         else:
-            body += """
-                    <div style="margin-bottom: 20px; padding: 20px; border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-radius: 8px;">
-                        <div style="display: flex; align-items: center;">
-                            <div style="background: #f59e0b; color: white; padding: 8px; border-radius: 50%; margin-right: 12px;">ℹ️</div>
-                            <p style="margin: 0; color: #92400e; font-weight: 600; font-size: 16px;">No live sessions scheduled for Sunday</p>
-                        </div>
-                    </div>
-            """
-        
-        body += "</div>"
+            body += "<p style='color: #d63384;'><strong>No live sessions scheduled for Sunday</strong></p>"
         
         # Add other day sessions if any
         if other_sessions:
@@ -935,38 +836,16 @@ def send_cohort_reminder_email(admin_email, cohort_name, sessions, preview_only,
         
         # Add World Time Buddy link and footer
         body += """
-                
-                <!-- Time Zone Converter -->
-                <div style="margin-top: 30px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);">
-                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                        <div style="background: #4299e1; color: white; padding: 8px; border-radius: 50%; margin-right: 12px;">🌍</div>
-                        <h4 style="margin: 0; color: #2d3748; font-size: 18px; font-weight: 600;">Time Zone Converter</h4>
-                    </div>
-                    <p style="margin: 0 0 15px 0; color: #4a5568; font-size: 16px;">Use World Time Buddy to convert session times to your local time zone:</p>
-                    <div style="text-align: center;">
-                        <a href="https://www.worldtimebuddy.com/" style="display: inline-block; background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);">🕐 Open Time Converter</a>
-                    </div>
-                </div>
-                
-                <!-- Important Note -->
-                <div style="margin-top: 25px; padding: 15px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px;">
-                    <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 500;">📝 <strong>Note:</strong> Please join the sessions on time. Recording links will be shared after each session.</p>
-                </div>
-                
-                <!-- Signature -->
-                <div style="margin-top: 30px; text-align: center; padding: 20px; background: #f7fafc; border-radius: 8px;">
-                    <p style="margin: 0 0 10px 0; color: #2d3748; font-size: 16px; font-weight: 600;">Best regards,</p>
-                    <p style="margin: 0 0 5px 0; color: #4299e1; font-size: 20px; font-weight: 700;">upGrad Academic Team</p>
-                    <p style="margin: 0; color: #718096; font-size: 14px;">DBA Program | Executive Education</p>
-                </div>
-                
-            </div>
             
-            <!-- Footer -->
-            <div style="text-align: center; margin-top: 20px; padding: 15px; color: #718096; font-size: 12px;">
-                <p style="margin: 0;">This is an automated reminder from upGrad DBA Program.</p>
-                <p style="margin: 5px 0 0 0;">For support, contact your program coordinator.</p>
-            </div>
+            <h4 style="color: #2c5aa0;">Time Zone Converter:</h4>
+            <p>Use World Time Buddy to convert session times to your local time zone:</p>
+            <p><a href="https://www.worldtimebuddy.com/" style="color: #2c5aa0; text-decoration: underline;">https://www.worldtimebuddy.com/</a></p>
+            
+            <p style="color: #d63384;"><strong>Note:</strong> Please join the sessions on time. Recording links will be shared after each session.</p>
+            
+            <p><strong>Best regards,</strong><br>
+            <strong>upGrad Academic Team</strong><br>
+            DBA Program | Executive Education</p>
             
         </body>
         </html>
