@@ -28,9 +28,19 @@ class EmailAccountManager:
         self._load_accounts()
     
     def _get_smtp_config(self, email_address):
-        """Office365 SMTP configuration for all domains"""
-        # All emails use Office365 SMTP configuration
-        return 'smtp-mail.outlook.com', 587, True
+        """Office365 SMTP configuration with Render-optimized settings"""
+        # Multiple Office 365 SMTP configurations for maximum compatibility
+        return [
+            # Primary Office 365 SMTP
+            ('smtp-mail.outlook.com', 587, True),
+            # Alternative Office 365 SMTP
+            ('smtp.office365.com', 587, True),
+            # Office 365 SSL (more reliable on some cloud platforms)
+            ('smtp-mail.outlook.com', 465, False),  # SSL instead of TLS
+            # Gmail fallback (if Office 365 fails)
+            ('smtp.gmail.com', 587, True),
+            ('smtp.gmail.com', 465, False)  # Gmail SSL
+        ]
 
     def _load_accounts(self):
         """Load Office365 email accounts from environment variables"""
@@ -40,16 +50,17 @@ class EmailAccountManager:
         email_display_name = os.getenv('EMAIL_DISPLAY_NAME', 'EduOps360 System')
         
         if email_address and email_password:
-            # Use Office365 SMTP settings
-            smtp_server, smtp_port, use_tls = self._get_smtp_config(email_address)
+            # Use primary Office365 SMTP settings
+            smtp_configs = self._get_smtp_config(email_address)
+            primary_config = smtp_configs[0]  # Use first configuration
             
             self.accounts['primary'] = EmailAccount(
                 name=email_display_name,
                 email=email_address,
                 password=email_password,
-                smtp_server='smtp-mail.outlook.com',
-                smtp_port=587,
-                use_tls=True
+                smtp_server=primary_config[0],
+                smtp_port=primary_config[1],
+                use_tls=primary_config[2]
             )
             print(f"✅ Primary Office365 account configured: {email_display_name} ({email_address})")
         else:
@@ -63,13 +74,17 @@ class EmailAccountManager:
         email_display_name_secondary = os.getenv('EMAIL_DISPLAY_NAME_SECONDARY', 'EduOps360 Secondary')
         
         if email_address_secondary and email_password_secondary:
+            # Use primary Office365 SMTP settings for secondary account too
+            smtp_configs = self._get_smtp_config(email_address_secondary)
+            secondary_config = smtp_configs[0]  # Use first configuration
+            
             self.accounts['secondary'] = EmailAccount(
                 name=email_display_name_secondary,
                 email=email_address_secondary,
                 password=email_password_secondary,
-                smtp_server='smtp-mail.outlook.com',
-                smtp_port=587,
-                use_tls=True
+                smtp_server=secondary_config[0],
+                smtp_port=secondary_config[1],
+                use_tls=secondary_config[2]
             )
             print(f"✅ Secondary Office365 account configured: {email_display_name_secondary} ({email_address_secondary})")
         else:

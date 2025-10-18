@@ -13,6 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from auth.email_utils import send_smtp_email
 from auth.email_config import get_email_accounts
+from auth.render_office365_fix import send_otp_email_render
 from utils.database import get_db_connection, get_db_cursor, execute_query
 import os
 from dotenv import load_dotenv
@@ -66,103 +67,85 @@ class OTPAuthenticator:
         return True
 
     def send_otp_email(self, email, otp_code, user_name="User", account_key="primary"):
-        """Send OTP via Office365 SMTP"""
+        """Send OTP via enhanced Office365 SMTP with Render optimization"""
         try:
-            print(f"🔍 Starting OTP email send to {email} via Office365")
+            print(f"🔍 Starting enhanced OTP email send to {email} via Office365")
             
-            # Send via Office365 SMTP
-            subject = "EduOps360 Login Code"
+            # Try enhanced Office 365 sender first (optimized for Render)
+            result = send_otp_email_render(email, otp_code)
             
-            # Simple, clean HTML that's less likely to be flagged as spam
-            html_body = f"""
-            <html>
-            <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
-                <div style="max-width: 500px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px;">
-                    <h2 style="color: #333; text-align: center; margin-bottom: 30px;">EduOps360 Login Code</h2>
-                    
-                    <p style="color: #555; font-size: 16px;">Hello {user_name},</p>
-                    
-                    <p style="color: #555; font-size: 16px;">
-                        Your login verification code is:
-                    </p>
-                    
-                    <div style="text-align: center; margin: 30px 0;">
-                        <div style="font-size: 32px; font-weight: bold; color: #007bff; background-color: #f8f9fa; padding: 15px 25px; border-radius: 5px; letter-spacing: 5px; display: inline-block;">
-                            {otp_code}
-                        </div>
-                    </div>
-                    
-                    <p style="color: #555; font-size: 14px;">
-                        This code expires in 10 minutes and can only be used once.
-                    </p>
-                    
-                    <p style="color: #777; font-size: 12px; margin-top: 30px;">
-                        If you did not request this code, please ignore this email.
-                    </p>
-                </div>
-            </body>
-            </html>
-            """
+            print(f"🔍 Enhanced Office365 sender returned: {result}")
             
-            print(f"🔍 Calling send_smtp_email with account_key: {account_key}")
-            
-            # Send email using SMTP directly
-            result = send_smtp_email(
-                to_email=email,
-                subject=subject,
-                html_body=html_body,
-                account_key=account_key
-            )
-            
-            print(f"🔍 send_smtp_email returned: {result}")
-            
-            # Check if result is a dict (new format) or boolean (old format)
-            if isinstance(result, dict):
-                success = result.get('success', False)
-                message = result.get('message', 'Unknown error')
-                print(f"🔍 Email result - Success: {success}, Message: {message}")
-            else:
-                success = bool(result)
-                print(f"🔍 Email result (boolean): {success}")
-            
-            if success:
-                print(f"✅ OTP sent successfully to {email}")
+            if result.get('success'):
+                print(f"✅ OTP sent successfully to {email} via enhanced Office365 sender")
                 # Also log to file as backup (for admin reference only)
                 self.send_simple_otp(email, otp_code, user_name)
                 return True
             else:
-                print(f"❌ Failed to send OTP to {email}")
-                # Check if this is a cloud environment or SMTP is blocked
-                if isinstance(result, dict) and result.get('cloud_environment'):
-                    print("🌐 Cloud environment detected - using Railway fallback service")
-                    
-                    # Use Railway email service for fallback
-                    try:
-                        from auth.railway_email_service import send_railway_otp
-                        railway_result = send_railway_otp(email, otp_code, user_name)
+                print(f"⚠️ Enhanced Office365 sender failed, trying standard SMTP...")
+                
+                # Fallback to standard SMTP
+                subject = "EduOps360 Login Code"
+                
+                # Simple, clean HTML that's less likely to be flagged as spam
+                html_body = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
+                    <div style="max-width: 500px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px;">
+                        <h2 style="color: #333; text-align: center; margin-bottom: 30px;">EduOps360 Login Code</h2>
                         
-                        if railway_result.get('success'):
-                            print("✅ Railway fallback service provided OTP successfully")
-                            return {
-                                'success': False,
-                                'cloud_fallback': True,
-                                'otp_code': otp_code,
-                                'message': railway_result.get('message', 'Your login code is provided below.'),
-                                'display_otp': True
-                            }
-                    except Exception as e:
-                        print(f"❌ Railway fallback service error: {e}")
-                    
-                    # Fallback to simple logging
-                    self.send_simple_otp(email, otp_code, user_name)
-                    return {
-                        'success': False,
-                        'cloud_fallback': True,
-                        'otp_code': otp_code,
-                        'message': 'Email services unavailable on Railway. Your login code is displayed below.',
-                        'display_otp': True
-                    }
+                        <p style="color: #555; font-size: 16px;">Hello {user_name},</p>
+                        
+                        <p style="color: #555; font-size: 16px;">
+                            Your login verification code is:
+                        </p>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <div style="font-size: 32px; font-weight: bold; color: #007bff; background-color: #f8f9fa; padding: 15px 25px; border-radius: 5px; letter-spacing: 5px; display: inline-block;">
+                                {otp_code}
+                            </div>
+                        </div>
+                        
+                        <p style="color: #555; font-size: 14px;">
+                            This code expires in 10 minutes and can only be used once.
+                        </p>
+                        
+                        <p style="color: #777; font-size: 12px; margin-top: 30px;">
+                            If you did not request this code, please ignore this email.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                print(f"🔍 Calling standard send_smtp_email with account_key: {account_key}")
+                
+                # Send email using standard SMTP
+                smtp_result = send_smtp_email(
+                    to_email=email,
+                    subject=subject,
+                    html_body=html_body,
+                    account_key=account_key
+                )
+                
+                print(f"🔍 Standard send_smtp_email returned: {smtp_result}")
+                
+                # Check if result is a dict (new format) or boolean (old format)
+                if isinstance(smtp_result, dict):
+                    success = smtp_result.get('success', False)
+                    message = smtp_result.get('message', 'Unknown error')
+                    print(f"🔍 Standard SMTP result - Success: {success}, Message: {message}")
                 else:
+                    success = bool(smtp_result)
+                    print(f"🔍 Standard SMTP result (boolean): {success}")
+                
+                if success:
+                    print(f"✅ OTP sent successfully to {email} via standard SMTP")
+                    # Also log to file as backup (for admin reference only)
+                    self.send_simple_otp(email, otp_code, user_name)
+                    return True
+                else:
+                    print(f"❌ Both enhanced and standard SMTP failed for {email}")
                     # Still log to file even if email fails
                     self.send_simple_otp(email, otp_code, user_name)
                     return False
